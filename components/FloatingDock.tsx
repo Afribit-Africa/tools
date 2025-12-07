@@ -72,7 +72,7 @@ export function FloatingDock() {
 
             {/* Donate Button */}
             <a
-              href="https://donate.afribit.africa"
+              href="https://afribit.africa/donate"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-bitcoin to-orange-600 rounded-full hover:shadow-lg hover:shadow-bitcoin/30 transition-all duration-200 ml-2"
@@ -137,7 +137,7 @@ export function FloatingDock() {
                 );
               })}
               <a
-                href="https://donate.afribit.africa"
+                href="https://afribit.africa/donate"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-bitcoin to-orange-600 rounded-lg hover:shadow-lg transition-all"

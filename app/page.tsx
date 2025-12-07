@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Zap, ArrowRight, CheckCircle, Sparkles, TrendingUp, Shield } from 'lucide-react';
 import { FloatingDock } from '@/components/FloatingDock';
 import { DonateSection } from '@/components/DonateSection';
+import ClientLogos from '@/components/ClientLogos';
 
 export default function HomePage() {
   return (
@@ -74,51 +75,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-4 bg-bg-secondary/30">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-heading font-bold mb-4">
-              Why Choose <span className="text-bitcoin">Afribitools</span>
-            </h2>
-            <p className="text-xl text-text-secondary">
-              Built for the Bitcoin circular economy, by Bitcoin enthusiasts
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="card-hover group">
-              <div className="w-14 h-14 bg-bitcoin/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-bitcoin/30 transition-colors">
-                <Zap className="w-8 h-8 text-bitcoin" />
-              </div>
-              <h3 className="text-2xl font-heading font-bold mb-3">Lightning Fast</h3>
-              <p className="text-text-secondary">
-                Process thousands of addresses in minutes with our optimized batch processing
-              </p>
-            </div>
-
-            <div className="card-hover group">
-              <div className="w-14 h-14 bg-bitcoin/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-bitcoin/30 transition-colors">
-                <Shield className="w-8 h-8 text-bitcoin" />
-              </div>
-              <h3 className="text-2xl font-heading font-bold mb-3">Secure & Private</h3>
-              <p className="text-text-secondary">
-                No data stored on servers. Your information stays local with automatic cleanup
-              </p>
-            </div>
-
-            <div className="card-hover group">
-              <div className="w-14 h-14 bg-bitcoin/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-bitcoin/30 transition-colors">
-                <TrendingUp className="w-8 h-8 text-bitcoin" />
-              </div>
-              <h3 className="text-2xl font-heading font-bold mb-3">Built to Scale</h3>
-              <p className="text-text-secondary">
-                From 10 to 10,000+ addresses, our tools grow with your organization
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Client Logos Section */}
+      <ClientLogos />
 
       {/* Modules Section */}
       <section id="modules" className="py-20 px-4">
