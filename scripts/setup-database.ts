@@ -54,7 +54,7 @@ async function setupDatabase() {
     // Create statistics view
     await sql`
       CREATE OR REPLACE VIEW validation_session_stats AS
-      SELECT 
+      SELECT
         vs.id,
         vs.file_name,
         vs.total_addresses,

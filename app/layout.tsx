@@ -31,8 +31,13 @@ const audiowide = Audiowide({
 
 export const metadata: Metadata = {
   title: 'Afribitools - Bitcoin Circular Economy Tools',
-  description: 'All-in-one solution for Bitcoin circular economy organizations',
-  keywords: ['bitcoin', 'lightning', 'blink', 'circular economy', 'africa'],
+  description: 'All-in-one solution for Bitcoin circular economy organizations. Verify, manage, and scale your Bitcoin workflows with ease.',
+  keywords: ['bitcoin', 'lightning', 'blink', 'circular economy', 'africa', 'fastlight', 'batch payments'],
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/logo.svg',
+  },
 };
 
 export default function RootLayout({

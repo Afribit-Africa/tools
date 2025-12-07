@@ -40,11 +40,11 @@
 @layer components {
   /* Button variants */
   .btn-primary {
-    @apply bg-bitcoin hover:bg-bitcoin-dark text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-bitcoin hover:bg-bitcoin-dark text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2;
   }
 
   .btn-secondary {
-    @apply bg-bg-tertiary hover:bg-border-light text-text-primary font-medium px-6 py-3 rounded-lg transition-colors duration-200;
+    @apply bg-bg-tertiary hover:bg-border-light text-text-primary font-medium px-6 py-3 rounded-lg transition-all duration-200 inline-flex items-center justify-center gap-2;
   }
 
   .btn-ghost {
@@ -134,5 +134,36 @@
 
   .animate-shimmer {
     animation: shimmer 2s infinite;
+  }
+
+  /* Gradient animation */
+  @keyframes gradient {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+
+  /* Fade in animation */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out;
   }
 }
