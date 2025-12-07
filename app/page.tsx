@@ -13,7 +13,7 @@ export default function HomePage() {
         {/* Animated Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-bitcoin/5 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-bitcoin/10 via-transparent to-transparent" />
-        
+
         <div className="container mx-auto max-w-6xl relative z-10">
           <div className="text-center space-y-8">
             {/* Badge */}
@@ -40,15 +40,15 @@ export default function HomePage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-              <Link 
-                href="/fastlight" 
+              <Link
+                href="/fastlight"
                 className="btn-primary group text-lg px-8 py-4"
               >
                 Get Started
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link 
-                href="#modules" 
+              <Link
+                href="#modules"
                 className="btn-secondary text-lg px-8 py-4"
               >
                 Explore Modules
@@ -136,7 +136,7 @@ export default function HomePage() {
             {/* Fastlight Module */}
             <Link href="/fastlight" className="card-hover group relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-bitcoin/5 rounded-full blur-3xl group-hover:bg-bitcoin/10 transition-colors" />
-              
+
               <div className="relative">
                 <div className="flex items-start justify-between mb-6">
                   <div className="w-14 h-14 bg-gradient-to-br from-bitcoin to-orange-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
@@ -170,7 +170,7 @@ export default function HomePage() {
             {/* Coming Soon Modules */}
             <div className="card relative overflow-hidden opacity-60">
               <div className="absolute inset-0 bg-gradient-to-br from-bg-tertiary to-bg-secondary" />
-              
+
               <div className="relative">
                 <div className="flex items-start justify-between mb-6">
                   <div className="w-14 h-14 bg-text-muted/20 rounded-2xl flex items-center justify-center">
@@ -199,7 +199,7 @@ export default function HomePage() {
 
             <div className="card relative overflow-hidden opacity-60">
               <div className="absolute inset-0 bg-gradient-to-br from-bg-tertiary to-bg-secondary" />
-              
+
               <div className="relative">
                 <div className="flex items-start justify-between mb-6">
                   <div className="w-14 h-14 bg-text-muted/20 rounded-2xl flex items-center justify-center">
@@ -264,64 +264,6 @@ export default function HomePage() {
               © 2025 Afribit Africa. Open Source.
             </p>
           </div>
-        </div>
-      </footer>
-    </main>
-  );
-}
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-border rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">📊</span>
-                </div>
-                <span className="badge-pending">Coming Soon</span>
-              </div>
-
-              <h4 className="text-xl font-heading font-bold mb-2">
-                Analytics
-              </h4>
-
-              <p className="text-text-secondary mb-4">
-                Track and analyze payment flows in your circular economy network.
-              </p>
-            </div>
-
-            <div className="card opacity-50 cursor-not-allowed">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-border rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">💳</span>
-                </div>
-                <span className="badge-pending">Coming Soon</span>
-              </div>
-
-              <h4 className="text-xl font-heading font-bold mb-2">
-                Batch Pay
-              </h4>
-
-              <p className="text-text-secondary mb-4">
-                Send bulk payments to multiple lightning addresses simultaneously.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border bg-bg-secondary py-8">
-        <div className="container mx-auto px-4 text-center text-text-muted">
-          <p>
-            Built with ⚡ by{' '}
-            <Link
-              href="https://github.com/Afribit-Africa"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-bitcoin hover:text-bitcoin-light"
-            >
-              Afribit Africa
-            </Link>
-          </p>
-          <p className="mt-2 text-sm">
-            Open source • Bitcoin only • Circular economy focused
-          </p>
         </div>
       </footer>
     </main>
