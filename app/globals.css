@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, sans-serif;
+    --font-space-grotesk: 'Space Grotesk', system-ui, sans-serif;
+    --font-jetbrains-mono: 'JetBrains Mono', 'Consolas', monospace;
+    --font-audiowide: 'Audiowide', system-ui, sans-serif;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-bg-primary text-text-primary font-sans antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-secondary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-light rounded-lg;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-bitcoin;
+  }
+}
+
+@layer components {
+  /* Button variants */
+  .btn-primary {
+    @apply bg-bitcoin hover:bg-bitcoin-dark text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-bg-tertiary hover:bg-border-light text-text-primary font-medium px-6 py-3 rounded-lg transition-colors duration-200;
+  }
+
+  .btn-ghost {
+    @apply hover:bg-bg-tertiary text-text-primary font-medium px-6 py-3 rounded-lg transition-colors duration-200;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-bg-secondary border border-border rounded-xl p-6;
+  }
+
+  .card-hover {
+    @apply card hover:border-border-light hover:shadow-lg hover:shadow-bitcoin/10 transition-all duration-200;
+  }
+
+  /* Input styles */
+  .input {
+    @apply bg-bg-tertiary border border-border text-text-primary placeholder:text-text-muted rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all duration-200;
+  }
+
+  /* Badge styles */
+  .badge-success {
+    @apply bg-status-success/20 text-status-success border border-status-success/30 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-error {
+    @apply bg-status-error/20 text-status-error border border-status-error/30 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-warning {
+    @apply bg-status-warning/20 text-status-warning border border-status-warning/30 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-pending {
+    @apply bg-status-pending/20 text-status-pending border border-status-pending/30 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  /* Table styles */
+  .table-container {
+    @apply bg-bg-secondary border border-border rounded-xl overflow-hidden;
+  }
+
+  .table {
+    @apply w-full text-left;
+  }
+
+  .table thead {
+    @apply bg-bg-tertiary border-b border-border;
+  }
+
+  .table th {
+    @apply px-6 py-4 text-text-secondary font-medium text-sm uppercase tracking-wider;
+  }
+
+  .table td {
+    @apply px-6 py-4 border-b border-border text-text-primary font-mono text-sm;
+  }
+
+  .table tbody tr:hover {
+    @apply bg-bg-tertiary/50;
+  }
+
+  /* Link styles */
+  .link {
+    @apply text-bitcoin hover:text-bitcoin-light transition-colors duration-200 underline decoration-bitcoin/30 hover:decoration-bitcoin-light;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glow-bitcoin {
+    box-shadow: 0 0 20px rgba(247, 147, 26, 0.3);
+  }
+
+  /* Shimmer animation for progress bar */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+}

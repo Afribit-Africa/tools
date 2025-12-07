@@ -1,0 +1,7 @@
+ID,Recipient Email,Full Name,Payment Amount,Status
+001, alice@blink.sv ,Alice Smith,50000,active
+002,bob@blink.sv,Bob Johnson,75000,active
+003,  charlie@blink.sv  ,Charlie Brown,60000,pending
+004,dave@blink.sv,Dave Wilson,100000,active
+005,invalid@example.com,Invalid User,25000,inactive
+006,eve@blink.sv,Eve Martinez,45000,active

@@ -1,0 +1,8 @@
+Lightning Address,Recipient Name,Amount,Notes
+alice@blink.sv,Alice Smith,1000,Regular customer
+bob@blink.sv,Bob Johnson,2500,Premium member
+charlie@blink.sv,Charlie Brown,1500,New signup
+dave@blink.sv,Dave Wilson,3000,VIP customer
+ eve@blink.sv ,Eve Martinez,1200,Has whitespace
+frank@blink.sv,Frank Anderson,800,Active user
+grace@blink.sv,Grace Taylor,2200,Monthly subscription
