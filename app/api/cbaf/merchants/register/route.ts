@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { merchants } from '@/lib/db/schema';
 import { requireBCE } from '@/lib/auth/session';
 import { eq, and } from 'drizzle-orm';
+import { verifyMerchant, extractOsmNodeId } from '@/lib/btcmap/verify-merchant';
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,28 +57,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract OSM node ID from BTCMap URL if possible
-    // BTCMap URLs are typically: https://btcmap.org/merchant/<osm_node_id>
-    let osmNodeId: string | null = null;
+    // Extract OSM node ID from BTCMap URL
+    const osmNodeId = extractOsmNodeId(btcmapUrl);
+
+    // Verify merchant against BTCMap API
+    let verifiedInfo = null;
+    let verificationError = null;
+    
     try {
-      const urlParts = btcmapUrl.split('/');
-      const lastPart = urlParts[urlParts.length - 1];
-      if (lastPart && !isNaN(parseInt(lastPart))) {
-        osmNodeId = lastPart;
+      verifiedInfo = await verifyMerchant(btcmapUrl);
+      if (!verifiedInfo) {
+        verificationError = 'Merchant not found on BTCMap';
       }
     } catch (err) {
-      console.error('Failed to extract OSM node ID:', err);
+      console.error('BTCMap verification failed:', err);
+      verificationError = 'Failed to verify with BTCMap';
     }
 
-    // Create merchant record
+    // Create merchant record with verified data if available
     const result = await db
       .insert(merchants)
       .values({
         economyId,
         btcmapUrl,
-        osmNodeId,
+        osmNodeId: verifiedInfo?.osmNodeId || osmNodeId,
+        merchantName: verifiedInfo?.name || null,
+        category: verifiedInfo?.category || null,
+        latitude: verifiedInfo?.latitude?.toString() || null,
+        longitude: verifiedInfo?.longitude?.toString() || null,
+        address: verifiedInfo?.address 
+          ? `${verifiedInfo.address}${verifiedInfo.city ? `, ${verifiedInfo.city}` : ''}${verifiedInfo.country ? `, ${verifiedInfo.country}` : ''}`
+          : null,
         localName: localName || null,
         notes: notes || null,
+        btcmapVerified: !!verifiedInfo,
+        verificationError,
+        lastVerifiedAt: verifiedInfo ? new Date() : null,
         isActive: true,
         registeredAt: new Date(),
         updatedAt: new Date(),
@@ -93,9 +108,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Phase 5 - Trigger BTCMap verification in background
-    // This would fetch merchant details from BTCMap API and update the record
-
     return NextResponse.json({
       success: true,
       merchant: {
@@ -103,7 +115,10 @@ export async function POST(request: NextRequest) {
         btcmapUrl: merchant.btcmapUrl,
         localName: merchant.localName,
         osmNodeId: merchant.osmNodeId,
+        verified: merchant.btcmapVerified,
+        verificationError: merchant.verificationError,
       },
+      verifiedInfo,
     }, { status: 201 });
 
   } catch (error) {

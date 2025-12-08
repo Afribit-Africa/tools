@@ -1,8 +1,8 @@
 import { requireAdmin } from '@/lib/auth/session';
 import { db } from '@/lib/db';
-import { videoSubmissions, economies } from '@/lib/db/schema';
+import { videoSubmissions, economies, merchants } from '@/lib/db/schema';
 import { eq, sql, desc } from 'drizzle-orm';
-import { Video, Users, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
+import { Video, Users, CheckCircle, XCircle, Clock, TrendingUp, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function AdminDashboardPage() {
@@ -26,6 +26,21 @@ export default async function AdminDashboardPage() {
     .from(economies);
 
   const totalEconomies = economiesCount[0]?.count || 0;
+
+  // Fetch merchant statistics
+  const merchantStats = await db
+    .select({
+      total: sql<number>`count(*)::int`,
+      verified: sql<number>`count(*) filter (where ${merchants.btcmapVerified} = true)::int`,
+      errors: sql<number>`count(*) filter (where ${merchants.verificationError} is not null)::int`,
+    })
+    .from(merchants);
+
+  const { total: totalMerchants, verified: verifiedMerchants, errors: errorMerchants } = merchantStats[0] || {
+    total: 0,
+    verified: 0,
+    errors: 0,
+  };
 
   // Fetch recent pending videos
   const recentPending = await db
@@ -63,7 +78,7 @@ export default async function AdminDashboardPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
           {/* Total Videos */}
           <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
             <div className="flex items-center justify-between">
@@ -98,6 +113,62 @@ export default async function AdminDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-text-muted text-sm font-medium">Approved</p>
+                <p className="text-3xl font-bold mt-2 text-green-500">{approved}</p>
+              </div>
+              <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-green-500" />
+              </div>
+            </div>
+            <p className="text-xs text-text-muted mt-3">
+              {total > 0 ? Math.round((approved / total) * 100) : 0}% approval rate
+            </p>
+          </div>
+
+          {/* Rejected */}
+          <div className="bg-bg-secondary border border-red-500/30 rounded-xl p-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-text-muted text-sm font-medium">Rejected</p>
+                <p className="text-3xl font-bold mt-2 text-red-500">{rejected}</p>
+              </div>
+              <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
+                <XCircle className="w-6 h-6 text-red-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Total Economies */}
+          <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-text-muted text-sm font-medium">Economies</p>
+                <p className="text-3xl font-bold mt-2">{totalEconomies}</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                <Users className="w-6 h-6 text-purple-500" />
+              </div>
+            </div>
+            <Link href="/cbaf/admin/economies" className="text-xs text-purple-500 hover:underline mt-3 inline-block">
+              View all →
+            </Link>
+          </div>
+
+          {/* Verified Merchants */}
+          <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-text-muted text-sm font-medium">Merchants</p>
+                <p className="text-3xl font-bold mt-2">{totalMerchants}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                <MapPin className="w-6 h-6 text-blue-500" />
+              </div>
+            </div>
+            <Link href="/cbaf/admin/merchants" className="text-xs text-blue-500 hover:underline mt-3 inline-block">
+              {verifiedMerchants} verified →
+            </Link>
+          </div>
+        </div>
                 <p className="text-3xl font-bold mt-2 text-green-500">{approved}</p>
               </div>
               <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
@@ -181,7 +252,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Link
             href="/cbaf/admin/reviews"
             className="bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 border border-yellow-500/30 rounded-xl p-6 hover:border-yellow-500 transition-colors group"
@@ -207,6 +278,21 @@ export default async function AdminDashboardPage() {
             </p>
             <span className="text-sm text-purple-500 group-hover:underline">
               View economies →
+            </span>
+          </Link>
+
+          <Link
+            href="/cbaf/admin/merchants"
+            className="bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/30 rounded-xl p-6 hover:border-blue-500 transition-colors group"
+          >
+            <MapPin className="w-8 h-8 text-blue-500 mb-3" />
+            <h3 className="font-heading font-bold text-lg mb-2">Verify Merchants</h3>
+            <p className="text-sm text-text-muted mb-4">
+              Manage BTCMap verification for all merchants
+              {errorMerchants > 0 && ` (${errorMerchants} errors)`}
+            </p>
+            <span className="text-sm text-blue-500 group-hover:underline">
+              Manage verification →
             </span>
           </Link>
 
