@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     // Require BCE authentication
     const session = await requireBCE();
-    
+
     const economyId = session.user.economyId;
     if (!economyId) {
       return NextResponse.json(

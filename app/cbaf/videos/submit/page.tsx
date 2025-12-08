@@ -63,7 +63,7 @@ export default function SubmitVideoPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (duplicateInfo?.isDuplicate) {
       setError('This video has already been submitted. Please use a different video.');
       return;
@@ -102,7 +102,7 @@ export default function SubmitVideoPage() {
       }
 
       setSuccess(true);
-      
+
       // Redirect to dashboard after 2 seconds
       setTimeout(() => {
         router.push('/cbaf/dashboard');

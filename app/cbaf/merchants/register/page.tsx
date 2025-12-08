@@ -35,7 +35,7 @@ export default function RegisterMerchantPage() {
       }
 
       setSuccess(true);
-      
+
       // Redirect to merchants list after 2 seconds
       setTimeout(() => {
         router.push('/cbaf/merchants');
