@@ -13,11 +13,11 @@ export default async function FundingAllocationPage({ searchParams }: PageProps)
   await requireSuperAdmin();
 
   const availablePeriods = await getAvailablePeriods();
-  
+
   // Determine which period to show
   const requestedPeriod = searchParams.period;
   let period = availablePeriods.length > 0 ? availablePeriods[0] : getCurrentPeriod();
-  
+
   if (requestedPeriod) {
     const [year, month] = requestedPeriod.split('-').map(Number);
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -134,7 +134,7 @@ export default async function FundingAllocationPage({ searchParams }: PageProps)
             )}
 
             {/* Funding Allocation Panel */}
-            <FundingAllocationPanel 
+            <FundingAllocationPanel
               period={period}
               existingDisbursements={existingDisbursements}
             />

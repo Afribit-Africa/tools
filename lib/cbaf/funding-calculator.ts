@@ -1,6 +1,6 @@
 /**
  * CBAF Funding Calculator
- * 
+ *
  * Calculates funding allocation based on monthly rankings and generates
  * payment data for bulk disbursement via Fastlight
  */
@@ -14,13 +14,13 @@ export interface FundingAllocation {
   economyId: string;
   economyName: string;
   lightningAddress: string | null;
-  
+
   // Ranking data
   overallRank: number;
   videosApproved: number;
   merchantsTotal: number;
   merchantsNew: number;
-  
+
   // Funding calculation
   baseAllocation: number;
   rankBonus: number;
@@ -65,7 +65,7 @@ export async function calculateFundingAllocation(
 ): Promise<FundingPool> {
   // Get rankings for the period
   const [year, month] = period.month.split('-').map(Number);
-  
+
   const rankings = await db
     .select({
       ranking: monthlyRankings,
@@ -86,7 +86,7 @@ export async function calculateFundingAllocation(
   }
 
   const totalEconomies = rankings.length;
-  
+
   // Calculate allocations
   const allocations: FundingAllocation[] = rankings.map(({ ranking, economy }, index) => {
     if (!economy) {
@@ -106,7 +106,7 @@ export async function calculateFundingAllocation(
     const videosWeight = (ranking.videosApproved || 0) * 0.4;
     const merchantsWeight = (ranking.merchantsTotal || 0) * 0.3;
     const newMerchantsWeight = (ranking.merchantsNew || 0) * 0.3 * 2; // 2x for new discoveries
-    
+
     const performanceScore = videosWeight + merchantsWeight + newMerchantsWeight;
     const totalPerformanceScore = rankings.reduce((sum, { ranking: r }) => {
       const vw = (r.videosApproved || 0) * 0.4;
@@ -114,8 +114,8 @@ export async function calculateFundingAllocation(
       const nmw = (r.merchantsNew || 0) * 0.3 * 2;
       return sum + vw + mw + nmw;
     }, 0);
-    
-    const performanceBonus = totalPerformanceScore > 0 
+
+    const performanceBonus = totalPerformanceScore > 0
       ? Math.floor((performanceScore / totalPerformanceScore) * config.performanceBonusPool)
       : 0;
 

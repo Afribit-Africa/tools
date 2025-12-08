@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { videoSubmissions, economies, adminUsers } from '@/lib/db/schema';
+import { videoSubmissions, economies, adminUsers, videoMerchants, merchants } from '@/lib/db/schema';
 import { requireAdmin } from '@/lib/auth/session';
 import { eq, sql } from 'drizzle-orm';
 
@@ -90,8 +90,32 @@ export async function POST(request: NextRequest) {
         })
         .where(eq(economies.id, video.economyId));
 
-      // TODO: Phase 6 - Update merchant statistics (timesAppearedInVideos)
-      // TODO: Phase 7 - Trigger ranking recalculation for the funding month
+      // Update merchant statistics for all merchants linked to this video
+      const linkedMerchants = await db
+        .select()
+        .from(videoMerchants)
+        .where(eq(videoMerchants.videoId, videoId));
+
+      for (const link of linkedMerchants) {
+        const merchant = await db.query.merchants.findFirst({
+          where: eq(merchants.id, link.merchantId),
+        });
+
+        if (merchant) {
+          await db
+            .update(merchants)
+            .set({
+              timesAppearedInVideos: (merchant.timesAppearedInVideos || 0) + 1,
+              firstAppearanceDate: merchant.firstAppearanceDate || new Date(),
+              lastAppearanceDate: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(eq(merchants.id, link.merchantId));
+        }
+      }
+
+      // Note: Ranking recalculation should be triggered manually through Super Admin interface
+      // or can be automated here with a background job if needed
     }
 
     // Update admin's review count

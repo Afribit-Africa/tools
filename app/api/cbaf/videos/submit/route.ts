@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { videoSubmissions, economies } from '@/lib/db/schema';
+import { videoSubmissions, economies, merchants, videoMerchants } from '@/lib/db/schema';
 import {
   checkDuplicateVideo,
   generateVideoUrlHash,
   detectVideoPlatform,
   extractVideoId,
 } from '@/lib/cbaf/duplicate-detection';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
+import { requireBCEProfile } from '@/lib/auth/session';
+import { verifyMerchant, extractOsmNodeId } from '@/lib/btcmap/verify-merchant';
 
 /**
  * POST /api/cbaf/videos/submit
@@ -15,15 +17,24 @@ import { eq } from 'drizzle-orm';
  */
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Add authentication middleware to get economyId from session
-    // For now, we'll expect it in the request body
+    // Require BCE authentication and get economyId from session
+    const session = await requireBCEProfile();
+    const economyId = session.user.economyId;
+
+    if (!economyId) {
+      return NextResponse.json(
+        { error: 'Economy profile not found' },
+        { status: 404 }
+      );
+    }
+
     const body = await request.json();
-    const { economyId, videoUrl, videoTitle, videoDescription, merchantIds } = body;
+    const { videoUrl, videoTitle, videoDescription, merchantBtcmapUrls, merchantLocalNames } = body;
 
     // Validation
-    if (!economyId || !videoUrl) {
+    if (!videoUrl) {
       return NextResponse.json(
-        { error: 'Economy ID and video URL are required' },
+        { error: 'Video URL is required' },
         { status: 400 }
       );
     }
@@ -81,7 +92,7 @@ export async function POST(request: NextRequest) {
     const submissionMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const submissionYear = now.getFullYear();
 
-    // Create video submission
+    // Create video submission (will update merchantCount later)
     const result = await db
       .insert(videoSubmissions)
       .values({
@@ -94,15 +105,104 @@ export async function POST(request: NextRequest) {
         videoId,
         submissionMonth,
         submissionYear,
-        merchantCount: merchantIds?.length || 0,
+        merchantCount: 0,
         status: 'pending',
       })
       .returning();
 
     const submission = Array.isArray(result) ? result[0] : result;
 
-    // TODO: Link merchants to video (insert into video_merchants table)
-    // This will be implemented in the next phase
+    // Register/lookup merchants and link to video
+    const merchantIds: string[] = [];
+
+    if (merchantBtcmapUrls && Array.isArray(merchantBtcmapUrls)) {
+      for (let i = 0; i < merchantBtcmapUrls.length; i++) {
+        const btcmapUrl = merchantBtcmapUrls[i];
+        const localName = merchantLocalNames?.[i] || null;
+
+        if (!btcmapUrl || !btcmapUrl.trim()) continue;
+
+        try {
+          // Check if merchant already exists for this economy
+          let merchant = await db.query.merchants.findFirst({
+            where: and(
+              eq(merchants.economyId, economyId),
+              eq(merchants.btcmapUrl, btcmapUrl)
+            ),
+          });
+
+          // If merchant doesn't exist, register it
+          if (!merchant) {
+            const osmNodeId = extractOsmNodeId(btcmapUrl);
+            let verifiedInfo = null;
+            let verificationError = null;
+
+            try {
+              verifiedInfo = await verifyMerchant(btcmapUrl);
+              if (!verifiedInfo) {
+                verificationError = 'Merchant not found on BTCMap';
+              }
+            } catch (err) {
+              console.error('BTCMap verification failed:', err);
+              verificationError = 'Failed to verify with BTCMap';
+            }
+
+            const merchantResult = await db
+              .insert(merchants)
+              .values({
+                economyId,
+                btcmapUrl,
+                osmNodeId: verifiedInfo?.osmNodeId || osmNodeId,
+                merchantName: verifiedInfo?.name || null,
+                category: verifiedInfo?.category || null,
+                latitude: verifiedInfo?.latitude?.toString() || null,
+                longitude: verifiedInfo?.longitude?.toString() || null,
+                address: verifiedInfo?.address
+                  ? `${verifiedInfo.address}${verifiedInfo.city ? `, ${verifiedInfo.city}` : ''}${verifiedInfo.country ? `, ${verifiedInfo.country}` : ''}`
+                  : null,
+                localName: localName || null,
+                btcmapVerified: !!verifiedInfo,
+                verificationError,
+                lastVerifiedAt: verifiedInfo ? new Date() : null,
+                isActive: true,
+                registeredAt: new Date(),
+                updatedAt: new Date(),
+              })
+              .returning();
+
+            merchant = Array.isArray(merchantResult) ? merchantResult[0] : merchantResult;
+          }
+
+          if (merchant && merchant.id) {
+            merchantIds.push(merchant.id);
+
+            // Determine if this is the merchant's first appearance
+            const isNewMerchant = !merchant.firstAppearanceDate;
+
+            // Link merchant to video
+            await db.insert(videoMerchants).values({
+              videoId: submission.id,
+              merchantId: merchant.id,
+              isNewMerchant,
+              linkedAt: new Date(),
+            });
+          }
+        } catch (err) {
+          console.error(`Error processing merchant ${btcmapUrl}:`, err);
+          // Continue with other merchants even if one fails
+        }
+      }
+    }
+
+    // Update merchant count on video submission
+    if (merchantIds.length > 0) {
+      await db
+        .update(videoSubmissions)
+        .set({
+          merchantCount: merchantIds.length,
+        })
+        .where(eq(videoSubmissions.id, submission.id));
+    }
 
     // Update economy statistics
     await db
