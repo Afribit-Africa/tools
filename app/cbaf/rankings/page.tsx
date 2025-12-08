@@ -12,11 +12,11 @@ export default async function RankingsPage({ searchParams }: PageProps) {
 
   // Get available periods
   const availablePeriods = await getAvailablePeriods();
-  
+
   // Determine which period to show
   const requestedPeriod = searchParams.period;
   let period = getCurrentPeriod();
-  
+
   if (requestedPeriod) {
     const [year, month] = requestedPeriod.split('-').map(Number);
     period = { month: requestedPeriod, year, monthName: '' };

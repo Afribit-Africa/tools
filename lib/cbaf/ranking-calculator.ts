@@ -1,6 +1,6 @@
 /**
  * CBAF Ranking Calculator
- * 
+ *
  * Calculates monthly rankings for Bitcoin circular economies based on:
  * - Number of approved videos
  * - Total merchants featured
@@ -9,30 +9,30 @@
  */
 
 import { db } from '@/lib/db';
-import { 
-  economies, 
-  videoSubmissions, 
-  videoMerchants, 
-  merchants, 
-  monthlyRankings 
+import {
+  economies,
+  videoSubmissions,
+  videoMerchants,
+  merchants,
+  monthlyRankings
 } from '@/lib/db/schema';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
 
 export interface EconomyMetrics {
   economyId: string;
   economyName: string;
-  
+
   // Video metrics
   videosSubmitted: number;
   videosApproved: number;
   videosRejected: number;
   approvalRate: number;
-  
+
   // Merchant metrics
   merchantsTotal: number;
   merchantsNew: number;
   merchantsReturning: number;
-  
+
   // Raw scores (before ranking)
   videoScore: number;
   merchantScore: number;
@@ -64,7 +64,7 @@ export function getCurrentPeriod(): RankingPeriod {
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-  
+
   return {
     month: `${year}-${month}`,
     year,
@@ -81,7 +81,7 @@ export function getPeriod(year: number, month: number): RankingPeriod {
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-  
+
   return {
     month: `${year}-${monthStr}`,
     year,
@@ -166,7 +166,7 @@ async function calculateEconomyMetrics(
 
       // Check if this is the merchant's first appearance
       const firstAppearance = merchant.firstAppearanceDate;
-      
+
       if (firstAppearance && firstAppearance >= startDate && firstAppearance <= endDate) {
         merchantsNew++;
       } else {
@@ -178,13 +178,13 @@ async function calculateEconomyMetrics(
   // Calculate scores
   // Video score: weighted by approval rate
   const videoScore = approved * (1 + approvalRate / 100);
-  
+
   // Merchant score: total merchants featured
   const merchantScore = merchantsTotal;
-  
+
   // New merchant score: heavily weighted to encourage discovery
   const newMerchantScore = merchantsNew * 2;
-  
+
   // Overall score: weighted combination
   const overallScore = (videoScore * 0.4) + (merchantScore * 0.3) + (newMerchantScore * 0.3);
 
@@ -224,7 +224,7 @@ export async function calculateRankings(period: RankingPeriod): Promise<EconomyR
   );
 
   // Sort and rank by different criteria
-  
+
   // Rank by approved videos
   const byVideos = [...allMetrics].sort((a, b) => b.videosApproved - a.videosApproved);
   const videoRanks = new Map<string, number>();

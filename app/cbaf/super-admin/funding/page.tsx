@@ -1,6 +1,6 @@
 import { requireSuperAdmin } from '@/lib/auth/session';
 import { getAvailablePeriods, getCurrentPeriod } from '@/lib/cbaf/ranking-calculator';
-import { Calculator, TrendingUp, Calendar, CheckCircle } from 'lucide-react';
+import { Calculator, TrendingUp, Calendar, CheckCircle, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import CalculateRankingsButton from './CalculateRankingsButton';
 
@@ -73,7 +73,7 @@ export default async function FundingCalculatorPage() {
                 </ul>
               </div>
 
-              <CalculateRankingsButton 
+              <CalculateRankingsButton
                 year={currentPeriod.year}
                 month={parseInt(currentPeriod.month.split('-')[1])}
                 label={`Calculate ${currentPeriod.monthName} ${currentPeriod.year}`}
@@ -82,9 +82,17 @@ export default async function FundingCalculatorPage() {
 
               <div className="flex items-center justify-between pt-4 border-t border-border-primary">
                 <span className="text-sm text-text-muted">View results after calculation</span>
-                <Link href="/cbaf/rankings" className="btn-secondary text-sm">
-                  View Leaderboard →
-                </Link>
+                <div className="flex gap-2">
+                  <Link href="/cbaf/rankings" className="btn-secondary text-sm">
+                    View Leaderboard →
+                  </Link>
+                  {currentMonthCalculated && (
+                    <Link href={`/cbaf/super-admin/funding/allocate?period=${currentPeriod.month}`} className="btn-primary text-sm">
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      Allocate Funding
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -116,6 +124,13 @@ export default async function FundingCalculatorPage() {
                       className="btn-secondary w-full text-sm"
                     >
                       View Rankings
+                    </Link>
+                    <Link
+                      href={`/cbaf/super-admin/funding/allocate?period=${period.month}`}
+                      className="btn-primary w-full text-sm flex items-center justify-center gap-2"
+                    >
+                      <DollarSign className="w-4 h-4" />
+                      Allocate Funding
                     </Link>
                     <CalculateRankingsButton
                       year={period.year}
