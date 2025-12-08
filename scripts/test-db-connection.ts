@@ -13,7 +13,7 @@ async function testDatabaseConnection() {
 
     // Test 2: Check if tables exist
     console.log('2️⃣ Checking if CBAF tables exist...');
-    
+
     const tables = [
       { name: 'economies', query: db.select().from(economies).limit(1) },
       { name: 'merchants', query: db.select().from(merchants).limit(1) },
@@ -31,7 +31,7 @@ async function testDatabaseConnection() {
     }
 
     console.log('\n3️⃣ Checking table counts...');
-    
+
     const economyCount = await db.select({ count: sql<number>`count(*)` }).from(economies);
     const merchantCount = await db.select({ count: sql<number>`count(*)` }).from(merchants);
     const videoCount = await db.select({ count: sql<number>`count(*)` }).from(videoSubmissions);
@@ -43,7 +43,7 @@ async function testDatabaseConnection() {
     console.log(`   📊 Video-Merchant Links: ${linkCount[0].count}`);
 
     console.log('\n✅ All database tests passed!\n');
-    
+
   } catch (error) {
     console.error('\n❌ Database test failed:', error);
     process.exit(1);

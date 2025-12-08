@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Zap, ArrowRight, CheckCircle, Sparkles, TrendingUp, Shield } from 'lucide-react';
+import { Zap, ArrowRight, CheckCircle, Sparkles, TrendingUp, Shield, Video, Users, Award } from 'lucide-react';
 import { FloatingDock } from '@/components/FloatingDock';
 import { DonateSection } from '@/components/DonateSection';
 import ClientLogos from '@/components/ClientLogos';
@@ -59,8 +59,8 @@ export default function HomePage() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto pt-16">
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-bitcoin mb-2">10K+</div>
-                <div className="text-sm text-text-muted">Addresses Validated</div>
+                <div className="text-3xl md:text-4xl font-bold text-bitcoin mb-2">2</div>
+                <div className="text-sm text-text-muted">Active Modules</div>
               </div>
               <div>
                 <div className="text-3xl md:text-4xl font-bold text-bitcoin mb-2">100%</div>
@@ -121,6 +121,40 @@ export default function HomePage() {
                   <span className="text-xs px-3 py-1 bg-bitcoin/10 text-bitcoin rounded-full font-medium">CSV Support</span>
                   <span className="text-xs px-3 py-1 bg-bitcoin/10 text-bitcoin rounded-full font-medium">XLSX Support</span>
                   <span className="text-xs px-3 py-1 bg-bitcoin/10 text-bitcoin rounded-full font-medium">Batch Payments</span>
+                </div>
+              </div>
+            </Link>
+
+            {/* CBAF Module */}
+            <Link href="/cbaf/dashboard" className="card-hover group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl group-hover:bg-orange-500/10 transition-colors" />
+
+              <div className="relative">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <Award className="w-8 h-8 text-white" />
+                  </div>
+                  <span className="badge-success text-xs">Active</span>
+                </div>
+
+                <h3 className="text-2xl font-heading font-bold mb-3 group-hover:text-orange-500 transition-colors">
+                  CBAF Manager
+                </h3>
+
+                <p className="text-text-secondary mb-6 leading-relaxed">
+                  Circular Bitcoin Africa Fund management system. Track videos, merchants, 
+                  rankings, and funding allocation for Bitcoin circular economies.
+                </p>
+
+                <div className="flex items-center gap-2 text-sm text-orange-500 font-medium">
+                  <span>Explore CBAF</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+
+                <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-border/50">
+                  <span className="text-xs px-3 py-1 bg-orange-500/10 text-orange-500 rounded-full font-medium">Video Tracking</span>
+                  <span className="text-xs px-3 py-1 bg-orange-500/10 text-orange-500 rounded-full font-medium">Rankings</span>
+                  <span className="text-xs px-3 py-1 bg-orange-500/10 text-orange-500 rounded-full font-medium">Funding</span>
                 </div>
               </div>
             </Link>
@@ -204,6 +238,9 @@ export default function HomePage() {
             <div className="flex items-center gap-6">
               <Link href="/fastlight" className="text-sm text-text-secondary hover:text-bitcoin transition-colors">
                 Fastlight
+              </Link>
+              <Link href="/cbaf/dashboard" className="text-sm text-text-secondary hover:text-orange-500 transition-colors">
+                CBAF
               </Link>
               <a
                 href="https://github.com/Afribit-Africa/tools"

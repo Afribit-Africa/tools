@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Home, Zap, Github, Coffee, Menu, X } from 'lucide-react';
+import { Home, Zap, Github, Coffee, Menu, X, Award } from 'lucide-react';
 
 export function FloatingDock() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -19,6 +19,7 @@ export function FloatingDock() {
   const navItems = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/fastlight', label: 'Fastlight', icon: Zap },
+    { href: '/cbaf/dashboard', label: 'CBAF', icon: Award },
     { href: 'https://github.com/Afribit-Africa/tools', label: 'GitHub', icon: Github, external: true },
   ];
 
