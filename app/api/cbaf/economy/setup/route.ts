@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     // Require BCE authentication
     const session = await requireBCE();
-    
+
     if (!session.user.googleId) {
       return NextResponse.json(
         { error: 'Google ID not found in session' },

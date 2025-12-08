@@ -48,7 +48,7 @@ export default function SignInPage() {
           <h2 className="text-xl font-heading font-semibold mb-4 text-center">
             Sign in to continue
           </h2>
-          
+
           <button
             onClick={handleSignIn}
             className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-800 font-medium py-3 px-6 rounded-lg transition-colors shadow-md"

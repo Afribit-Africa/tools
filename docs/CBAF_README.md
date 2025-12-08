@@ -158,7 +158,7 @@ import { requireBCEProfile } from '@/lib/auth/session';
 
 export default async function DashboardPage() {
   const session = await requireBCEProfile();
-  
+
   return (
     <div>
       <h1>Welcome {session.user.economyName}!</h1>
@@ -176,10 +176,10 @@ import { requireBCE } from '@/lib/auth/session';
 
 export async function POST(request: NextRequest) {
   const session = await requireBCE();
-  
+
   // session.user.economyId is guaranteed to exist
   const economyId = session.user.economyId!;
-  
+
   // Process video submission...
 }
 ```
@@ -193,10 +193,10 @@ import { signIn, signOut } from 'next-auth/react';
 
 export default function MyComponent() {
   const { data: session, status } = useSession();
-  
+
   if (status === 'loading') return <div>Loading...</div>;
   if (status === 'unauthenticated') return <div>Please sign in</div>;
-  
+
   return (
     <div>
       <p>Welcome {session.user.name}</p>

@@ -8,15 +8,15 @@ export default function UnauthorizedPage() {
         <div className="mb-6 inline-block p-4 bg-red-500/10 rounded-full">
           <Shield className="w-16 h-16 text-red-500" />
         </div>
-        
+
         <h1 className="text-3xl font-heading font-bold mb-2">
           Access Denied
         </h1>
-        
+
         <p className="text-text-secondary mb-6">
           You don't have permission to access this page. Please contact an administrator if you believe this is an error.
         </p>
-        
+
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/"
@@ -24,7 +24,7 @@ export default function UnauthorizedPage() {
           >
             Go to Homepage
           </Link>
-          
+
           <Link
             href="/auth/signin"
             className="btn-secondary"

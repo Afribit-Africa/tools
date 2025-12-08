@@ -10,13 +10,13 @@ declare module 'next-auth' {
       image: string;
       role: 'bce' | 'admin' | 'super_admin';
       googleId: string;
-      
+
       // BCE specific
       economyId?: string;
       economyName?: string;
       economySlug?: string;
       isVerified?: boolean;
-      
+
       // Admin specific
       adminId?: string;
       canApproveVideos?: boolean;
@@ -35,13 +35,13 @@ declare module 'next-auth/jwt' {
   interface JWT {
     role: 'bce' | 'admin' | 'super_admin';
     googleId: string;
-    
+
     // BCE specific
     economyId?: string;
     economyName?: string;
     economySlug?: string;
     isVerified?: boolean;
-    
+
     // Admin specific
     adminId?: string;
     canApproveVideos?: boolean;

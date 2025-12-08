@@ -99,7 +99,7 @@ export default function SetupPage() {
           {/* Basic Info */}
           <div>
             <h2 className="text-xl font-heading font-semibold mb-4">Basic Information</h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -185,7 +185,7 @@ export default function SetupPage() {
           {/* Contact Info */}
           <div>
             <h2 className="text-xl font-heading font-semibold mb-4">Contact & Social</h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -237,7 +237,7 @@ export default function SetupPage() {
           {/* Payment Info */}
           <div>
             <h2 className="text-xl font-heading font-semibold mb-4">Payment Information</h2>
-            
+
             <div>
               <label className="block text-sm font-medium mb-2">
                 Lightning Address <span className="text-text-muted text-xs">(for receiving funding)</span>

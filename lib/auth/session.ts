@@ -17,11 +17,11 @@ export async function getCurrentUser() {
  */
 export async function requireAuth() {
   const session = await getSession();
-  
+
   if (!session) {
     redirect('/auth/signin');
   }
-  
+
   return session;
 }
 
@@ -30,11 +30,11 @@ export async function requireAuth() {
  */
 export async function requireBCE() {
   const session = await requireAuth();
-  
+
   if (session.user.role !== 'bce') {
     redirect('/unauthorized');
   }
-  
+
   return session;
 }
 
@@ -43,11 +43,11 @@ export async function requireBCE() {
  */
 export async function requireAdmin() {
   const session = await requireAuth();
-  
+
   if (session.user.role !== 'admin' && session.user.role !== 'super_admin') {
     redirect('/unauthorized');
   }
-  
+
   return session;
 }
 
@@ -56,11 +56,11 @@ export async function requireAdmin() {
  */
 export async function requireSuperAdmin() {
   const session = await requireAuth();
-  
+
   if (session.user.role !== 'super_admin') {
     redirect('/unauthorized');
   }
-  
+
   return session;
 }
 
@@ -70,12 +70,12 @@ export async function requireSuperAdmin() {
  */
 export async function requireBCEProfile() {
   const session = await requireBCE();
-  
+
   // Check if economy name is set (indicates profile completion)
   if (!session.user.economyName) {
     redirect('/cbaf/setup');
   }
-  
+
   return session;
 }
 

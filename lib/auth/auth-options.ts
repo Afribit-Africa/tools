@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  
+
   callbacks: {
     async signIn({ user, account, profile }) {
       if (!user.email) return false;
@@ -98,7 +98,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       if (account && user) {
         const role = getUserRole(user.email!);
-        
+
         token.role = role;
         token.googleId = account.providerAccountId;
         token.email = user.email;
