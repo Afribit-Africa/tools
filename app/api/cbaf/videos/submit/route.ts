@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
         status: 'pending',
       })
       .returning();
-    
+
     const submission = Array.isArray(result) ? result[0] : result;
 
     // TODO: Link merchants to video (insert into video_merchants table)

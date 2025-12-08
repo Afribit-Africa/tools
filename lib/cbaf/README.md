@@ -45,7 +45,7 @@ The system includes robust duplicate detection to prevent the same video from be
 ❌ Economy A submits video in October 2025 ✅ Approved
 ❌ Economy A tries to resubmit same video in December 2025 ⛔ BLOCKED
 
-Error: "This video was previously submitted by your economy on October 15, 2025 
+Error: "This video was previously submitted by your economy on October 15, 2025
 (2 months ago). Status: approved. You cannot resubmit the same video."
 ```
 
@@ -54,7 +54,7 @@ Error: "This video was previously submitted by your economy on October 15, 2025
 ❌ Economy A submits video in November 2025 ✅ Approved
 ❌ Economy B tries to submit same video in December 2025 ⛔ BLOCKED
 
-Error: "This video was previously submitted by another economy on November 3, 2025 
+Error: "This video was previously submitted by another economy on November 3, 2025
 (1 month ago). Status: approved. Each video can only be submitted once across all economies."
 ```
 
@@ -197,13 +197,13 @@ async function checkDuplicate(videoUrl: string, economyId: string) {
     `/api/cbaf/videos/check-duplicate?url=${encodeURIComponent(videoUrl)}&economyId=${economyId}`
   );
   const data = await response.json();
-  
+
   if (data.isDuplicate) {
     // Show error to user
     alert(data.message);
     return false;
   }
-  
+
   return true;
 }
 
@@ -211,20 +211,20 @@ async function checkDuplicate(videoUrl: string, economyId: string) {
 async function submitVideo(data: VideoSubmissionData) {
   // First check for duplicates
   const isUnique = await checkDuplicate(data.videoUrl, data.economyId);
-  
+
   if (!isUnique) {
     return;
   }
-  
+
   // Proceed with submission
   const response = await fetch('/api/cbaf/videos/submit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  
+
   const result = await response.json();
-  
+
   if (response.status === 409) {
     // Duplicate detected (shouldn't happen if we checked first)
     alert(result.message);

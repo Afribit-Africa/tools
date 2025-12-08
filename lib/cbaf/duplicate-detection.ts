@@ -11,7 +11,7 @@ export function generateVideoUrlHash(url: string): string {
   try {
     // Normalize URL
     const normalized = normalizeVideoUrl(url);
-    
+
     // Generate SHA-256 hash
     return crypto
       .createHash('sha256')
@@ -30,13 +30,13 @@ export function normalizeVideoUrl(url: string): string {
   try {
     // Remove whitespace
     let normalized = url.trim().toLowerCase();
-    
+
     // Parse URL
     const urlObj = new URL(normalized);
-    
+
     // Remove www.
     const hostname = urlObj.hostname.replace(/^www\./, '');
-    
+
     // Special handling for different platforms
     if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
       return normalizeYouTubeUrl(urlObj);
@@ -47,7 +47,7 @@ export function normalizeVideoUrl(url: string): string {
     } else if (hostname.includes('instagram.com')) {
       return normalizeInstagramUrl(urlObj);
     }
-    
+
     // Default: return protocol + hostname + pathname (no query params)
     return `${urlObj.protocol}//${hostname}${urlObj.pathname.replace(/\/$/, '')}`;
   } catch (error) {
@@ -62,10 +62,10 @@ export function normalizeVideoUrl(url: string): string {
  */
 function normalizeYouTubeUrl(urlObj: URL): string {
   const hostname = urlObj.hostname.replace(/^www\./, '');
-  
+
   // Extract video ID from different YouTube URL formats
   let videoId: string | null = null;
-  
+
   if (hostname === 'youtu.be') {
     // Short URL: youtu.be/VIDEO_ID
     videoId = urlObj.pathname.split('/')[1];
@@ -82,13 +82,13 @@ function normalizeYouTubeUrl(urlObj: URL): string {
     // Shorts URL: youtube.com/shorts/VIDEO_ID
     videoId = urlObj.pathname.split('/shorts/')[1];
   }
-  
+
   if (videoId) {
     // Clean video ID (remove anything after & or ?)
     videoId = videoId.split('&')[0].split('?')[0];
     return `youtube:${videoId}`;
   }
-  
+
   return urlObj.href;
 }
 
@@ -98,16 +98,16 @@ function normalizeYouTubeUrl(urlObj: URL): string {
  */
 function normalizeTwitterUrl(urlObj: URL): string {
   const hostname = urlObj.hostname.replace(/^www\./, '');
-  
+
   // Extract tweet ID
   const pathParts = urlObj.pathname.split('/');
   const statusIndex = pathParts.indexOf('status');
-  
+
   if (statusIndex !== -1 && pathParts[statusIndex + 1]) {
     const tweetId = pathParts[statusIndex + 1].split('?')[0];
     return `twitter:${tweetId}`;
   }
-  
+
   return urlObj.href;
 }
 
@@ -117,22 +117,22 @@ function normalizeTwitterUrl(urlObj: URL): string {
  */
 function normalizeTikTokUrl(urlObj: URL): string {
   const hostname = urlObj.hostname.replace(/^www\./, '');
-  
+
   if (hostname.includes('vm.tiktok.com')) {
     // Short URL
     const videoId = urlObj.pathname.split('/')[1];
     return `tiktok:${videoId}`;
   }
-  
+
   // Extract video ID from path
   const pathParts = urlObj.pathname.split('/');
   const videoIndex = pathParts.indexOf('video');
-  
+
   if (videoIndex !== -1 && pathParts[videoIndex + 1]) {
     const videoId = pathParts[videoIndex + 1].split('?')[0];
     return `tiktok:${videoId}`;
   }
-  
+
   return urlObj.href;
 }
 
@@ -142,13 +142,13 @@ function normalizeTikTokUrl(urlObj: URL): string {
  */
 function normalizeInstagramUrl(urlObj: URL): string {
   const pathParts = urlObj.pathname.split('/');
-  
+
   // Extract content ID (after /p/, /reel/, or /tv/)
   if (pathParts.length >= 3 && ['p', 'reel', 'tv'].includes(pathParts[1])) {
     const contentId = pathParts[2].split('?')[0];
     return `instagram:${contentId}`;
   }
-  
+
   return urlObj.href;
 }
 
@@ -166,17 +166,17 @@ export async function checkDuplicateVideo(
 }> {
   try {
     const urlHash = generateVideoUrlHash(videoUrl);
-    
+
     // Search for existing submissions with same URL hash
     const existingSubmissions = await db.query.videoSubmissions.findMany({
       where: eq(videoSubmissions.videoUrlHash, urlHash),
       orderBy: [desc(videoSubmissions.submittedAt)],
     });
-    
+
     if (existingSubmissions.length === 0) {
       return { isDuplicate: false };
     }
-    
+
     // Found duplicate(s) - get the earliest submission
     const original = existingSubmissions[existingSubmissions.length - 1];
     const isSameEconomy = economyId && original.economyId === economyId;
@@ -184,9 +184,9 @@ export async function checkDuplicateVideo(
       original.submittedAt,
       new Date()
     );
-    
+
     let message = '';
-    
+
     if (isSameEconomy) {
       message = `⚠️ This video was previously submitted by your economy on ${formatDate(
         original.submittedAt
@@ -200,7 +200,7 @@ export async function checkDuplicateVideo(
         monthsSinceOriginal !== 1 ? 's' : ''
       } ago). Status: ${original.status}. Each video can only be submitted once across all economies.`;
     }
-    
+
     return {
       isDuplicate: true,
       originalSubmission: original,
@@ -243,7 +243,7 @@ export function detectVideoPlatform(
   url: string
 ): 'youtube' | 'twitter' | 'tiktok' | 'instagram' | 'other' {
   const lowerUrl = url.toLowerCase();
-  
+
   if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) {
     return 'youtube';
   } else if (lowerUrl.includes('twitter.com') || lowerUrl.includes('x.com')) {
@@ -253,7 +253,7 @@ export function detectVideoPlatform(
   } else if (lowerUrl.includes('instagram.com')) {
     return 'instagram';
   }
-  
+
   return 'other';
 }
 
@@ -263,13 +263,13 @@ export function detectVideoPlatform(
 export function extractVideoId(url: string): string | null {
   try {
     const normalized = normalizeVideoUrl(url);
-    
+
     // Normalized format is "platform:id"
     if (normalized.includes(':')) {
       const [platform, id] = normalized.split(':');
       return id;
     }
-    
+
     return null;
   } catch (error) {
     return null;

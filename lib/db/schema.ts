@@ -36,45 +36,45 @@ export type NewAddressValidation = typeof addressValidations.$inferInsert;
 // Economies Table - Bitcoin Circular Economy Profiles
 export const economies = pgTable('economies', {
   id: uuid('id').primaryKey().defaultRandom(),
-  
+
   // Google OAuth
   googleId: text('google_id').notNull().unique(),
   googleEmail: text('google_email').notNull(),
   googleName: text('google_name'),
   googleAvatar: text('google_avatar'),
-  
+
   // Economy Profile
   economyName: text('economy_name').notNull(),
   slug: text('slug').notNull().unique(),
   country: text('country').notNull(),
   city: text('city'),
   description: text('description'),
-  
+
   // Contact Info
   website: text('website'),
   twitter: text('twitter'),
   telegram: text('telegram'),
-  
+
   // Location
   latitude: numeric('latitude', { precision: 10, scale: 8 }),
   longitude: numeric('longitude', { precision: 11, scale: 8 }),
-  
+
   // Payment Details
   lightningAddress: text('lightning_address'),
   lnurlPay: text('lnurl_pay'),
   onchainAddress: text('onchain_address'),
-  
+
   // Membership
   joinedCBAFAt: timestamp('joined_cbaf_at').defaultNow().notNull(),
   isActive: boolean('is_active').default(true),
   isVerified: boolean('is_verified').default(false),
-  
+
   // Statistics (cached)
   totalVideosSubmitted: integer('total_videos_submitted').default(0),
   totalVideosApproved: integer('total_videos_approved').default(0),
   totalMerchantsRegistered: integer('total_merchants_registered').default(0),
   totalFundingReceived: bigint('total_funding_received', { mode: 'number' }).default(0),
-  
+
   // Metadata
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -88,40 +88,40 @@ export const economies = pgTable('economies', {
 // Merchants Table - Registered Merchants with BTCMap Links
 export const merchants = pgTable('merchants', {
   id: uuid('id').primaryKey().defaultRandom(),
-  
+
   // Ownership
   economyId: uuid('economy_id')
     .references(() => economies.id, { onDelete: 'cascade' })
     .notNull(),
-  
+
   // BTCMap Integration
   btcmapUrl: text('btcmap_url').notNull(),
   osmNodeId: text('osm_node_id'),
-  
+
   // Merchant Details
   merchantName: text('merchant_name'),
   category: text('category'),
   latitude: numeric('latitude', { precision: 10, scale: 8 }),
   longitude: numeric('longitude', { precision: 11, scale: 8 }),
   address: text('address'),
-  
+
   // Custom Details
   localName: text('local_name'),
   notes: text('notes'),
-  
+
   // Verification
   btcmapVerified: boolean('btcmap_verified').default(false),
   lastVerifiedAt: timestamp('last_verified_at'),
   verificationError: text('verification_error'),
-  
+
   // Usage Statistics
   timesAppearedInVideos: integer('times_appeared_in_videos').default(0),
   firstAppearanceDate: timestamp('first_appearance_date'),
   lastAppearanceDate: timestamp('last_appearance_date'),
-  
+
   // Status
   isActive: boolean('is_active').default(true),
-  
+
   // Timestamps
   registeredAt: timestamp('registered_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -134,12 +134,12 @@ export const merchants = pgTable('merchants', {
 // Video Submissions Table - Proof of Work Videos
 export const videoSubmissions = pgTable('video_submissions', {
   id: uuid('id').primaryKey().defaultRandom(),
-  
+
   // Ownership
   economyId: uuid('economy_id')
     .references(() => economies.id, { onDelete: 'cascade' })
     .notNull(),
-  
+
   // Video Details
   videoUrl: text('video_url').notNull(),
   videoUrlHash: text('video_url_hash').notNull(), // SHA-256 hash for duplicate detection
@@ -147,40 +147,40 @@ export const videoSubmissions = pgTable('video_submissions', {
   videoDescription: text('video_description'),
   videoDuration: integer('video_duration'),
   videoThumbnail: text('video_thumbnail'),
-  
+
   // Platform Detection
   platform: text('platform').$type<'youtube' | 'twitter' | 'tiktok' | 'instagram' | 'other'>(),
   videoId: text('video_id'),
-  
+
   // Month/Period Tracking
   submissionMonth: text('submission_month').notNull(), // "2025-12"
   submissionYear: integer('submission_year').notNull(),
-  
+
   // Review Status
   status: text('status')
     .notNull()
     .$type<'pending' | 'approved' | 'rejected' | 'flagged' | 'duplicate'>()
     .default('pending'),
-  
+
   // Duplicate Detection
   isDuplicate: boolean('is_duplicate').default(false),
   duplicateOfId: uuid('duplicate_of_id').references(() => videoSubmissions.id),
   duplicateDetectedAt: timestamp('duplicate_detected_at'),
-  
+
   // Admin Review
   reviewedBy: text('reviewed_by'),
   reviewedAt: timestamp('reviewed_at'),
   adminComments: text('admin_comments'),
   rejectionReason: text('rejection_reason'),
-  
+
   // Merchant Association
   merchantCount: integer('merchant_count').default(0),
   newMerchantCount: integer('new_merchant_count').default(0),
   returningMerchantCount: integer('returning_merchant_count').default(0),
-  
+
   // Funding Impact
   fundingEarned: bigint('funding_earned', { mode: 'number' }).default(0),
-  
+
   // Timestamps
   submittedAt: timestamp('submitted_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -196,20 +196,20 @@ export const videoSubmissions = pgTable('video_submissions', {
 // Video Merchants Junction Table
 export const videoMerchants = pgTable('video_merchants', {
   id: uuid('id').primaryKey().defaultRandom(),
-  
+
   videoId: uuid('video_id')
     .references(() => videoSubmissions.id, { onDelete: 'cascade' })
     .notNull(),
-  
+
   merchantId: uuid('merchant_id')
     .references(() => merchants.id, { onDelete: 'cascade' })
     .notNull(),
-  
+
   // Context
   isNewMerchant: boolean('is_new_merchant').default(false),
   merchantRole: text('merchant_role'),
   notes: text('notes'),
-  
+
   // Timestamps
   linkedAt: timestamp('linked_at').defaultNow().notNull(),
 }, (table) => ({
@@ -221,32 +221,32 @@ export const videoMerchants = pgTable('video_merchants', {
 // Admin Users Table
 export const adminUsers = pgTable('admin_users', {
   id: uuid('id').primaryKey().defaultRandom(),
-  
+
   // Google OAuth
   googleId: text('google_id').notNull().unique(),
   googleEmail: text('google_email').notNull().unique(),
   googleName: text('google_name'),
   googleAvatar: text('google_avatar'),
-  
+
   // Role
   role: text('role')
     .notNull()
     .$type<'admin' | 'super_admin'>()
     .default('admin'),
-  
+
   // Permissions
   canApproveVideos: boolean('can_approve_videos').default(true),
   canRejectVideos: boolean('can_reject_videos').default(true),
   canSendPayments: boolean('can_send_payments').default(false),
   canManageAdmins: boolean('can_manage_admins').default(false),
-  
+
   // Activity
   lastLoginAt: timestamp('last_login_at'),
   videosReviewedCount: integer('videos_reviewed_count').default(0),
-  
+
   // Status
   isActive: boolean('is_active').default(true),
-  
+
   // Timestamps
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -259,42 +259,42 @@ export const adminUsers = pgTable('admin_users', {
 // Funding Disbursements Table
 export const fundingDisbursements = pgTable('funding_disbursements', {
   id: uuid('id').primaryKey().defaultRandom(),
-  
+
   // Payment Details
   economyId: uuid('economy_id')
     .references(() => economies.id, { onDelete: 'cascade' })
     .notNull(),
-  
+
   amountSats: bigint('amount_sats', { mode: 'number' }).notNull(),
   amountUsd: numeric('amount_usd', { precision: 10, scale: 2 }),
-  
+
   // Period
   fundingMonth: text('funding_month').notNull(),
   fundingYear: integer('funding_year').notNull(),
-  
+
   // Metrics
   videosApproved: integer('videos_approved').default(0),
   merchantsInvolved: integer('merchants_involved').default(0),
   newMerchants: integer('new_merchants').default(0),
-  
+
   // Payment Info
   paymentMethod: text('payment_method').$type<'lightning' | 'onchain' | 'manual'>(),
   lightningInvoice: text('lightning_invoice'),
   paymentHash: text('payment_hash'),
   transactionId: text('transaction_id'),
-  
+
   // Status
   status: text('status')
     .notNull()
     .$type<'pending' | 'processing' | 'completed' | 'failed'>()
     .default('pending'),
-  
+
   errorMessage: text('error_message'),
-  
+
   // Admin
   initiatedBy: text('initiated_by').notNull(),
   approvedBy: text('approved_by'),
-  
+
   // Timestamps
   createdAt: timestamp('created_at').defaultNow().notNull(),
   processedAt: timestamp('processed_at'),
@@ -308,34 +308,34 @@ export const fundingDisbursements = pgTable('funding_disbursements', {
 // Monthly Rankings Table
 export const monthlyRankings = pgTable('monthly_rankings', {
   id: uuid('id').primaryKey().defaultRandom(),
-  
+
   economyId: uuid('economy_id')
     .references(() => economies.id, { onDelete: 'cascade' })
     .notNull(),
-  
+
   // Period
   month: text('month').notNull(),
   year: integer('year').notNull(),
-  
+
   // Metrics
   videosSubmitted: integer('videos_submitted').default(0),
   videosApproved: integer('videos_approved').default(0),
   videosRejected: integer('videos_rejected').default(0),
   approvalRate: numeric('approval_rate', { precision: 5, scale: 2 }),
-  
+
   merchantsTotal: integer('merchants_total').default(0),
   merchantsNew: integer('merchants_new').default(0),
   merchantsReturning: integer('merchants_returning').default(0),
-  
+
   // Rankings
   rankByVideos: integer('rank_by_videos'),
   rankByMerchants: integer('rank_by_merchants'),
   rankByNewMerchants: integer('rank_by_new_merchants'),
   overallRank: integer('overall_rank'),
-  
+
   // Funding
   fundingEarned: bigint('funding_earned', { mode: 'number' }).default(0),
-  
+
   // Timestamps
   calculatedAt: timestamp('calculated_at').defaultNow().notNull(),
 }, (table) => ({

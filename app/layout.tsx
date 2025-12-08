@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk, JetBrains_Mono, Audiowide } from 'next/font/googl
 import './globals.css';
 import { NetworkMonitor } from '@/components/NetworkMonitor';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import SessionProvider from '@/lib/auth/SessionProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -50,10 +51,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${audiowide.variable}`}
       >
-        <ErrorBoundary>
-          <NetworkMonitor />
-          {children}
-        </ErrorBoundary>
+        <SessionProvider>
+          <ErrorBoundary>
+            <NetworkMonitor />
+            {children}
+          </ErrorBoundary>
+        </SessionProvider>
       </body>
     </html>
   );
