@@ -44,14 +44,23 @@ export const authOptions: NextAuthOptions = {
 
       const role = getUserRole(user.email);
 
+      console.log('🔐 Sign-in attempt:', {
+        email: user.email,
+        role,
+        hasAccount: !!account,
+      });
+
       try {
         // Check if user exists as admin
         if (role === 'admin' || role === 'super_admin') {
+          console.log('👤 User is admin/super_admin, checking database...');
+
           const existingAdmin = await db.query.adminUsers.findFirst({
             where: eq(adminUsers.googleEmail, user.email),
           });
 
           if (!existingAdmin && account) {
+            console.log('➕ Creating new admin user...');
             // Create admin user
             await db.insert(adminUsers).values({
               googleId: account.providerAccountId,
@@ -65,32 +74,41 @@ export const authOptions: NextAuthOptions = {
               canManageAdmins: role === 'super_admin',
               isActive: true,
             });
+            console.log('✅ Admin user created successfully');
           } else if (existingAdmin) {
+            console.log('🔄 Updating existing admin last login...');
             // Update last login
             await db
               .update(adminUsers)
               .set({ lastLoginAt: new Date() })
               .where(eq(adminUsers.googleEmail, user.email));
+            console.log('✅ Admin login updated');
           }
         } else {
+          console.log('👤 User is BCE, checking for economy...');
           // BCE user - check if economy exists
           const existingEconomy = await db.query.economies.findFirst({
             where: eq(economies.googleEmail, user.email),
           });
 
           if (existingEconomy) {
+            console.log('🔄 Updating economy last activity...');
             // Update last activity
             await db
               .update(economies)
               .set({ lastActivityAt: new Date() })
               .where(eq(economies.googleEmail, user.email));
+            console.log('✅ Economy activity updated');
+          } else {
+            console.log('ℹ️  No economy found, will create on dashboard visit');
           }
           // If economy doesn't exist, we'll create it on first dashboard visit
         }
 
+        console.log('✅ Sign-in callback returning true');
         return true;
       } catch (error) {
-        console.error('Error in signIn callback:', error);
+        console.error('❌ Error in signIn callback:', error);
         return false;
       }
     },

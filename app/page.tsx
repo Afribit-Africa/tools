@@ -142,7 +142,7 @@ export default function HomePage() {
                 </h3>
 
                 <p className="text-text-secondary mb-6 leading-relaxed">
-                  Circular Bitcoin Africa Fund management system. Track videos, merchants, 
+                  Circular Bitcoin Africa Fund management system. Track videos, merchants,
                   rankings, and funding allocation for Bitcoin circular economies.
                 </p>
 

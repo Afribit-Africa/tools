@@ -67,9 +67,20 @@ export async function requireSuperAdmin() {
 /**
  * Check if user has completed BCE profile setup
  * Redirects to setup page if economyName is missing
+ * Super admins can access without BCE profile
  */
 export async function requireBCEProfile() {
-  const session = await requireBCE();
+  const session = await requireAuth();
+
+  // Super admins can access everything
+  if (session.user.role === 'super_admin') {
+    return session;
+  }
+
+  // Regular admins need BCE role check
+  if (session.user.role !== 'bce') {
+    redirect('/unauthorized');
+  }
 
   // Check if economy name is set (indicates profile completion)
   if (!session.user.economyName) {

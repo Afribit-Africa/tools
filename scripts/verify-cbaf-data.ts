@@ -1,11 +1,11 @@
 import { db } from '@/lib/db';
-import { 
-  economies, 
-  merchants, 
-  videoSubmissions, 
+import {
+  economies,
+  merchants,
+  videoSubmissions,
   videoMerchants,
   monthlyRankings,
-  fundingDisbursements 
+  fundingDisbursements
 } from '@/lib/db/schema';
 import { sql } from 'drizzle-orm';
 
@@ -102,14 +102,14 @@ async function verifyData() {
 
     // 7. Critical Relationship Checks
     console.log('\n✅ CRITICAL CHECKS:');
-    
+
     // Check if videos have merchant links
     const videosWithoutLinks = await db
       .select({ id: videoSubmissions.id, title: videoSubmissions.videoTitle })
       .from(videoSubmissions)
       .leftJoin(videoMerchants, sql`${videoSubmissions.id} = ${videoMerchants.videoId}`)
       .where(sql`${videoMerchants.id} IS NULL AND ${videoSubmissions.merchantCount} > 0`);
-    
+
     if (videosWithoutLinks.length > 0) {
       console.log(`   ⚠️  ${videosWithoutLinks.length} video(s) have merchantCount > 0 but no links!`);
       videosWithoutLinks.forEach(v => console.log(`      - ${v.title}`));

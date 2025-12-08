@@ -4,9 +4,16 @@ import { economies, videoSubmissions, merchants, monthlyRankings } from '@/lib/d
 import { eq, desc, sql, and } from 'drizzle-orm';
 import { Video, TrendingUp, Users, Award, Calendar, ExternalLink, Trophy } from 'lucide-react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 export default async function DashboardPage() {
   const session = await requireBCEProfile();
+  
+  // Redirect admins to their dashboard
+  if (session.user.role === 'admin' || session.user.role === 'super_admin') {
+    redirect('/cbaf/admin');
+  }
+  
   const economyId = session.user.economyId!;
 
   // Fetch economy data with statistics
