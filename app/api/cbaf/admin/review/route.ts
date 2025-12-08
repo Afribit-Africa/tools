@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     // Require admin authentication
     const session = await requireAdmin();
-    
+
     // Parse request body
     const body = await request.json();
     const { videoId, action, comment } = body;
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     // Update video status
     const newStatus = action === 'approve' ? 'approved' : 'rejected';
-    
+
     const result = await db
       .update(videoSubmissions)
       .set({

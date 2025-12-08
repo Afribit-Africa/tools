@@ -2,7 +2,7 @@ import { requireBCEProfile } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { economies, videoSubmissions, merchants, monthlyRankings } from '@/lib/db/schema';
 import { eq, desc, sql, and } from 'drizzle-orm';
-import { Video, TrendingUp, Users, Award, Calendar, ExternalLink } from 'lucide-react';
+import { Video, TrendingUp, Users, Award, Calendar, ExternalLink, Trophy } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function DashboardPage() {
@@ -139,7 +139,9 @@ export default async function DashboardPage() {
                 <TrendingUp className="w-6 h-6 text-orange-500" />
               </div>
             </div>
-            <p className="text-xs text-text-muted mt-4">This month's ranking</p>
+            <Link href="/cbaf/rankings" className="text-xs text-bitcoin hover:underline mt-4 inline-block">
+              View leaderboard →
+            </Link>
           </div>
         </div>
 
@@ -213,7 +215,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Link
             href="/cbaf/videos/submit"
             className="bg-gradient-to-br from-bitcoin/20 to-bitcoin/5 border border-bitcoin/30 rounded-xl p-6 hover:border-bitcoin transition-colors group"
@@ -243,13 +245,27 @@ export default async function DashboardPage() {
           </Link>
 
           <Link
+            href="/cbaf/rankings"
+            className="bg-gradient-to-br from-orange-500/20 to-orange-500/5 border border-orange-500/30 rounded-xl p-6 hover:border-orange-500 transition-colors group"
+          >
+            <Trophy className="w-8 h-8 text-orange-500 mb-3" />
+            <h3 className="font-heading font-bold text-lg mb-2">View Leaderboard</h3>
+            <p className="text-sm text-text-muted">
+              See how you rank against other circular economies
+            </p>
+            <span className="text-sm text-orange-500 mt-4 inline-block group-hover:underline">
+              View rankings →
+            </span>
+          </Link>
+
+          <Link
             href="/cbaf/merchants"
             className="bg-gradient-to-br from-green-500/20 to-green-500/5 border border-green-500/30 rounded-xl p-6 hover:border-green-500 transition-colors group"
           >
             <TrendingUp className="w-8 h-8 text-green-500 mb-3" />
             <h3 className="font-heading font-bold text-lg mb-2">View Analytics</h3>
             <p className="text-sm text-text-muted">
-              Track your progress, rankings, and merchant network growth
+              Track your progress and merchant network growth
             </p>
             <span className="text-sm text-green-500 mt-4 inline-block group-hover:underline">
               View stats →

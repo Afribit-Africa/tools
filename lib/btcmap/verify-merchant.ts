@@ -1,9 +1,9 @@
 /**
  * BTCMap API Integration
- * 
+ *
  * This module provides functions to interact with the BTCMap API
  * to verify merchant information and extract details.
- * 
+ *
  * API Documentation: https://api.btcmap.org/v2/docs
  */
 
@@ -66,7 +66,7 @@ export interface BTCMapMerchantInfo {
 
 /**
  * Extract OSM node ID from BTCMap URL
- * 
+ *
  * Examples:
  * - https://btcmap.org/merchant/123456 → "123456"
  * - https://btcmap.org/map?id=n123456 → "123456"
@@ -91,7 +91,7 @@ export function extractOsmNodeId(btcmapUrl: string): string | null {
 
 /**
  * Fetch merchant data from BTCMap API
- * 
+ *
  * @param osmNodeId - The OpenStreetMap node ID (without 'n' prefix)
  * @returns BTCMap element data or null if not found
  */
@@ -118,7 +118,7 @@ export async function fetchBTCMapElement(osmNodeId: string): Promise<BTCMapEleme
     }
 
     const data: BTCMapElement = await response.json();
-    
+
     // Check if element is deleted
     if (data.deleted_at) {
       console.log(`BTCMap element deleted: ${elementId}`);
@@ -186,7 +186,7 @@ export function parseBTCMapElement(element: BTCMapElement): BTCMapMerchantInfo {
 
 /**
  * Verify a merchant against BTCMap and return structured data
- * 
+ *
  * @param btcmapUrl - Full BTCMap URL
  * @returns Verified merchant info or null if verification fails
  */
@@ -217,7 +217,7 @@ export function buildBTCMapUrl(osmNodeId: string): string {
 
 /**
  * Search for nearby merchants on BTCMap
- * 
+ *
  * @param lat - Latitude
  * @param lon - Longitude
  * @param limit - Maximum number of results (default: 20)
@@ -231,7 +231,7 @@ export async function searchNearbyMerchants(
   try {
     // BTCMap API for area search
     const apiUrl = `https://api.btcmap.org/v2/elements`;
-    
+
     const response = await fetch(apiUrl, {
       headers: {
         'Accept': 'application/json',
@@ -276,12 +276,12 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   const R = 6371; // Earth's radius in km
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  
+
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  
+
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }

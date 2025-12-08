@@ -103,7 +103,7 @@ export default async function EconomiesPage() {
                       <span className="font-medium">{approvalRate}%</span>
                     </div>
                     <div className="w-full h-2 bg-bg-primary rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-green-500 transition-all"
                         style={{ width: `${approvalRate}%` }}
                       />

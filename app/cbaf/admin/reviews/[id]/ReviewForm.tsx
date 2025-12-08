@@ -45,7 +45,7 @@ export default function ReviewForm({ videoId, currentStatus, currentComment, can
 
       // Refresh the page to show updated status
       router.refresh();
-      
+
       // Optionally redirect to reviews list
       // router.push('/cbaf/admin/reviews');
     } catch (err) {

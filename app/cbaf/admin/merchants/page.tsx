@@ -31,7 +31,7 @@ export default async function AdminMerchantsPage() {
     economyName: string;
     merchants: typeof allMerchants[0]['merchant'][];
   }
-  
+
   const economyGroups = allMerchants.reduce((acc, { merchant, economyName }) => {
     if (!economyName || !merchant.economyId) return acc;
     const key = merchant.economyId;

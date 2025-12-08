@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
         .where(eq(merchants.id, merchantId));
 
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Merchant not found on BTCMap',
           merchant: { id: merchantId, verified: false }
         },
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         category: verifiedInfo.category,
         latitude: verifiedInfo.latitude?.toString() || null,
         longitude: verifiedInfo.longitude?.toString() || null,
-        address: verifiedInfo.address 
+        address: verifiedInfo.address
           ? `${verifiedInfo.address}${verifiedInfo.city ? `, ${verifiedInfo.city}` : ''}${verifiedInfo.country ? `, ${verifiedInfo.country}` : ''}`
           : null,
         btcmapVerified: true,
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
               category: verifiedInfo.category,
               latitude: verifiedInfo.latitude?.toString() || null,
               longitude: verifiedInfo.longitude?.toString() || null,
-              address: verifiedInfo.address 
+              address: verifiedInfo.address
                 ? `${verifiedInfo.address}${verifiedInfo.city ? `, ${verifiedInfo.city}` : ''}`
                 : null,
               btcmapVerified: true,

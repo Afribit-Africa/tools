@@ -14,7 +14,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
   const statusFilter = searchParams.status as 'pending' | 'approved' | 'rejected' | undefined;
 
   // Build query based on filter
-  const whereClause = statusFilter 
+  const whereClause = statusFilter
     ? eq(videoSubmissions.status, statusFilter)
     : undefined;
 
@@ -121,7 +121,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
               {statusFilter ? `No ${statusFilter} videos` : 'No videos found'}
             </h2>
             <p className="text-text-muted">
-              {statusFilter === 'pending' 
+              {statusFilter === 'pending'
                 ? 'All caught up! Check back later for new submissions.'
                 : 'Try adjusting your filters to see more results.'}
             </p>

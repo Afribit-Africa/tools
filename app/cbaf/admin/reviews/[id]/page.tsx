@@ -111,7 +111,7 @@ export default async function ReviewVideoPage({ params }: Props) {
             {/* Video Player/Preview */}
             <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
               <h2 className="text-lg font-heading font-bold mb-4">Video Content</h2>
-              
+
               {/* Embed video if possible */}
               {video.videoPlatform === 'youtube' && video.videoUrl.includes('youtube.com') && (
                 <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
@@ -162,7 +162,7 @@ export default async function ReviewVideoPage({ params }: Props) {
                         <p>Original submission by: <span className="font-medium">{duplicateInfo.economy?.economyName}</span></p>
                         <p>Submitted on: {new Date(duplicateInfo.video.submittedAt).toLocaleDateString()}</p>
                         <p>Status: <span className="capitalize">{duplicateInfo.video.status}</span></p>
-                        <a 
+                        <a
                           href={`/cbaf/admin/reviews/${duplicateInfo.video.id}`}
                           className="text-bitcoin hover:underline inline-block mt-2"
                         >
@@ -308,7 +308,7 @@ export default async function ReviewVideoPage({ params }: Props) {
             )}
 
             {/* Review Form */}
-            <ReviewForm 
+            <ReviewForm
               videoId={video.id}
               currentStatus={video.status as 'pending' | 'approved' | 'rejected'}
               currentComment={video.reviewComment || ''}

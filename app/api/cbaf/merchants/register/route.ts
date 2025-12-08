@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Verify merchant against BTCMap API
     let verifiedInfo = null;
     let verificationError = null;
-    
+
     try {
       verifiedInfo = await verifyMerchant(btcmapUrl);
       if (!verifiedInfo) {
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         category: verifiedInfo?.category || null,
         latitude: verifiedInfo?.latitude?.toString() || null,
         longitude: verifiedInfo?.longitude?.toString() || null,
-        address: verifiedInfo?.address 
+        address: verifiedInfo?.address
           ? `${verifiedInfo.address}${verifiedInfo.city ? `, ${verifiedInfo.city}` : ''}${verifiedInfo.country ? `, ${verifiedInfo.country}` : ''}`
           : null,
         localName: localName || null,
