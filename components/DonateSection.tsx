@@ -40,7 +40,7 @@ export function DonateSection() {
           </div>
 
           <p className="text-text-secondary mb-6 leading-relaxed">
-            I built Afribitools to support Bitcoin circular economy initiatives in Africa. 
+            I built Afribitools to support Bitcoin circular economy initiatives in Africa.
             Your support helps me dedicate more time to developing and maintaining these tools.
           </p>
 

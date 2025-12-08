@@ -4,12 +4,12 @@ This directory contains planned modules and features that are not currently bein
 
 ## Merchant Registration Module
 
-**Status:** Planned, not implemented  
+**Status:** Planned, not implemented
 **Files:**
 - `BTCMAP_REG.md` - Original specification and requirements
 - `MERCHANT_REGISTRATION_PLAN.md` - Comprehensive implementation plan
 
-**Description:**  
+**Description:**
 A multi-economy merchant registration system that enables Bitcoin circular economies worldwide to easily onboard merchants and automatically publish them to OpenStreetMap and BTCMap.
 
 **Key Features:**
@@ -20,7 +20,7 @@ A multi-economy merchant registration system that enables Bitcoin circular econo
 - Public merchant directory with interactive maps
 - Economy-scoped admin permissions
 
-**Why Archived:**  
+**Why Archived:**
 Deferred for future development to focus on core validation tools first.
 
 **Revisit When:**
