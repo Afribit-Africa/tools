@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { economies } from '@/lib/db/schema';
-import { requireBCE } from '@/lib/auth/session';
+import { requireAuth } from '@/lib/auth/session';
 import { eq } from 'drizzle-orm';
 
 export async function POST(request: NextRequest) {
   try {
-    // Require BCE authentication
-    const session = await requireBCE();
+    // Require authentication (any authenticated user can create economy)
+    const session = await requireAuth();
 
     if (!session.user.googleId) {
       return NextResponse.json(
@@ -60,26 +60,59 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update the economy record
-    const result = await db
-      .update(economies)
-      .set({
-        economyName,
-        slug,
-        country,
-        city: city || null,
-        description: description || null,
-        website: website || null,
-        twitter: twitter || null,
-        telegram: telegram || null,
-        lightningAddress: lightningAddress || null,
-        isActive: true,
-        updatedAt: new Date(),
-      })
-      .where(eq(economies.googleId, session.user.googleId))
-      .returning();
+    // Check if user already has an economy
+    const existingEconomy = await db.query.economies.findFirst({
+      where: eq(economies.googleEmail, session.user.email!),
+    });
 
-    const economy = Array.isArray(result) ? result[0] : result;
+    let economy;
+
+    if (existingEconomy) {
+      // Update existing economy
+      const result = await db
+        .update(economies)
+        .set({
+          economyName,
+          slug,
+          country,
+          city: city || null,
+          description: description || null,
+          website: website || null,
+          twitter: twitter || null,
+          telegram: telegram || null,
+          lightningAddress: lightningAddress || null,
+          isActive: true,
+          updatedAt: new Date(),
+        })
+        .where(eq(economies.googleEmail, session.user.email!))
+        .returning();
+
+      economy = Array.isArray(result) ? result[0] : result;
+    } else {
+      // Create new economy
+      const result = await db
+        .insert(economies)
+        .values({
+          googleId: session.user.googleId!,
+          googleEmail: session.user.email!,
+          googleName: session.user.name || null,
+          googleAvatar: session.user.image || null,
+          economyName,
+          slug,
+          country,
+          city: city || null,
+          description: description || null,
+          website: website || null,
+          twitter: twitter || null,
+          telegram: telegram || null,
+          lightningAddress: lightningAddress || null,
+          isActive: true,
+        })
+        .returning();
+
+      economy = Array.isArray(result) ? result[0] : result;
+    }
+
 
     if (!economy) {
       return NextResponse.json(

@@ -148,7 +148,7 @@ export default async function VideosPage() {
                         {video.status === 'approved' && <CheckCircle className="w-3 h-3" />}
                         {video.status === 'rejected' && <XCircle className="w-3 h-3" />}
                         {video.status === 'pending' && <Clock className="w-3 h-3" />}
-                        {video.status === 'draft' && <AlertTriangle className="w-3 h-3" />}
+                        {video.status === 'flagged' && <AlertTriangle className="w-3 h-3" />}
                         {video.status}
                       </span>
                     </div>
@@ -162,11 +162,11 @@ export default async function VideosPage() {
                         <Users className="w-3 h-3" />
                         {video.merchantCount || 0} merchants
                       </span>
-                      {video.videoPlatform && (
-                        <span className="capitalize">{video.videoPlatform}</span>
+                      {video.platform && (
+                        <span className="capitalize">{video.platform}</span>
                       )}
-                      {video.fundingMonth && (
-                        <span>Funding: {video.fundingMonth}</span>
+                      {video.submissionMonth && (
+                        <span>Month: {video.submissionMonth}</span>
                       )}
                     </div>
 
@@ -179,13 +179,13 @@ export default async function VideosPage() {
                     )}
 
                     {/* Admin Comments */}
-                    {video.reviewComment && (
+                    {video.adminComments && (
                       <div className="mb-3 p-3 bg-bg-primary rounded border border-border-primary">
                         <div className="flex items-start gap-2">
                           <MessageSquare className="w-4 h-4 text-bitcoin flex-shrink-0 mt-0.5" />
                           <div className="flex-1">
                             <p className="text-xs text-text-muted mb-1">Admin Comment:</p>
-                            <p className="text-sm">{video.reviewComment}</p>
+                            <p className="text-sm">{video.adminComments}</p>
                           </div>
                         </div>
                       </div>

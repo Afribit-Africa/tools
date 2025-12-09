@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         status: newStatus,
         reviewedBy: session.user.adminId || session.user.id,
         reviewedAt: new Date(),
-        reviewComment: comment || null,
+        adminComments: comment || null,
         updatedAt: new Date(),
       })
       .where(eq(videoSubmissions.id, videoId))
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         id: updatedVideo.id,
         status: updatedVideo.status,
         reviewedAt: updatedVideo.reviewedAt,
-        reviewComment: updatedVideo.reviewComment,
+        adminComments: updatedVideo.adminComments,
       },
     }, { status: 200 });
 

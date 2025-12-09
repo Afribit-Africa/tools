@@ -113,7 +113,7 @@ export default async function ReviewVideoPage({ params }: Props) {
               <h2 className="text-lg font-heading font-bold mb-4">Video Content</h2>
 
               {/* Embed video if possible */}
-              {video.videoPlatform === 'youtube' && video.videoUrl.includes('youtube.com') && (
+              {video.platform === 'youtube' && video.videoUrl.includes('youtube.com') && (
                 <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
                   <iframe
                     src={`https://www.youtube.com/embed/${extractYouTubeId(video.videoUrl)}`}
@@ -124,7 +124,7 @@ export default async function ReviewVideoPage({ params }: Props) {
                 </div>
               )}
 
-              {video.videoThumbnail && video.videoPlatform !== 'youtube' && (
+              {video.videoThumbnail && video.platform !== 'youtube' && (
                 <img
                   src={video.videoThumbnail}
                   alt="Video thumbnail"
@@ -243,11 +243,11 @@ export default async function ReviewVideoPage({ params }: Props) {
               <div className="space-y-3 text-sm">
                 <div>
                   <p className="text-text-muted mb-1">Platform</p>
-                  <p className="font-medium capitalize">{video.videoPlatform || 'Unknown'}</p>
+                  <p className="font-medium capitalize">{video.platform || 'Unknown'}</p>
                 </div>
                 <div>
                   <p className="text-text-muted mb-1">Funding Month</p>
-                  <p className="font-medium">{video.fundingMonth || 'N/A'}</p>
+                  <p className="font-medium">{video.submissionMonth || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-text-muted mb-1">Submitted</p>
@@ -311,7 +311,7 @@ export default async function ReviewVideoPage({ params }: Props) {
             <ReviewForm
               videoId={video.id}
               currentStatus={video.status as 'pending' | 'approved' | 'rejected'}
-              currentComment={video.reviewComment || ''}
+              currentComment={video.adminComments || ''}
               canApprove={session.user.canApproveVideos ?? true}
               canReject={session.user.canRejectVideos ?? true}
             />

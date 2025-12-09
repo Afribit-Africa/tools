@@ -164,7 +164,7 @@ export const videoSubmissions = pgTable('video_submissions', {
 
   // Duplicate Detection
   isDuplicate: boolean('is_duplicate').default(false),
-  duplicateOfId: uuid('duplicate_of_id').references(() => videoSubmissions.id),
+  duplicateOfId: uuid('duplicate_of_id'),
   duplicateDetectedAt: timestamp('duplicate_detected_at'),
 
   // Admin Review

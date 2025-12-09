@@ -195,11 +195,11 @@ export default async function ReviewsPage({ searchParams }: Props) {
                         <Users className="w-3 h-3" />
                         {video.merchantCount || 0} merchants
                       </span>
-                      {video.videoPlatform && (
-                        <span className="capitalize">{video.videoPlatform}</span>
+                      {video.platform && (
+                        <span className="capitalize">{video.platform}</span>
                       )}
-                      {video.fundingMonth && (
-                        <span>Month: {video.fundingMonth}</span>
+                      {video.submissionMonth && (
+                        <span>Month: {video.submissionMonth}</span>
                       )}
                     </div>
 

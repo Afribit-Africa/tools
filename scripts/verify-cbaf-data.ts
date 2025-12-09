@@ -85,9 +85,9 @@ async function verifyData() {
     const rankingData = await db.select().from(monthlyRankings);
     console.log(`   Total Rankings: ${rankingData.length}`);
     rankingData.forEach((r, i) => {
-      console.log(`   ${i + 1}. Rank ${r.rank} - ${r.fundingMonth}`);
-      console.log(`      Videos: ${r.videosCount}, Merchants: ${r.merchantsCount}, New Discoveries: ${r.newMerchantsCount}`);
-      console.log(`      Score: ${r.totalScore}`);
+      console.log(`   ${i + 1}. Rank ${r.overallRank || 'N/A'} - ${r.month}`);
+      console.log(`      Videos: ${r.videosApproved}, Merchants: ${r.merchantsTotal}, New: ${r.merchantsNew}`);
+      console.log(`      Funding: ${r.fundingEarned} sats`);
     });
 
     // 6. Funding Disbursements
@@ -96,8 +96,8 @@ async function verifyData() {
     console.log(`   Total Disbursements: ${disbursementData.length}`);
     disbursementData.forEach((d, i) => {
       console.log(`   ${i + 1}. ${d.fundingMonth} - ${d.amountSats} sats`);
-      console.log(`      Status: ${d.paymentStatus}`);
-      console.log(`      Lightning: ${d.lightningAddress || 'N/A'}`);
+      console.log(`      Status: ${d.status}`);
+      console.log(`      Payment: ${d.paymentMethod || 'N/A'}`);
     });
 
     // 7. Critical Relationship Checks
