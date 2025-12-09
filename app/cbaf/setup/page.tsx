@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Globe, Twitter, Send, Zap } from 'lucide-react';
+import { MapPin, Globe, Twitter, Send, Zap, ChevronDown } from 'lucide-react';
+import { Country, City } from 'country-state-city';
 
 interface FormData {
   economyName: string;
   slug: string;
   country: string;
+  countryCode: string;
   city: string;
   description: string;
   website: string;
@@ -17,40 +19,17 @@ interface FormData {
   lightningAddress: string;
 }
 
-// African countries with major cities
-const COUNTRIES_WITH_CITIES: Record<string, string[]> = {
-  'South Africa': ['Cape Town', 'Johannesburg', 'Durban', 'Pretoria', 'Port Elizabeth', 'Bloemfontein', 'Mossel Bay', 'East London', 'Pietermaritzburg'],
-  'Nigeria': ['Lagos', 'Abuja', 'Kano', 'Ibadan', 'Port Harcourt', 'Benin City', 'Kaduna', 'Enugu'],
-  'Kenya': ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Thika', 'Malindi'],
-  'Ghana': ['Accra', 'Kumasi', 'Tamale', 'Sekondi-Takoradi', 'Cape Coast', 'Sunyani'],
-  'Tanzania': ['Dar es Salaam', 'Mwanza', 'Arusha', 'Dodoma', 'Mbeya', 'Morogoro', 'Tanga'],
-  'Uganda': ['Kampala', 'Gulu', 'Lira', 'Mbarara', 'Jinja', 'Mbale', 'Entebbe'],
-  'Ethiopia': ['Addis Ababa', 'Dire Dawa', 'Mekelle', 'Gondar', 'Bahir Dar', 'Hawassa'],
-  'Egypt': ['Cairo', 'Alexandria', 'Giza', 'Luxor', 'Aswan', 'Port Said', 'Suez'],
-  'Morocco': ['Casablanca', 'Rabat', 'Fes', 'Marrakech', 'Tangier', 'Agadir', 'Meknes'],
-  'Senegal': ['Dakar', 'Touba', 'Thiès', 'Kaolack', 'Saint-Louis', 'Ziguinchor'],
-  'Rwanda': ['Kigali', 'Butare', 'Gitarama', 'Ruhengeri', 'Gisenyi'],
-  'Zambia': ['Lusaka', 'Kitwe', 'Ndola', 'Kabwe', 'Chingola', 'Mufulira'],
-  'Zimbabwe': ['Harare', 'Bulawayo', 'Chitungwiza', 'Mutare', 'Gweru', 'Kwekwe'],
-  'Botswana': ['Gaborone', 'Francistown', 'Maun', 'Kasane', 'Serowe'],
-  'Namibia': ['Windhoek', 'Walvis Bay', 'Swakopmund', 'Oshakati', 'Rundu'],
-  'Malawi': ['Lilongwe', 'Blantyre', 'Mzuzu', 'Zomba', 'Kasungu'],
-  'Mozambique': ['Maputo', 'Beira', 'Nampula', 'Quelimane', 'Tete'],
-  'Angola': ['Luanda', 'Huambo', 'Lobito', 'Benguela', 'Lubango'],
-  'Other': ['Enter manually'],
-};
-
 export default function SetupPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [availableCities, setAvailableCities] = useState<string[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     economyName: '',
     slug: '',
     country: '',
+    countryCode: '',
     city: '',
     description: '',
     website: '',
@@ -59,18 +38,23 @@ export default function SetupPage() {
     lightningAddress: '',
   });
 
-  // Update available cities when country changes
-  useEffect(() => {
-    if (formData.country && COUNTRIES_WITH_CITIES[formData.country]) {
-      setAvailableCities(COUNTRIES_WITH_CITIES[formData.country]);
-      // Reset city if not in new country's cities
-      if (formData.city && !COUNTRIES_WITH_CITIES[formData.country].includes(formData.city)) {
-        setFormData(prev => ({ ...prev, city: '' }));
-      }
-    } else {
-      setAvailableCities([]);
-    }
-  }, [formData.country]);
+  // Get African countries
+  const africanCountries = useMemo(() => {
+    const africaContinentCode = 'AF';
+    return Country.getAllCountries()
+      .filter(country => {
+        // Filter African countries by continent or known African country codes
+        const africanCodes = ['DZ', 'AO', 'BJ', 'BW', 'BF', 'BI', 'CM', 'CV', 'CF', 'TD', 'KM', 'CG', 'CD', 'CI', 'DJ', 'EG', 'GQ', 'ER', 'ET', 'GA', 'GM', 'GH', 'GN', 'GW', 'KE', 'LS', 'LR', 'LY', 'MG', 'MW', 'ML', 'MR', 'MU', 'MA', 'MZ', 'NA', 'NE', 'NG', 'RW', 'ST', 'SN', 'SC', 'SL', 'SO', 'ZA', 'SS', 'SD', 'SZ', 'TZ', 'TG', 'TN', 'UG', 'ZM', 'ZW'];
+        return africanCodes.includes(country.isoCode);
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  // Get cities for selected country
+  const availableCities = useMemo(() => {
+    if (!formData.countryCode) return [];
+    return City.getCitiesOfCountry(formData.countryCode)?.sort((a, b) => a.name.localeCompare(b.name)) || [];
+  }, [formData.countryCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,6 +87,19 @@ export default function SetupPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
+    // Handle country selection
+    if (name === 'country') {
+      const selectedCountry = africanCountries.find(c => c.name === value);
+      setFormData((prev) => ({ 
+        ...prev, 
+        country: value,
+        countryCode: selectedCountry?.isoCode || '',
+        city: '' // Reset city when country changes
+      }));
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Auto-generate slug from economy name
@@ -162,7 +159,8 @@ export default function SetupPage() {
                   onChange={handleChange}
                   placeholder="Bitcoin Ekasi"
                   required
-                  className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all"
+                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
                 />
               </div>
 
@@ -178,7 +176,7 @@ export default function SetupPage() {
                   placeholder="bitcoin-ekasi"
                   required
                   title="Lowercase letters, numbers, and hyphens only"
-                  className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent font-mono"
+                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent font-mono transition-all"
                 />
                 <p className="text-xs text-text-muted mt-1">
                   URL: tools.afribit.africa/cbaf/{formData.slug || 'your-slug'}
@@ -190,49 +188,64 @@ export default function SetupPage() {
                   <label className="block text-sm font-medium mb-2">
                     Country <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    name="country"
-                    value={formData.country}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
-                  >
-                    <option value="">Select country...</option>
-                    {Object.keys(COUNTRIES_WITH_CITIES).map((country) => (
-                      <option key={country} value={country}>
-                        {country}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="country"
+                      value={formData.country}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2.5 pr-10 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent appearance-none cursor-pointer transition-all hover:border-bitcoin/50"
+                      style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                    >
+                      <option value="">Select country...</option>
+                      {africanCountries.map((country) => (
+                        <option key={country.isoCode} value={country.name}>
+                          {country.flag} {country.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     City
                   </label>
-                  {availableCities.length > 0 ? (
-                    <select
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
-                    >
-                      <option value="">Select city...</option>
-                      {availableCities.map((city) => (
-                        <option key={city} value={city}>
-                          {city}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      placeholder="Enter city"
-                      className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
-                    />
+                  <div className="relative">
+                    {availableCities.length > 0 ? (
+                      <>
+                        <select
+                          name="city"
+                          value={formData.city}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 pr-10 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent appearance-none cursor-pointer transition-all hover:border-bitcoin/50"
+                          style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                        >
+                          <option value="">Select city...</option>
+                          {availableCities.map((city) => (
+                            <option key={city.name} value={city.name}>
+                              {city.name}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+                      </>
+                    ) : (
+                      <input
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleChange}
+                        placeholder={formData.country ? "Enter city name" : "Select country first"}
+                        disabled={!formData.country}
+                        className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                      />
+                    )}
+                  </div>
+                  {formData.country && availableCities.length === 0 && (
+                    <p className="text-xs text-text-muted mt-1">Enter your city manually</p>
                   )}
                 </div>
               </div>
@@ -247,7 +260,8 @@ export default function SetupPage() {
                   onChange={handleChange}
                   placeholder="Tell us about your circular economy..."
                   rows={3}
-                  className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent resize-none"
+                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent resize-none transition-all"
+                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
                 />
               </div>
             </div>
@@ -269,7 +283,8 @@ export default function SetupPage() {
                   value={formData.website}
                   onChange={handleChange}
                   placeholder="https://bitcoinekasi.com"
-                  className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all"
+                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
                 />
               </div>
 
@@ -284,7 +299,8 @@ export default function SetupPage() {
                   value={formData.twitter}
                   onChange={handleChange}
                   placeholder="@BitcoinEkasi"
-                  className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all"
+                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
                 />
               </div>
 
@@ -299,7 +315,8 @@ export default function SetupPage() {
                   value={formData.telegram}
                   onChange={handleChange}
                   placeholder="@YourTelegram"
-                  className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all"
+                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
                 />
               </div>
             </div>
@@ -322,7 +339,8 @@ export default function SetupPage() {
                 value={formData.lightningAddress}
                 onChange={handleChange}
                 placeholder="name@getalby.com"
-                className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all"
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
               />
               <p className="text-xs text-text-muted mt-1">
                 This is where you'll receive CBAF funding when available
