@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Globe, Twitter, Send } from 'lucide-react';
+import { MapPin, Globe, Twitter, Send, Zap } from 'lucide-react';
 
 interface FormData {
   economyName: string;
@@ -17,11 +17,35 @@ interface FormData {
   lightningAddress: string;
 }
 
+// African countries with major cities
+const COUNTRIES_WITH_CITIES: Record<string, string[]> = {
+  'South Africa': ['Cape Town', 'Johannesburg', 'Durban', 'Pretoria', 'Port Elizabeth', 'Bloemfontein', 'Mossel Bay', 'East London', 'Pietermaritzburg'],
+  'Nigeria': ['Lagos', 'Abuja', 'Kano', 'Ibadan', 'Port Harcourt', 'Benin City', 'Kaduna', 'Enugu'],
+  'Kenya': ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Thika', 'Malindi'],
+  'Ghana': ['Accra', 'Kumasi', 'Tamale', 'Sekondi-Takoradi', 'Cape Coast', 'Sunyani'],
+  'Tanzania': ['Dar es Salaam', 'Mwanza', 'Arusha', 'Dodoma', 'Mbeya', 'Morogoro', 'Tanga'],
+  'Uganda': ['Kampala', 'Gulu', 'Lira', 'Mbarara', 'Jinja', 'Mbale', 'Entebbe'],
+  'Ethiopia': ['Addis Ababa', 'Dire Dawa', 'Mekelle', 'Gondar', 'Bahir Dar', 'Hawassa'],
+  'Egypt': ['Cairo', 'Alexandria', 'Giza', 'Luxor', 'Aswan', 'Port Said', 'Suez'],
+  'Morocco': ['Casablanca', 'Rabat', 'Fes', 'Marrakech', 'Tangier', 'Agadir', 'Meknes'],
+  'Senegal': ['Dakar', 'Touba', 'Thiès', 'Kaolack', 'Saint-Louis', 'Ziguinchor'],
+  'Rwanda': ['Kigali', 'Butare', 'Gitarama', 'Ruhengeri', 'Gisenyi'],
+  'Zambia': ['Lusaka', 'Kitwe', 'Ndola', 'Kabwe', 'Chingola', 'Mufulira'],
+  'Zimbabwe': ['Harare', 'Bulawayo', 'Chitungwiza', 'Mutare', 'Gweru', 'Kwekwe'],
+  'Botswana': ['Gaborone', 'Francistown', 'Maun', 'Kasane', 'Serowe'],
+  'Namibia': ['Windhoek', 'Walvis Bay', 'Swakopmund', 'Oshakati', 'Rundu'],
+  'Malawi': ['Lilongwe', 'Blantyre', 'Mzuzu', 'Zomba', 'Kasungu'],
+  'Mozambique': ['Maputo', 'Beira', 'Nampula', 'Quelimane', 'Tete'],
+  'Angola': ['Luanda', 'Huambo', 'Lobito', 'Benguela', 'Lubango'],
+  'Other': ['Enter manually'],
+};
+
 export default function SetupPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     economyName: '',
@@ -34,6 +58,19 @@ export default function SetupPage() {
     telegram: '',
     lightningAddress: '',
   });
+
+  // Update available cities when country changes
+  useEffect(() => {
+    if (formData.country && COUNTRIES_WITH_CITIES[formData.country]) {
+      setAvailableCities(COUNTRIES_WITH_CITIES[formData.country]);
+      // Reset city if not in new country's cities
+      if (formData.city && !COUNTRIES_WITH_CITIES[formData.country].includes(formData.city)) {
+        setFormData(prev => ({ ...prev, city: '' }));
+      }
+    } else {
+      setAvailableCities([]);
+    }
+  }, [formData.country]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,17 +90,18 @@ export default function SetupPage() {
         throw new Error(data.error || 'Failed to create profile');
       }
 
-      // Redirect to dashboard
-      router.push('/cbaf/dashboard');
-      router.refresh();
+      // Force session refresh to update economyName
+      await fetch('/api/auth/session');
+      
+      // Redirect to dashboard with refresh
+      window.location.href = '/cbaf/dashboard';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -76,6 +114,18 @@ export default function SetupPage() {
       setFormData((prev) => ({ ...prev, slug }));
     }
   };
+
+  // Show loading while session is being fetched
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-bitcoin border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-text-secondary">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-primary py-12 px-4">
@@ -127,8 +177,8 @@ export default function SetupPage() {
                   onChange={handleChange}
                   placeholder="bitcoin-ekasi"
                   required
-                  pattern="[a-z0-9-]+"
-                  className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                  title="Lowercase letters, numbers, and hyphens only"
+                  className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent font-mono"
                 />
                 <p className="text-xs text-text-muted mt-1">
                   URL: tools.afribit.africa/cbaf/{formData.slug || 'your-slug'}
@@ -140,29 +190,50 @@ export default function SetupPage() {
                   <label className="block text-sm font-medium mb-2">
                     Country <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="country"
                     value={formData.country}
                     onChange={handleChange}
-                    placeholder="South Africa"
                     required
                     className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
-                  />
+                  >
+                    <option value="">Select country...</option>
+                    {Object.keys(COUNTRIES_WITH_CITIES).map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     City
                   </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    placeholder="Mossel Bay"
-                    className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
-                  />
+                  {availableCities.length > 0 ? (
+                    <select
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                    >
+                      <option value="">Select city...</option>
+                      {availableCities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      placeholder="Enter city"
+                      className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -236,7 +307,10 @@ export default function SetupPage() {
 
           {/* Payment Info */}
           <div>
-            <h2 className="text-xl font-heading font-semibold mb-4">Payment Information</h2>
+            <h2 className="text-xl font-heading font-semibold mb-4 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-bitcoin" />
+              Payment Information
+            </h2>
 
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -251,7 +325,11 @@ export default function SetupPage() {
                 className="w-full px-4 py-2 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
               />
               <p className="text-xs text-text-muted mt-1">
-                This is where you'll receive monthly CBAF funding
+                This is where you'll receive CBAF funding when available
+              </p>
+              <p className="text-xs text-yellow-500/80 mt-1 flex items-start gap-1">
+                <span>ℹ️</span>
+                <span>Funding is distributed when available, not on a fixed monthly schedule</span>
               </p>
             </div>
           </div>
