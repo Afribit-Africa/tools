@@ -1,6 +1,6 @@
 /**
  * Auth Debug Endpoint
- * 
+ *
  * Helps diagnose NextAuth configuration issues in production
  * Access: https://tools.afribit.africa/api/debug/auth
  */
@@ -22,6 +22,8 @@ export async function GET() {
     NEXTAUTH_SECRET: !!process.env.NEXTAUTH_SECRET,
     GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
+    CBAF_SUPER_ADMIN_EMAILS: !!process.env.CBAF_SUPER_ADMIN_EMAILS,
+    CBAF_ADMIN_EMAILS: !!process.env.CBAF_ADMIN_EMAILS,
     nextAuthUrlValue: process.env.NEXTAUTH_URL || 'NOT_SET',
   };
 
@@ -62,8 +64,8 @@ export async function GET() {
 
   // Check 4: Summary
   const allEnvVarsSet = Object.values(checks.checks.envVars).every(v => v === true);
-  const nextAuthUrlValid = checks.checks.nextAuthUrlValidation.isSet && 
-                           checks.checks.nextAuthUrlValidation.hasProtocol && 
+  const nextAuthUrlValid = checks.checks.nextAuthUrlValidation.isSet &&
+                           checks.checks.nextAuthUrlValidation.hasProtocol &&
                            !checks.checks.nextAuthUrlValidation.hasTrailingSlash &&
                            checks.checks.nextAuthUrlValidation.isHttpsInProd;
   const databaseOk = checks.checks.database.status === 'connected';

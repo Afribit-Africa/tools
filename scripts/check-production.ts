@@ -1,6 +1,6 @@
 /**
  * Production Readiness Check
- * 
+ *
  * This script validates the production environment and provides
  * helpful debugging information for deployment issues.
  */

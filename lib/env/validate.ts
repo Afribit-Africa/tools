@@ -1,6 +1,6 @@
 /**
  * Environment Variables Validation
- * 
+ *
  * This file validates that all required environment variables are set
  * before the application starts. This prevents runtime errors in production.
  */
@@ -8,19 +8,19 @@
 interface EnvironmentConfig {
   // Database
   DATABASE_URL: string;
-  
+
   // NextAuth
   NEXTAUTH_URL: string;
   NEXTAUTH_SECRET: string;
-  
+
   // Google OAuth
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
-  
+
   // Admin Configuration
   CBAF_SUPER_ADMIN_EMAILS?: string;
   CBAF_ADMIN_EMAILS?: string;
-  
+
   // Optional
   BLINK_API_URL?: string;
   SMTP_HOST?: string;
@@ -50,23 +50,23 @@ const optionalEnvVars = [
 export function validateEnvironment(): { isValid: boolean; missing: string[]; warnings: string[] } {
   const missing: string[] = [];
   const warnings: string[] = [];
-  
+
   // Check required variables
   for (const varName of requiredEnvVars) {
     if (!process.env[varName]) {
       missing.push(varName);
     }
   }
-  
+
   // Check optional but recommended variables
   if (!process.env.CBAF_SUPER_ADMIN_EMAILS && !process.env.CBAF_ADMIN_EMAILS) {
     warnings.push('No admin emails configured. No one will have admin access.');
   }
-  
+
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
     warnings.push('Email configuration incomplete. Email notifications will not work.');
   }
-  
+
   return {
     isValid: missing.length === 0,
     missing,
@@ -76,10 +76,10 @@ export function validateEnvironment(): { isValid: boolean; missing: string[]; wa
 
 export function logEnvironmentStatus(): void {
   const { isValid, missing, warnings } = validateEnvironment();
-  
+
   console.log('\n🔍 Environment Variables Check:');
   console.log('================================');
-  
+
   if (isValid) {
     console.log('✅ All required environment variables are set');
   } else {
@@ -88,23 +88,23 @@ export function logEnvironmentStatus(): void {
       console.error(`   - ${varName}`);
     });
   }
-  
+
   if (warnings.length > 0) {
     console.warn('\n⚠️  Warnings:');
     warnings.forEach(warning => {
       console.warn(`   - ${warning}`);
     });
   }
-  
+
   // Log which optional features are enabled
   console.log('\n📋 Optional Features:');
   console.log(`   - Admin Emails: ${process.env.CBAF_ADMIN_EMAILS ? '✅' : '❌'}`);
   console.log(`   - Super Admin Emails: ${process.env.CBAF_SUPER_ADMIN_EMAILS ? '✅' : '❌'}`);
   console.log(`   - Email Notifications: ${process.env.SMTP_HOST ? '✅' : '❌'}`);
   console.log(`   - Blink API: ${process.env.BLINK_API_URL || 'Default (https://api.blink.sv/graphql)'}`);
-  
+
   console.log('================================\n');
-  
+
   if (!isValid) {
     throw new Error(
       `Missing required environment variables: ${missing.join(', ')}. ` +

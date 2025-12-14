@@ -19,7 +19,7 @@ export default function Error({
   }, [error]);
 
   // Determine if this is an auth-related error
-  const isAuthError = error.message?.toLowerCase().includes('auth') || 
+  const isAuthError = error.message?.toLowerCase().includes('auth') ||
                       error.message?.toLowerCase().includes('session') ||
                       error.digest?.includes('auth');
 
@@ -30,13 +30,13 @@ export default function Error({
           <div className="w-24 h-24 bg-status-error/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertTriangle className="w-12 h-12 text-status-error" />
           </div>
-          
+
           <h1 className="text-3xl font-heading font-bold mb-2">
             {isAuthError ? 'Authentication Error' : 'Something Went Wrong'}
           </h1>
-          
+
           <p className="text-text-secondary mb-4">
-            {isAuthError 
+            {isAuthError
               ? 'We encountered an issue with authentication. Please try signing in again.'
               : 'We encountered an unexpected error. Our team has been notified and is working on a fix.'
             }
@@ -87,25 +87,25 @@ export default function Error({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button 
+          <button
             onClick={reset}
             className="btn-primary inline-flex items-center justify-center gap-2"
           >
             <RefreshCw className="w-5 h-5" />
             Try Again
           </button>
-          
+
           {isAuthError ? (
-            <Link 
-              href="/auth/signin" 
+            <Link
+              href="/auth/signin"
               className="btn-secondary inline-flex items-center justify-center gap-2"
             >
               <Home className="w-5 h-5" />
               Sign In
             </Link>
           ) : (
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="btn-secondary inline-flex items-center justify-center gap-2"
             >
               <Home className="w-5 h-5" />
@@ -119,7 +119,7 @@ export default function Error({
             <p className="text-sm text-text-secondary mb-2">
               Need help? Contact support
             </p>
-            <a 
+            <a
               href="mailto:support@afribit.africa"
               className="inline-flex items-center gap-2 text-brand-primary hover:text-brand-primary-hover transition-colors"
             >
