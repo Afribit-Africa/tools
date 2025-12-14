@@ -145,7 +145,7 @@ export default function FundingAllocationPanel({
   return (
     <div className="space-y-6">
       {/* Configuration */}
-      <div className="bg-bg-secondary border border-border-primary rounded-xl p-6">
+      <div className="card rounded-xl p-6">
         <h2 className="text-xl font-heading font-bold mb-4">Funding Configuration</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -158,17 +158,17 @@ export default function FundingAllocationPanel({
               value={totalPool}
               onChange={(e) => setTotalPool(e.target.value)}
               disabled={hasExisting}
-              className="w-full px-3 py-2 bg-bg-primary border border-border-primary rounded-lg disabled:opacity-50"
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg disabled:opacity-50"
               placeholder="10000000"
             />
-            <p className="text-xs text-text-muted mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               ≈ ${((parseInt(totalPool) / 100_000_000) * 35000).toFixed(2)} @ $35k/BTC
             </p>
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-2">Period</label>
-            <div className="px-3 py-2 bg-bg-primary border border-border-primary rounded-lg">
+            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
               {period.monthName} {period.year}
             </div>
           </div>
@@ -213,11 +213,11 @@ export default function FundingAllocationPanel({
 
       {/* Results */}
       {fundingData && (
-        <div className="bg-bg-secondary border border-border-primary rounded-xl overflow-hidden">
-          <div className="p-6 border-b border-border-primary flex items-center justify-between">
+        <div className="card rounded-xl overflow-hidden">
+          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
             <div>
               <h2 className="text-xl font-heading font-bold">Funding Allocation</h2>
-              <p className="text-sm text-text-muted mt-1">
+              <p className="text-sm text-gray-500 mt-1">
                 {fundingData.allocations.length} economies • {(fundingData.totalPool / 1_000_000).toFixed(2)}M sats total
               </p>
             </div>
@@ -237,7 +237,7 @@ export default function FundingAllocationPanel({
 
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-bg-primary border-b border-border-primary">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="text-left p-4 font-medium">Rank</th>
                   <th className="text-left p-4 font-medium">Economy</th>
@@ -250,7 +250,7 @@ export default function FundingAllocationPanel({
               </thead>
               <tbody className="divide-y divide-border-primary">
                 {fundingData.allocations.map((allocation: any) => (
-                  <tr key={allocation.economyId} className="hover:bg-bg-primary/50">
+                  <tr key={allocation.economyId} className="hover:bg-gray-50/50">
                     <td className="p-4">
                       <span className="font-bold">#{allocation.overallRank}</span>
                     </td>
@@ -266,7 +266,7 @@ export default function FundingAllocationPanel({
                     </td>
                     <td className="p-4 text-center text-sm">
                       <div>{allocation.videosApproved} videos</div>
-                      <div className="text-text-muted">
+                      <div className="text-gray-500">
                         {allocation.merchantsTotal} merchants ({allocation.merchantsNew} new)
                       </div>
                     </td>
@@ -281,7 +281,7 @@ export default function FundingAllocationPanel({
                     </td>
                     <td className="p-4 text-right">
                       <div className="font-bold">{(allocation.totalFunding / 1000).toFixed(0)}k</div>
-                      <div className="text-xs text-text-muted">sats</div>
+                      <div className="text-xs text-gray-500">sats</div>
                     </td>
                   </tr>
                 ))}

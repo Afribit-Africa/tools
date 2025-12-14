@@ -4,6 +4,7 @@ import './globals.css';
 import { NetworkMonitor } from '@/components/NetworkMonitor';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import SessionProvider from '@/lib/auth/SessionProvider';
+import { NotificationProvider } from '@/components/ui/NotificationSystem';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -47,15 +48,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${audiowide.variable}`}
+        suppressHydrationWarning
       >
         <SessionProvider>
-          <ErrorBoundary>
-            <NetworkMonitor />
-            {children}
-          </ErrorBoundary>
+          <NotificationProvider>
+            <ErrorBoundary>
+              <NetworkMonitor />
+              {children}
+            </ErrorBoundary>
+          </NotificationProvider>
         </SessionProvider>
       </body>
     </html>

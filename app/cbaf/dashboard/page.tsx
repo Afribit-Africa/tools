@@ -5,16 +5,22 @@ import { eq, desc, sql, and } from 'drizzle-orm';
 import { Video, TrendingUp, Users, Award, Calendar, ExternalLink, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { StatCard, EmptyState, Badge } from '@/components/cbaf';
 
 export default async function DashboardPage() {
   const session = await requireBCEProfile();
-  
+
   // Redirect admins to their dashboard
   if (session.user.role === 'admin' || session.user.role === 'super_admin') {
     redirect('/cbaf/admin');
   }
-  
-  const economyId = session.user.economyId!;
+
+  // If no economyId, redirect to setup (safety check)
+  if (!session.user.economyId) {
+    redirect('/cbaf/setup');
+  }
+
+  const economyId = session.user.economyId;
 
   // Fetch economy data with statistics
   const economy = await db.query.economies.findFirst({
@@ -55,14 +61,14 @@ export default async function DashboardPage() {
   const approvalRate = totalSubmitted > 0 ? Math.round((totalApproved / totalSubmitted) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-primary">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="border-b border-border-primary bg-bg-secondary/50 backdrop-blur-sm">
+      <header className="bg-black text-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-heading font-bold">{economy.economyName}</h1>
-              <p className="text-text-secondary mt-1">
+              <p className="text-gray-300 mt-1">
                 {economy.city ? `${economy.city}, ` : ''}{economy.country}
               </p>
             </div>
@@ -76,7 +82,7 @@ export default async function DashboardPage() {
               </Link>
               <Link
                 href="/cbaf/merchants/register"
-                className="btn-secondary"
+                className="bg-white text-black hover:bg-gray-100 px-4 py-2 rounded-lg font-medium transition-colors inline-flex items-center"
               >
                 <Users className="w-4 h-4 mr-2" />
                 Add Merchant
@@ -90,98 +96,85 @@ export default async function DashboardPage() {
         {/* Statistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Total Videos Submitted */}
-          <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-text-muted text-sm font-medium">Total Submitted</p>
-                <p className="text-3xl font-bold mt-2">{totalSubmitted}</p>
-              </div>
-              <div className="w-12 h-12 bg-bitcoin/10 rounded-lg flex items-center justify-center">
-                <Video className="w-6 h-6 text-bitcoin" />
-              </div>
-            </div>
-            <p className="text-xs text-text-muted mt-4">All-time video submissions</p>
-          </div>
+          <Link href="/cbaf/videos" className="block">
+            <StatCard
+              title="Total Submitted"
+              value={totalSubmitted.toString()}
+              icon={Video}
+              iconBgColor="bg-bitcoin-100"
+              iconColor="text-bitcoin-600"
+            />
+          </Link>
 
           {/* Videos Approved */}
-          <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-text-muted text-sm font-medium">Approved</p>
-                <p className="text-3xl font-bold mt-2 text-green-500">{totalApproved}</p>
-              </div>
-              <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
-                <Award className="w-6 h-6 text-green-500" />
-              </div>
-            </div>
-            <p className="text-xs text-text-muted mt-4">{approvalRate}% approval rate</p>
-          </div>
+          <StatCard
+            title="Approved"
+            value={totalApproved.toString()}
+            icon={Award}
+            iconBgColor="bg-green-100"
+            iconColor="text-green-600"
+            trend={{
+              value: `${approvalRate}%`,
+              direction: 'up',
+              label: 'approval rate'
+            }}
+          />
 
           {/* Merchants Registered */}
-          <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-text-muted text-sm font-medium">Merchants</p>
-                <p className="text-3xl font-bold mt-2">{merchantCount}</p>
-              </div>
-              <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-purple-500" />
-              </div>
-            </div>
-            <Link href="/cbaf/merchants" className="text-xs text-bitcoin hover:underline mt-4 inline-block">
-              View all merchants →
-            </Link>
-          </div>
+          <Link href="/cbaf/merchants" className="block">
+            <StatCard
+              title="Merchants"
+              value={merchantCount.toString()}
+              icon={Users}
+              iconBgColor="bg-purple-100"
+              iconColor="text-purple-600"
+            />
+          </Link>
 
           {/* Current Rank */}
-          <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-text-muted text-sm font-medium">Current Rank</p>
-                <p className="text-3xl font-bold mt-2">
-                  {ranking?.overallRank ? `#${ranking.overallRank}` : 'N/A'}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-orange-500" />
-              </div>
-            </div>
-            <Link href="/cbaf/rankings" className="text-xs text-bitcoin hover:underline mt-4 inline-block">
-              View leaderboard →
-            </Link>
-          </div>
+          <Link href="/cbaf/rankings" className="block">
+            <StatCard
+              title="Current Rank"
+              value={ranking?.overallRank ? `#${ranking.overallRank}` : 'N/A'}
+              icon={Trophy}
+              iconBgColor="bg-orange-100"
+              iconColor="text-orange-600"
+            />
+          </Link>
         </div>
 
         {/* Recent Submissions */}
-        <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg mb-8">
+        <div className="card mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-heading font-bold">Recent Submissions</h2>
-            <Link href="/cbaf/videos" className="text-sm text-bitcoin hover:underline">
+            <h2 className="text-xl font-heading font-bold text-gray-900">Recent Submissions</h2>
+            <Link href="/cbaf/videos" className="text-sm text-bitcoin-600 hover:text-bitcoin-700 hover:underline font-medium">
               View all →
             </Link>
           </div>
 
           {recentVideos.length === 0 ? (
-            <div className="text-center py-12">
-              <Video className="w-12 h-12 text-text-muted mx-auto mb-4" />
-              <p className="text-text-muted mb-4">No video submissions yet</p>
-              <Link href="/cbaf/videos/submit" className="btn-primary inline-flex items-center">
-                <Video className="w-4 h-4 mr-2" />
+            <EmptyState
+              icon={Video}
+              title="No video submissions yet"
+              description="Get started by submitting your first proof-of-work video"
+            >
+              <Link href="/cbaf/videos/submit" className="btn-primary inline-flex items-center gap-2 mt-4">
+                <Video className="w-4 h-4" />
                 Submit Your First Video
               </Link>
-            </div>
+            </EmptyState>
           ) : (
             <div className="space-y-4">
               {recentVideos.map((video) => (
                 <div
                   key={video.id}
-                  className="flex items-center justify-between p-4 bg-bg-primary rounded-lg border border-border-primary hover:border-bitcoin/50 transition-colors"
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-bitcoin-300 transition-colors"
                 >
                   <div className="flex-1">
-                    <h3 className="font-medium">
+                    <h3 className="font-medium text-gray-900">
                       {video.videoTitle || 'Untitled Video'}
                     </h3>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-text-muted">
+                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(video.submittedAt).toLocaleDateString()}
@@ -193,24 +186,24 @@ export default async function DashboardPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    <Badge
+                      variant={
                         video.status === 'approved'
-                          ? 'bg-green-500/10 text-green-500'
+                          ? 'success'
                           : video.status === 'rejected'
-                          ? 'bg-red-500/10 text-red-500'
+                          ? 'error'
                           : video.status === 'pending'
-                          ? 'bg-yellow-500/10 text-yellow-500'
-                          : 'bg-gray-500/10 text-gray-500'
-                      }`}
+                          ? 'warning'
+                          : 'info'
+                      }
                     >
                       {video.status}
-                    </span>
+                    </Badge>
                     <a
                       href={video.videoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-bitcoin hover:underline flex items-center gap-1"
+                      className="text-bitcoin-600 hover:text-bitcoin-700 flex items-center gap-1"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </a>
@@ -222,59 +215,59 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Link
             href="/cbaf/videos/submit"
-            className="bg-gradient-to-br from-bitcoin/20 to-bitcoin/5 border border-bitcoin/30 rounded-xl p-6 hover:border-bitcoin transition-colors group"
+            className="bg-gradient-to-br from-bitcoin-50 to-white border-2 border-bitcoin-200 rounded-xl p-6 hover:border-bitcoin-400 hover:shadow-md transition-all group"
           >
-            <Video className="w-8 h-8 text-bitcoin mb-3" />
-            <h3 className="font-heading font-bold text-lg mb-2">Submit Video</h3>
-            <p className="text-sm text-text-muted">
+            <Video className="w-8 h-8 text-bitcoin-600 mb-3" />
+            <h3 className="font-heading font-bold text-lg mb-2 text-gray-900">Submit Video</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
               Upload proof-of-work videos showcasing merchants in your circular economy
             </p>
-            <span className="text-sm text-bitcoin mt-4 inline-block group-hover:underline">
+            <span className="text-sm text-bitcoin-600 font-medium mt-4 inline-block group-hover:underline">
               Get started →
             </span>
           </Link>
 
           <Link
             href="/cbaf/merchants/register"
-            className="bg-gradient-to-br from-purple-500/20 to-purple-500/5 border border-purple-500/30 rounded-xl p-6 hover:border-purple-500 transition-colors group"
+            className="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-xl p-6 hover:border-purple-400 hover:shadow-md transition-all group"
           >
-            <Users className="w-8 h-8 text-purple-500 mb-3" />
-            <h3 className="font-heading font-bold text-lg mb-2">Register Merchant</h3>
-            <p className="text-sm text-text-muted">
+            <Users className="w-8 h-8 text-purple-600 mb-3" />
+            <h3 className="font-heading font-bold text-lg mb-2 text-gray-900">Register Merchant</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
               Add new merchants from BTCMap to your circular economy network
             </p>
-            <span className="text-sm text-purple-500 mt-4 inline-block group-hover:underline">
+            <span className="text-sm text-purple-600 font-medium mt-4 inline-block group-hover:underline">
               Add merchant →
             </span>
           </Link>
 
           <Link
             href="/cbaf/rankings"
-            className="bg-gradient-to-br from-orange-500/20 to-orange-500/5 border border-orange-500/30 rounded-xl p-6 hover:border-orange-500 transition-colors group"
+            className="bg-gradient-to-br from-orange-50 to-white border-2 border-orange-200 rounded-xl p-6 hover:border-orange-400 hover:shadow-md transition-all group"
           >
-            <Trophy className="w-8 h-8 text-orange-500 mb-3" />
-            <h3 className="font-heading font-bold text-lg mb-2">View Leaderboard</h3>
-            <p className="text-sm text-text-muted">
+            <Trophy className="w-8 h-8 text-orange-600 mb-3" />
+            <h3 className="font-heading font-bold text-lg mb-2 text-gray-900">View Leaderboard</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
               See how you rank against other circular economies
             </p>
-            <span className="text-sm text-orange-500 mt-4 inline-block group-hover:underline">
+            <span className="text-sm text-orange-600 font-medium mt-4 inline-block group-hover:underline">
               View rankings →
             </span>
           </Link>
 
           <Link
             href="/cbaf/merchants"
-            className="bg-gradient-to-br from-green-500/20 to-green-500/5 border border-green-500/30 rounded-xl p-6 hover:border-green-500 transition-colors group"
+            className="bg-gradient-to-br from-green-50 to-white border-2 border-green-200 rounded-xl p-6 hover:border-green-400 hover:shadow-md transition-all group"
           >
-            <TrendingUp className="w-8 h-8 text-green-500 mb-3" />
-            <h3 className="font-heading font-bold text-lg mb-2">View Analytics</h3>
-            <p className="text-sm text-text-muted">
+            <TrendingUp className="w-8 h-8 text-green-600 mb-3" />
+            <h3 className="font-heading font-bold text-lg mb-2 text-gray-900">View Analytics</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
               Track your progress and merchant network growth
             </p>
-            <span className="text-sm text-green-500 mt-4 inline-block group-hover:underline">
+            <span className="text-sm text-green-600 font-medium mt-4 inline-block group-hover:underline">
               View stats →
             </span>
           </Link>

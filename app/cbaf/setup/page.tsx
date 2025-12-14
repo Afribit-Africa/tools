@@ -3,8 +3,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Globe, Twitter, Send, Zap, ChevronDown } from 'lucide-react';
+import { Globe, Twitter, Send, Zap, ChevronDown, CheckCircle, Loader2 } from 'lucide-react';
 import { Country, City } from 'country-state-city';
+import { Alert } from '@/components/cbaf';
 
 interface FormData {
   economyName: string;
@@ -24,6 +25,8 @@ export default function SetupPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [slugError, setSlugError] = useState('');
+  const [checkingSlug, setCheckingSlug] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     economyName: '',
@@ -56,6 +59,35 @@ export default function SetupPage() {
     return City.getCitiesOfCountry(formData.countryCode)?.sort((a, b) => a.name.localeCompare(b.name)) || [];
   }, [formData.countryCode]);
 
+  // Check slug availability with debounce
+  useEffect(() => {
+    if (!formData.slug || formData.slug.length < 3) {
+      setSlugError('');
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setCheckingSlug(true);
+      try {
+        const response = await fetch(`/api/cbaf/economy/check-slug?slug=${encodeURIComponent(formData.slug)}`);
+        const data = await response.json();
+
+        if (!data.available) {
+          setSlugError('This slug is already taken');
+        } else {
+          setSlugError('');
+        }
+      } catch (err) {
+        // Silent fail on check
+        setSlugError('');
+      } finally {
+        setCheckingSlug(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.slug]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -76,7 +108,7 @@ export default function SetupPage() {
 
       // Force session refresh to update economyName
       await fetch('/api/auth/session');
-      
+
       // Redirect to dashboard with refresh
       window.location.href = '/cbaf/dashboard';
     } catch (err) {
@@ -91,8 +123,8 @@ export default function SetupPage() {
     // Handle country selection
     if (name === 'country') {
       const selectedCountry = africanCountries.find(c => c.name === value);
-      setFormData((prev) => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         country: value,
         countryCode: selectedCountry?.isoCode || '',
         city: '' // Reset city when country changes
@@ -115,41 +147,46 @@ export default function SetupPage() {
   // Show loading while session is being fetched
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-primary flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-bitcoin border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-text-secondary">Loading...</p>
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-bitcoin-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-primary py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-heading font-bold mb-2">
-            Welcome to CBAF! 👋
-          </h1>
-          <p className="text-text-secondary">
-            Let's set up your circular economy profile
-          </p>
-        </div>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-            <p className="text-red-500 text-sm">{error}</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Black Header */}
+      <header className="bg-black text-white border-b border-gray-200">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-heading font-bold mb-2">
+              Welcome to CBAF! 👋
+            </h1>
+            <p className="text-gray-300">
+              Create your circular economy profile
+            </p>
           </div>
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {error && (
+          <Alert variant="error" title="Error creating profile" className="mb-6">
+            {error}
+          </Alert>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-bg-secondary border border-border-primary rounded-2xl p-8 shadow-xl space-y-6">
+        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm space-y-6">
           {/* Basic Info */}
           <div>
-            <h2 className="text-xl font-heading font-semibold mb-4">Basic Information</h2>
+            <h2 className="text-xl font-heading font-semibold text-gray-900 mb-4">Basic Information</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="label">
                   Economy Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -159,33 +196,51 @@ export default function SetupPage() {
                   onChange={handleChange}
                   placeholder="Bitcoin Ekasi"
                   required
-                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all"
-                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                  className="input"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Slug <span className="text-text-muted text-xs">(auto-generated)</span>
+                <label className="label">
+                  Slug <span className="text-gray-500 text-xs font-normal">(auto-generated)</span>
                 </label>
-                <input
-                  type="text"
-                  name="slug"
-                  value={formData.slug}
-                  onChange={handleChange}
-                  placeholder="bitcoin-ekasi"
-                  required
-                  title="Lowercase letters, numbers, and hyphens only"
-                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent font-mono transition-all"
-                />
-                <p className="text-xs text-text-muted mt-1">
-                  URL: tools.afribit.africa/cbaf/{formData.slug || 'your-slug'}
-                </p>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleChange}
+                    placeholder="bitcoin-ekasi"
+                    required
+                    title="Lowercase letters, numbers, and hyphens only"
+                    className={`input font-mono pr-10 ${
+                      slugError ? 'border-red-500 focus:ring-red-500' : ''
+                    }`}
+                  />
+                  {checkingSlug && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 className="w-4 h-4 text-bitcoin-500 animate-spin" />
+                    </div>
+                  )}
+                  {!checkingSlug && slugError && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 text-xl">✗</span>
+                  )}
+                  {!checkingSlug && !slugError && formData.slug.length >= 3 && (
+                    <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  )}
+                </div>
+                {slugError ? (
+                  <p className="error-text">{slugError}</p>
+                ) : (
+                  <p className="helper-text">
+                    URL: tools.afribit.africa/cbaf/{formData.slug || 'your-slug'}
+                  </p>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="label">
                     Country <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -194,8 +249,7 @@ export default function SetupPage() {
                       value={formData.country}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2.5 pr-10 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent appearance-none cursor-pointer transition-all hover:border-bitcoin/50"
-                      style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                      className="select"
                     >
                       <option value="">Select country...</option>
                       {africanCountries.map((country) => (
@@ -204,12 +258,12 @@ export default function SetupPage() {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="label">
                     City
                   </label>
                   <div className="relative">
@@ -219,8 +273,7 @@ export default function SetupPage() {
                           name="city"
                           value={formData.city}
                           onChange={handleChange}
-                          className="w-full px-4 py-2.5 pr-10 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent appearance-none cursor-pointer transition-all hover:border-bitcoin/50"
-                          style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                          className="select"
                         >
                           <option value="">Select city...</option>
                           {availableCities.map((city) => (
@@ -229,7 +282,7 @@ export default function SetupPage() {
                             </option>
                           ))}
                         </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                       </>
                     ) : (
                       <input
@@ -239,19 +292,18 @@ export default function SetupPage() {
                         onChange={handleChange}
                         placeholder={formData.country ? "Enter city name" : "Select country first"}
                         disabled={!formData.country}
-                        className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                        style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                        className="input"
                       />
                     )}
                   </div>
                   {formData.country && availableCities.length === 0 && (
-                    <p className="text-xs text-text-muted mt-1">Enter your city manually</p>
+                    <p className="helper-text">Enter your city manually</p>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="label">
                   Description
                 </label>
                 <textarea
@@ -260,8 +312,7 @@ export default function SetupPage() {
                   onChange={handleChange}
                   placeholder="Tell us about your circular economy..."
                   rows={3}
-                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent resize-none transition-all"
-                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                  className="textarea"
                 />
               </div>
             </div>
@@ -269,11 +320,11 @@ export default function SetupPage() {
 
           {/* Contact Info */}
           <div>
-            <h2 className="text-xl font-heading font-semibold mb-4">Contact & Social</h2>
+            <h2 className="text-xl font-heading font-semibold text-gray-900 mb-4">Contact & Social</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="label">
                   <Globe className="w-4 h-4 inline mr-1" />
                   Website
                 </label>
@@ -283,13 +334,12 @@ export default function SetupPage() {
                   value={formData.website}
                   onChange={handleChange}
                   placeholder="https://bitcoinekasi.com"
-                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all"
-                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                  className="input"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="label">
                   <Twitter className="w-4 h-4 inline mr-1" />
                   Twitter/X Username
                 </label>
@@ -299,13 +349,12 @@ export default function SetupPage() {
                   value={formData.twitter}
                   onChange={handleChange}
                   placeholder="@BitcoinEkasi"
-                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all"
-                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                  className="input"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="label">
                   <Send className="w-4 h-4 inline mr-1" />
                   Telegram Username
                 </label>
@@ -315,8 +364,7 @@ export default function SetupPage() {
                   value={formData.telegram}
                   onChange={handleChange}
                   placeholder="@YourTelegram"
-                  className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all"
-                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                  className="input"
                 />
               </div>
             </div>
@@ -324,14 +372,14 @@ export default function SetupPage() {
 
           {/* Payment Info */}
           <div>
-            <h2 className="text-xl font-heading font-semibold mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-bitcoin" />
+            <h2 className="text-xl font-heading font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-bitcoin-500" />
               Payment Information
             </h2>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Lightning Address <span className="text-text-muted text-xs">(for receiving funding)</span>
+              <label className="label">
+                Lightning Address <span className="text-gray-500 text-xs font-normal">(for receiving funding)</span>
               </label>
               <input
                 type="email"
@@ -339,35 +387,37 @@ export default function SetupPage() {
                 value={formData.lightningAddress}
                 onChange={handleChange}
                 placeholder="name@getalby.com"
-                className="w-full px-4 py-2.5 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent transition-all"
-                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+                className="input"
               />
-              <p className="text-xs text-text-muted mt-1">
+              <p className="helper-text">
                 This is where you'll receive CBAF funding when available
-              </p>
-              <p className="text-xs text-yellow-500/80 mt-1 flex items-start gap-1">
-                <span>ℹ️</span>
-                <span>Funding is distributed when available, not on a fixed monthly schedule</span>
               </p>
             </div>
           </div>
 
           {/* Submit */}
-          <div className="pt-4 border-t border-border-primary">
+          <div className="pt-4 border-t border-gray-200">
             <button
               type="submit"
-              disabled={loading || !formData.economyName || !formData.country}
-              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || !formData.economyName || !formData.country || !!slugError}
+              className="btn-primary w-full"
             >
-              {loading ? 'Creating Profile...' : 'Create Profile & Continue'}
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Creating Profile...
+                </>
+              ) : (
+                'Create Profile & Continue'
+              )}
             </button>
           </div>
         </form>
 
-        <p className="text-center text-xs text-text-muted mt-4">
+        <p className="text-center text-xs text-gray-500 mt-6">
           Signed in as: {session?.user?.email}
         </p>
-      </div>
+      </main>
     </div>
   );
 }

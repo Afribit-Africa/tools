@@ -54,6 +54,7 @@ export const economies = pgTable('economies', {
   website: text('website'),
   twitter: text('twitter'),
   telegram: text('telegram'),
+  contactEmail: text('contact_email'),
 
   // Location
   latitude: numeric('latitude', { precision: 10, scale: 8 }),
@@ -83,6 +84,7 @@ export const economies = pgTable('economies', {
   googleIdIdx: index('economy_google_id_idx').on(table.googleId),
   slugIdx: index('economy_slug_idx').on(table.slug),
   activeIdx: index('economy_active_idx').on(table.isActive),
+  contactEmailIdx: index('economy_contact_email_idx').on(table.contactEmail),
 }));
 
 // Merchants Table - Registered Merchants with BTCMap Links
@@ -114,6 +116,17 @@ export const merchants = pgTable('merchants', {
   lastVerifiedAt: timestamp('last_verified_at'),
   verificationError: text('verification_error'),
 
+  // Payment Details
+  lightningAddress: text('lightning_address'),
+  paymentProvider: text('payment_provider')
+    .$type<'blink' | 'fedi' | 'machankura' | 'other'>()
+    .default('blink'),
+  addressVerified: boolean('address_verified').default(false),
+  addressVerificationError: text('address_verification_error'),
+  addressVerifiedAt: timestamp('address_verified_at'),
+  addressVerifiedBy: uuid('address_verified_by')
+    .references(() => adminUsers.id),
+
   // Usage Statistics
   timesAppearedInVideos: integer('times_appeared_in_videos').default(0),
   firstAppearanceDate: timestamp('first_appearance_date'),
@@ -129,6 +142,8 @@ export const merchants = pgTable('merchants', {
   economyIdx: index('merchant_economy_idx').on(table.economyId),
   btcmapIdx: index('merchant_btcmap_idx').on(table.btcmapUrl),
   osmIdx: index('merchant_osm_idx').on(table.osmNodeId),
+  addressVerifiedIdx: index('merchant_address_verified_idx').on(table.addressVerified),
+  paymentProviderIdx: index('merchant_payment_provider_idx').on(table.paymentProvider),
 }));
 
 // Video Submissions Table - Proof of Work Videos
@@ -178,6 +193,11 @@ export const videoSubmissions = pgTable('video_submissions', {
   newMerchantCount: integer('new_merchant_count').default(0),
   returningMerchantCount: integer('returning_merchant_count').default(0),
 
+  // Payment Address Verification
+  addressesVerified: boolean('addresses_verified').default(false),
+  addressesVerifiedAt: timestamp('addresses_verified_at'),
+  invalidAddressesCount: integer('invalid_addresses_count').default(0),
+
   // Funding Impact
   fundingEarned: bigint('funding_earned', { mode: 'number' }).default(0),
 
@@ -191,6 +211,7 @@ export const videoSubmissions = pgTable('video_submissions', {
   yearIdx: index('video_year_idx').on(table.submissionYear),
   urlHashIdx: index('video_url_hash_idx').on(table.videoUrlHash), // For duplicate detection
   duplicateIdx: index('video_duplicate_idx').on(table.isDuplicate),
+  addressesVerifiedIdx: index('video_addresses_verified_idx').on(table.addressesVerified),
 }));
 
 // Video Merchants Junction Table
@@ -344,6 +365,82 @@ export const monthlyRankings = pgTable('monthly_rankings', {
   overallRankIdx: index('ranking_overall_idx').on(table.overallRank),
 }));
 
+// Email Notifications Table - Track all emails sent by CBAF
+export const emailNotifications = pgTable('email_notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  // Recipient
+  recipientEmail: text('recipient_email').notNull(),
+  recipientName: text('recipient_name'),
+
+  // Email Details
+  templateType: text('template_type')
+    .notNull()
+    .$type<'address_correction_request' | 'address_verified' | 'funding_processed'>(),
+  subject: text('subject').notNull(),
+  htmlBody: text('html_body').notNull(),
+  textBody: text('text_body'),
+
+  // Context
+  economyId: uuid('economy_id').references(() => economies.id, { onDelete: 'cascade' }),
+  videoId: uuid('video_id').references(() => videoSubmissions.id, { onDelete: 'cascade' }),
+
+  // Status
+  status: text('status')
+    .notNull()
+    .$type<'pending' | 'sent' | 'failed' | 'bounced'>()
+    .default('pending'),
+  errorMessage: text('error_message'),
+
+  // Provider Details (Resend)
+  providerMessageId: text('provider_message_id'),
+
+  // Metadata
+  sentBy: uuid('sent_by').references(() => adminUsers.id),
+  sentAt: timestamp('sent_at'),
+  openedAt: timestamp('opened_at'),
+  clickedAt: timestamp('clicked_at'),
+
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  recipientIdx: index('email_recipient_idx').on(table.recipientEmail),
+  statusIdx: index('email_status_idx').on(table.status),
+  templateIdx: index('email_template_idx').on(table.templateType),
+  economyIdx: index('email_economy_idx').on(table.economyId),
+  sentAtIdx: index('email_sent_at_idx').on(table.sentAt),
+}));
+
+// Super Admin Settings Table - Encrypted configuration storage
+export const superAdminSettings = pgTable('super_admin_settings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+
+  // Setting identification
+  key: text('key').notNull().unique(), // e.g., 'blink_api_key'
+
+  // Encrypted value
+  encryptedValue: text('encrypted_value').notNull(),
+
+  // Metadata
+  description: text('description'),
+  isActive: boolean('is_active').default(true).notNull(),
+
+  // Connection status (for API integrations)
+  isConnected: boolean('is_connected').default(false),
+  lastTested: timestamp('last_tested'),
+
+  // Additional data (JSON string for flexible storage)
+  metadata: text('metadata'), // JSON string for balance, etc.
+
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  keyIdx: index('settings_key_idx').on(table.key),
+  activeIdx: index('settings_active_idx').on(table.isActive),
+}));
+
 // Type exports for CBAF tables
 export type Economy = typeof economies.$inferSelect;
 export type NewEconomy = typeof economies.$inferInsert;
@@ -359,3 +456,7 @@ export type FundingDisbursement = typeof fundingDisbursements.$inferSelect;
 export type NewFundingDisbursement = typeof fundingDisbursements.$inferInsert;
 export type MonthlyRanking = typeof monthlyRankings.$inferSelect;
 export type NewMonthlyRanking = typeof monthlyRankings.$inferInsert;
+export type EmailNotification = typeof emailNotifications.$inferSelect;
+export type NewEmailNotification = typeof emailNotifications.$inferInsert;
+export type SuperAdminSetting = typeof superAdminSettings.$inferSelect;
+export type NewSuperAdminSetting = typeof superAdminSettings.$inferInsert;

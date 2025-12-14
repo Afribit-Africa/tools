@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, ExternalLink, CheckCircle, AlertCircle, Loader2, MapPin } from 'lucide-react';
+import { Users, ExternalLink, CheckCircle, AlertCircle, Loader2, MapPin, Zap } from 'lucide-react';
+import { Alert } from '@/components/cbaf';
 
 export default function RegisterMerchantPage() {
   const router = useRouter();
@@ -13,6 +14,8 @@ export default function RegisterMerchantPage() {
   const [formData, setFormData] = useState({
     btcmapUrl: '',
     localName: '',
+    lightningAddress: '',
+    paymentProvider: 'blink' as 'blink' | 'fedi' | 'machankura' | 'other',
     notes: '',
   });
 
@@ -49,43 +52,44 @@ export default function RegisterMerchantPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-primary flex items-center justify-center px-4">
-        <div className="bg-bg-secondary border border-green-500/50 rounded-2xl p-8 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-500" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="bg-white border-2 border-green-200 rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h2 className="text-2xl font-heading font-bold mb-2">Merchant Registered!</h2>
-          <p className="text-text-muted mb-4">
+          <h2 className="text-2xl font-heading font-bold text-gray-900 mb-2">Merchant Registered!</h2>
+          <p className="text-gray-600 mb-4">
             The merchant has been added to your circular economy network.
           </p>
-          <p className="text-sm text-text-muted">Redirecting to merchants list...</p>
+          <p className="text-sm text-gray-500">Redirecting to merchants list...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-primary py-12 px-4">
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-heading font-bold mb-2">Register Merchant</h1>
-          <p className="text-text-secondary">
+          <h1 className="text-3xl font-heading font-bold text-gray-900 mb-2">Register Merchant</h1>
+          <p className="text-gray-600">
             Add a merchant from BTCMap to your circular economy network
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-            <p className="text-red-500 text-sm">{error}</p>
+          <div className="mb-6">
+            <Alert variant="error" title="Error">
+              {error}
+            </Alert>
           </div>
         )}
 
         {/* Instructions */}
-        <div className="mb-6 p-4 bg-bitcoin/10 border border-bitcoin/30 rounded-lg">
-          <h3 className="font-medium text-bitcoin mb-2">How to find merchants on BTCMap:</h3>
-          <ol className="text-sm text-text-muted space-y-1 list-decimal list-inside">
-            <li>Visit <a href="https://btcmap.org" target="_blank" rel="noopener noreferrer" className="text-bitcoin hover:underline">btcmap.org</a></li>
+        <div className="mb-6 p-4 bg-bitcoin-50 border-2 border-bitcoin-200 rounded-lg">
+          <h3 className="font-medium text-gray-900 mb-2">How to find merchants on BTCMap:</h3>
+          <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
+            <li>Visit <a href="https://btcmap.org" target="_blank" rel="noopener noreferrer" className="text-bitcoin-600 hover:text-bitcoin-700 font-medium">btcmap.org</a></li>
             <li>Search for merchants in your area</li>
             <li>Click on a merchant to view details</li>
             <li>Copy the merchant's URL (e.g., https://btcmap.org/merchant/12345)</li>
@@ -93,10 +97,35 @@ export default function RegisterMerchantPage() {
           </ol>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-bg-secondary border border-border-primary rounded-2xl p-8 shadow-xl space-y-6">
+        {/* CSV Import Option */}
+        <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+          <h3 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+            <Users className="w-5 h-5 text-blue-600" />
+            Registering Multiple Merchants?
+          </h3>
+          <p className="text-sm text-gray-700 mb-3">
+            Use CSV import to add multiple merchants at once. Required columns: <code className="bg-white px-2 py-0.5 rounded text-xs">btcmap_url</code>, <code className="bg-white px-2 py-0.5 rounded text-xs">lightning_address</code>
+          </p>
+          <div className="text-xs text-gray-600 mb-2">
+            <strong>Example CSV format:</strong>
+            <pre className="bg-white p-2 rounded mt-1 overflow-x-auto">
+              btcmap_url,lightning_address,payment_provider,merchant_name,local_name{'\n'}
+              https://btcmap.org/merchant/12345,joes@blink.sv,blink,Joe's Cafe,{'\n'}
+              https://btcmap.org/merchant/67890,mamas@blink.sv,blink,Mama's Shop,Mama's
+            </pre>
+          </div>
+          <a
+            href="/cbaf/merchants"
+            className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            Go to Merchants Page to Import CSV →
+          </a>
+        </div>
+
+        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm space-y-6">
           {/* BTCMap URL */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="label">
               <ExternalLink className="w-4 h-4 inline mr-1" />
               BTCMap URL <span className="text-red-500">*</span>
             </label>
@@ -106,16 +135,16 @@ export default function RegisterMerchantPage() {
               onChange={(e) => setFormData({ ...formData, btcmapUrl: e.target.value })}
               placeholder="https://btcmap.org/merchant/12345"
               required
-              className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+              className="input"
             />
-            <p className="text-xs text-text-muted mt-1">
+            <p className="helper-text">
               The unique BTCMap URL for this merchant
             </p>
           </div>
 
           {/* Local Name */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="label">
               <Users className="w-4 h-4 inline mr-1" />
               Local Name (Optional)
             </label>
@@ -124,16 +153,61 @@ export default function RegisterMerchantPage() {
               value={formData.localName}
               onChange={(e) => setFormData({ ...formData, localName: e.target.value })}
               placeholder="e.g., 'Joe's Cafe' or 'Mama's Shop'"
-              className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent"
+              className="input"
             />
-            <p className="text-xs text-text-muted mt-1">
+            <p className="helper-text">
               Local name if different from BTCMap listing
+            </p>
+          </div>
+
+          {/* Payment Provider */}
+          <div>
+            <label className="label">
+              Payment Provider <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.paymentProvider}
+              onChange={(e) => setFormData({ ...formData, paymentProvider: e.target.value as any })}
+              required
+              className="input"
+            >
+              <option value="blink">Blink (Recommended)</option>
+              <option value="fedi">Fedi</option>
+              <option value="machankura">Machankura</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          {/* Lightning Address */}
+          <div>
+            <label className="label">
+              <Zap className="w-4 h-4 inline mr-1" />
+              Lightning Address <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.lightningAddress}
+              onChange={(e) => setFormData({ ...formData, lightningAddress: e.target.value })}
+              placeholder={
+                formData.paymentProvider === 'blink' ? 'username@blink.sv' :
+                formData.paymentProvider === 'fedi' ? 'user@federation.fedi.xyz' :
+                formData.paymentProvider === 'machankura' ? '+27123456789' :
+                'Lightning address or LNURL'
+              }
+              required
+              className="input"
+            />
+            <p className="helper-text">
+              {formData.paymentProvider === 'blink' && 'Format: username@blink.sv'}
+              {formData.paymentProvider === 'fedi' && 'Format: user@federation.fedi.xyz'}
+              {formData.paymentProvider === 'machankura' && 'Format: +27XXXXXXXXX'}
+              {formData.paymentProvider === 'other' && 'Enter lightning address or LNURL'}
             </p>
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="label">
               <MapPin className="w-4 h-4 inline mr-1" />
               Notes (Optional)
             </label>
@@ -142,16 +216,16 @@ export default function RegisterMerchantPage() {
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Add any additional information about this merchant..."
               rows={3}
-              className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg focus:ring-2 focus:ring-bitcoin focus:border-transparent resize-none"
+              className="textarea"
             />
           </div>
 
           {/* Submit Button */}
-          <div className="pt-4 border-t border-border-primary">
+          <div className="pt-4 border-t border-gray-200">
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center"
             >
               {loading ? (
                 <>
@@ -168,9 +242,9 @@ export default function RegisterMerchantPage() {
           </div>
         </form>
 
-        <div className="mt-6 p-4 bg-bg-secondary border border-border-primary rounded-lg">
-          <h3 className="font-medium mb-2 text-sm">What happens next?</h3>
-          <ul className="text-xs text-text-muted space-y-1 list-disc list-inside">
+        <div className="mt-6 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+          <h3 className="font-medium text-gray-900 mb-2 text-sm">What happens next?</h3>
+          <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
             <li>The merchant will be added to your economy's network</li>
             <li>We'll verify the merchant details against BTCMap</li>
             <li>You can feature this merchant in your video submissions</li>

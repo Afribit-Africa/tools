@@ -46,14 +46,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if slug is already taken
+    // Check if slug is already taken by another economy
     const existingSlug = await db
       .select()
       .from(economies)
       .where(eq(economies.slug, slug))
       .limit(1);
 
-    if (existingSlug.length > 0) {
+    // Only error if slug is taken by a different user
+    if (existingSlug.length > 0 && existingSlug[0].googleEmail !== session.user.email) {
       return NextResponse.json(
         { error: 'This slug is already taken. Please choose a different one.' },
         { status: 409 }
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
           twitter: twitter || null,
           telegram: telegram || null,
           lightningAddress: lightningAddress || null,
+          contactEmail: session.user.email!,
           isActive: true,
           updatedAt: new Date(),
         })
@@ -106,6 +108,7 @@ export async function POST(request: NextRequest) {
           twitter: twitter || null,
           telegram: telegram || null,
           lightningAddress: lightningAddress || null,
+          contactEmail: session.user.email!,
           isActive: true,
         })
         .returning();

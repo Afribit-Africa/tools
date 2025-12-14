@@ -194,15 +194,25 @@ export async function verifyMerchant(btcmapUrl: string): Promise<BTCMapMerchantI
   // Extract OSM node ID
   const osmNodeId = extractOsmNodeId(btcmapUrl);
   if (!osmNodeId) {
-    console.error('Invalid BTCMap URL format:', btcmapUrl);
+    console.error('❌ Invalid BTCMap URL format:', btcmapUrl);
+    console.error('Expected formats:');
+    console.error('  - https://btcmap.org/merchant/123456');
+    console.error('  - https://btcmap.org/map?id=n123456');
+    console.error('  - https://btcmap.org/element/n123456');
     return null;
   }
+
+  console.log(`✅ Extracted OSM node ID: ${osmNodeId} from URL: ${btcmapUrl}`);
 
   // Fetch element from BTCMap
   const element = await fetchBTCMapElement(osmNodeId);
   if (!element) {
+    console.error(`❌ Merchant with ID ${osmNodeId} not found on BTCMap API`);
+    console.error(`API endpoint tried: https://api.btcmap.org/v2/elements/node:${osmNodeId}`);
     return null;
   }
+
+  console.log(`✅ Found merchant on BTCMap: ${element.osm_json.tags?.name || 'Unknown'}`);
 
   // Parse and return merchant info
   return parseBTCMapElement(element);

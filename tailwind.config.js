@@ -10,38 +10,64 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Background colors
-        'bg-primary': '#0A0A0A',
-        'bg-secondary': '#1A1A1A',
-        'bg-tertiary': '#252525',
+        // Base colors
+        white: '#FFFFFF',
+        black: '#000000',
 
-        // Bitcoin Orange
-        'bitcoin': {
+        // Bitcoin Orange - Primary Brand Color
+        bitcoin: {
+          50: '#FFF7ED',
+          100: '#FFEDD5',
+          200: '#FED7AA',
+          300: '#FDBA74',
+          400: '#FB923C',
+          500: '#F7931A',
+          600: '#EA580C',
+          700: '#C2410C',
+          800: '#9A3412',
+          900: '#7C2D12',
           DEFAULT: '#F7931A',
-          light: '#FF9F40',
-          dark: '#E67E00',
         },
 
-        // Status colors
-        'status': {
-          success: '#00CC66',
-          warning: '#F7931A',
-          error: '#FF4444',
-          pending: '#FFC107',
+        // Grayscale - Supporting Colors
+        gray: {
+          50: '#F9FAFB',
+          100: '#F3F4F6',
+          200: '#E5E7EB',
+          300: '#D1D5DB',
+          400: '#9CA3AF',
+          500: '#6B7280',
+          600: '#4B5563',
+          700: '#374151',
+          800: '#1F2937',
+          900: '#111827',
         },
 
-        // Text colors
-        'text': {
-          primary: '#FFFFFF',
-          secondary: '#B0B0B0',
-          muted: '#666666',
+        // Status Colors
+        status: {
+          success: '#10B981',
+          warning: '#F59E0B',
+          error: '#EF4444',
+          info: '#3B82F6',
         },
 
-        // Border colors
-        border: {
-          DEFAULT: '#333333',
-          light: '#444444',
+        // Social Platform Colors
+        social: {
+          twitter: '#1DA1F2',
+          youtube: '#FF0000',
+          tiktok: '#000000',
+          instagram: '#E4405F',
         },
+
+        // Legacy aliases for backward compatibility (will be removed)
+        'bg-primary': '#F9FAFB',
+        'bg-secondary': '#FFFFFF',
+        'bg-tertiary': '#F3F4F6',
+        'text-primary': '#111827',
+        'text-secondary': '#6B7280',
+        'text-muted': '#9CA3AF',
+        'border-primary': '#E5E7EB',
+        'border-light': '#D1D5DB',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],

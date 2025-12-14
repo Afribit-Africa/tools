@@ -4,14 +4,19 @@ import { videoSubmissions, economies, videoMerchants, merchants } from '@/lib/db
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import ReviewForm from './ReviewForm';
-import { Video, ExternalLink, Users, Calendar, MapPin, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
+import AddressVerificationPanel from './AddressVerificationPanel';
+import VideoEmbed from '@/components/cbaf/VideoEmbed';
+import { Video, ExternalLink, Users, Calendar, MapPin, CheckCircle, XCircle, Clock, AlertTriangle, Wallet, Send } from 'lucide-react';
+import { Badge } from '@/components/cbaf';
+import FloatingNav from '@/components/ui/FloatingNav';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ReviewVideoPage({ params }: Props) {
   const session = await requireAdmin();
+  const { id } = await params;
 
   // Fetch video with economy info
   const videoData = await db
@@ -21,7 +26,7 @@ export default async function ReviewVideoPage({ params }: Props) {
     })
     .from(videoSubmissions)
     .leftJoin(economies, eq(videoSubmissions.economyId, economies.id))
-    .where(eq(videoSubmissions.id, params.id))
+    .where(eq(videoSubmissions.id, id))
     .limit(1);
 
   if (videoData.length === 0) {
@@ -62,20 +67,22 @@ export default async function ReviewVideoPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-primary py-8 px-4">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <FloatingNav role={session.user.role} />
+
+      <div className="max-w-5xl mx-auto px-4 pt-28">
         {/* Header */}
         <div className="mb-6">
-          <a href="/cbaf/admin/reviews" className="text-sm text-bitcoin hover:underline mb-4 inline-block">
+          <a href="/cbaf/admin/reviews" className="text-sm text-bitcoin-600 hover:text-bitcoin-700 mb-4 inline-block font-medium">
             ← Back to Reviews
           </a>
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h1 className="text-3xl font-heading font-bold mb-2">
+              <h1 className="text-3xl font-heading font-bold mb-2 text-gray-900">
                 {video.videoTitle || 'Untitled Video'}
               </h1>
-              <div className="flex items-center gap-4 text-sm text-text-muted">
-                <span className="font-medium">{economy?.economyName || 'Unknown Economy'}</span>
+              <div className="flex items-center gap-4 text-sm text-gray-500">
+                <span className="font-medium text-gray-900">{economy?.economyName || 'Unknown Economy'}</span>
                 {economy?.country && (
                   <>
                     <span>•</span>
@@ -86,22 +93,24 @@ export default async function ReviewVideoPage({ params }: Props) {
                 <span>{new Date(video.submittedAt).toLocaleDateString()}</span>
               </div>
             </div>
-            <span
-              className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 ${
+            <Badge
+              variant={
                 video.status === 'approved'
-                  ? 'bg-green-500/10 text-green-500 border border-green-500/30'
+                  ? 'success'
                   : video.status === 'rejected'
-                  ? 'bg-red-500/10 text-red-500 border border-red-500/30'
+                  ? 'error'
                   : video.status === 'pending'
-                  ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/30'
-                  : 'bg-gray-500/10 text-gray-500 border border-gray-500/30'
-              }`}
+                  ? 'warning'
+                  : 'info'
+              }
+              icon={
+                video.status === 'approved' ? CheckCircle :
+                video.status === 'rejected' ? XCircle :
+                video.status === 'pending' ? Clock : undefined
+              }
             >
-              {video.status === 'approved' && <CheckCircle className="w-4 h-4" />}
-              {video.status === 'rejected' && <XCircle className="w-4 h-4" />}
-              {video.status === 'pending' && <Clock className="w-4 h-4" />}
               {video.status}
-            </span>
+            </Badge>
           </div>
         </div>
 
@@ -109,62 +118,62 @@ export default async function ReviewVideoPage({ params }: Props) {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Video Player/Preview */}
-            <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
-              <h2 className="text-lg font-heading font-bold mb-4">Video Content</h2>
+            <div className="card">
+              <h2 className="text-lg font-heading font-bold mb-4 text-gray-900">Video Content</h2>
 
-              {/* Embed video if possible */}
-              {video.platform === 'youtube' && video.videoUrl.includes('youtube.com') && (
-                <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${extractYouTubeId(video.videoUrl)}`}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+              {/* Show warning if platform is unknown or other */}
+              {(!video.platform || video.platform === 'other') && (
+                <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-yellow-800">Unsupported Video Platform</p>
+                    <p className="text-xs text-yellow-600 mt-1">
+                      This video URL may not be from a supported platform (YouTube, Twitter, TikTok, Instagram).
+                      You may need to open it in a new tab to review the content.
+                    </p>
+                    <a
+                      href={video.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-yellow-700 hover:text-yellow-800 font-medium inline-flex items-center gap-1 mt-2"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Open Video URL
+                    </a>
+                  </div>
                 </div>
               )}
 
-              {video.videoThumbnail && video.platform !== 'youtube' && (
-                <img
-                  src={video.videoThumbnail}
-                  alt="Video thumbnail"
-                  className="w-full rounded-lg mb-4"
-                />
-              )}
-
-              <a
-                href={video.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary w-full flex items-center justify-center gap-2"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Open Video in New Tab
-              </a>
+              <VideoEmbed
+                url={video.videoUrl}
+                platform={video.platform as any}
+                thumbnail={video.videoThumbnail}
+                title={video.videoTitle || undefined}
+              />
 
               {video.videoDescription && (
-                <div className="mt-4 p-4 bg-bg-primary rounded-lg">
-                  <p className="text-sm text-text-muted font-medium mb-2">Description:</p>
-                  <p className="text-sm">{video.videoDescription}</p>
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <p className="text-sm text-gray-600 font-medium mb-2">Description:</p>
+                  <p className="text-sm text-gray-900">{video.videoDescription}</p>
                 </div>
               )}
             </div>
 
             {/* Duplicate Warning */}
             {video.isDuplicate && (
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6">
+              <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-6 h-6 text-yellow-500 flex-shrink-0" />
+                  <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0" />
                   <div className="flex-1">
-                    <h3 className="font-bold text-yellow-500 mb-2">Duplicate Video Detected</h3>
+                    <h3 className="font-bold text-yellow-900 mb-2">Duplicate Video Detected</h3>
                     {duplicateInfo && (
-                      <div className="text-sm text-text-muted space-y-1">
+                      <div className="text-sm text-gray-700 space-y-1">
                         <p>Original submission by: <span className="font-medium">{duplicateInfo.economy?.economyName}</span></p>
                         <p>Submitted on: {new Date(duplicateInfo.video.submittedAt).toLocaleDateString()}</p>
                         <p>Status: <span className="capitalize">{duplicateInfo.video.status}</span></p>
                         <a
                           href={`/cbaf/admin/reviews/${duplicateInfo.video.id}`}
-                          className="text-bitcoin hover:underline inline-block mt-2"
+                          className="text-bitcoin-600 hover:text-bitcoin-700 inline-block mt-2 font-medium"
                         >
                           View original submission →
                         </a>
@@ -176,53 +185,79 @@ export default async function ReviewVideoPage({ params }: Props) {
             )}
 
             {/* Merchants */}
-            <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
-              <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
+            <div className="card">
+              <h2 className="text-lg font-heading font-bold mb-4 flex items-center gap-2 text-gray-900">
                 <Users className="w-5 h-5" />
                 Featured Merchants ({videoMerchantData.length})
               </h2>
 
               {videoMerchantData.length === 0 ? (
-                <p className="text-text-muted text-sm">No merchants tagged</p>
+                <p className="text-gray-500 text-sm">No merchants tagged</p>
               ) : (
                 <div className="space-y-3">
                   {videoMerchantData.map(({ merchant }) => (
                     merchant && (
-                      <div key={merchant.id} className="p-4 bg-bg-primary rounded-lg border border-border-primary">
+                      <div key={merchant.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1">
-                            <h3 className="font-medium">
+                            <h3 className="font-medium text-gray-900">
                               {merchant.localName || merchant.merchantName || 'Unnamed Merchant'}
                             </h3>
                             {merchant.category && (
-                              <p className="text-xs text-text-muted">{merchant.category}</p>
+                              <p className="text-xs text-gray-500">{merchant.category}</p>
                             )}
                           </div>
-                          {merchant.btcmapVerified ? (
-                            <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded-full flex items-center gap-1">
-                              <CheckCircle className="w-3 h-3" />
-                              Verified
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 bg-yellow-500/10 text-yellow-500 text-xs rounded-full flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              Pending
-                            </span>
-                          )}
+                          <Badge
+                            variant={merchant.btcmapVerified ? 'success' : 'warning'}
+                            icon={merchant.btcmapVerified ? CheckCircle : Clock}
+                          >
+                            {merchant.btcmapVerified ? 'Verified' : 'Pending'}
+                          </Badge>
                         </div>
 
                         {merchant.address && (
-                          <p className="text-xs text-text-muted flex items-center gap-1 mb-2">
+                          <p className="text-xs text-gray-600 flex items-center gap-1 mb-2">
                             <MapPin className="w-3 h-3" />
                             {merchant.address}
                           </p>
+                        )}
+
+                        {/* Payment Address Section */}
+                        {merchant.lightningAddress && (
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-xs font-medium text-gray-700 flex items-center gap-1">
+                                <Wallet className="w-3 h-3" />
+                                Payment Address
+                              </p>
+                              {merchant.addressVerified ? (
+                                <Badge variant="success" icon={CheckCircle}>Verified</Badge>
+                              ) : (
+                                <Badge variant="warning" icon={Clock}>Unverified</Badge>
+                              )}
+                            </div>
+                            <div className="bg-white rounded p-2 border border-gray-200 mb-2">
+                              <p className="text-xs font-mono text-gray-900 break-all">
+                                {merchant.lightningAddress}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Provider: <span className="capitalize">{merchant.paymentProvider || 'unknown'}</span>
+                              </p>
+                            </div>
+                            {merchant.addressVerificationError && (
+                              <p className="text-xs text-red-600 flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3" />
+                                {merchant.addressVerificationError}
+                              </p>
+                            )}
+                          </div>
                         )}
 
                         <a
                           href={merchant.btcmapUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-bitcoin hover:underline flex items-center gap-1"
+                          className="text-xs text-bitcoin-600 hover:text-bitcoin-700 flex items-center gap-1 font-medium mt-2"
                         >
                           <ExternalLink className="w-3 h-3" />
                           View on BTCMap
@@ -233,40 +268,48 @@ export default async function ReviewVideoPage({ params }: Props) {
                 </div>
               )}
             </div>
+
+            {/* Payment Address Verification */}
+            <AddressVerificationPanel
+              videoId={video.id}
+              merchants={videoMerchantData.map(({ merchant }) => merchant).filter((m): m is NonNullable<typeof m> => m !== null)}
+              economyEmail={economy?.contactEmail || null}
+              economyName={economy?.economyName || 'Unknown Economy'}
+            />
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Video Details */}
-            <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
-              <h2 className="text-lg font-heading font-bold mb-4">Details</h2>
+            <div className="card">
+              <h2 className="text-lg font-heading font-bold mb-4 text-gray-900">Details</h2>
               <div className="space-y-3 text-sm">
                 <div>
-                  <p className="text-text-muted mb-1">Platform</p>
-                  <p className="font-medium capitalize">{video.platform || 'Unknown'}</p>
+                  <p className="text-gray-500 mb-1">Platform</p>
+                  <p className="font-medium capitalize text-gray-900">{video.platform || 'Unknown'}</p>
                 </div>
                 <div>
-                  <p className="text-text-muted mb-1">Funding Month</p>
-                  <p className="font-medium">{video.submissionMonth || 'N/A'}</p>
+                  <p className="text-gray-500 mb-1">Funding Month</p>
+                  <p className="font-medium text-gray-900">{video.submissionMonth || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-text-muted mb-1">Submitted</p>
-                  <p className="font-medium">{new Date(video.submittedAt).toLocaleString()}</p>
+                  <p className="text-gray-500 mb-1">Submitted</p>
+                  <p className="font-medium text-gray-900">{new Date(video.submittedAt).toLocaleString()}</p>
                 </div>
                 {video.reviewedAt && (
                   <div>
-                    <p className="text-text-muted mb-1">Reviewed</p>
-                    <p className="font-medium">{new Date(video.reviewedAt).toLocaleString()}</p>
+                    <p className="text-gray-500 mb-1">Reviewed</p>
+                    <p className="font-medium text-gray-900">{new Date(video.reviewedAt).toLocaleString()}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-text-muted mb-1">Merchants</p>
-                  <p className="font-medium">{video.merchantCount || 0}</p>
+                  <p className="text-gray-500 mb-1">Merchants</p>
+                  <p className="font-medium text-gray-900">{video.merchantCount || 0}</p>
                 </div>
                 {video.videoDuration && (
                   <div>
-                    <p className="text-text-muted mb-1">Duration</p>
-                    <p className="font-medium">{Math.floor(video.videoDuration / 60)}:{(video.videoDuration % 60).toString().padStart(2, '0')}</p>
+                    <p className="text-gray-500 mb-1">Duration</p>
+                    <p className="font-medium text-gray-900">{Math.floor(video.videoDuration / 60)}:{(video.videoDuration % 60).toString().padStart(2, '0')}</p>
                   </div>
                 )}
               </div>
@@ -274,30 +317,30 @@ export default async function ReviewVideoPage({ params }: Props) {
 
             {/* Economy Info */}
             {economy && (
-              <div className="bg-bg-secondary border border-border-primary rounded-xl p-6 shadow-lg">
-                <h2 className="text-lg font-heading font-bold mb-4">Economy</h2>
+              <div className="card">
+                <h2 className="text-lg font-heading font-bold mb-4 text-gray-900">Economy</h2>
                 <div className="space-y-3 text-sm">
                   <div>
-                    <p className="text-text-muted mb-1">Name</p>
-                    <p className="font-medium">{economy.economyName}</p>
+                    <p className="text-gray-500 mb-1">Name</p>
+                    <p className="font-medium text-gray-900">{economy.economyName}</p>
                   </div>
                   <div>
-                    <p className="text-text-muted mb-1">Location</p>
-                    <p className="font-medium">
+                    <p className="text-gray-500 mb-1">Location</p>
+                    <p className="font-medium text-gray-900">
                       {economy.city ? `${economy.city}, ` : ''}{economy.country}
                     </p>
                   </div>
                   <div>
-                    <p className="text-text-muted mb-1">Total Videos</p>
-                    <p className="font-medium">{economy.totalVideosSubmitted || 0} submitted</p>
-                    <p className="font-medium">{economy.totalVideosApproved || 0} approved</p>
+                    <p className="text-gray-500 mb-1">Total Videos</p>
+                    <p className="font-medium text-gray-900">{economy.totalVideosSubmitted || 0} submitted</p>
+                    <p className="font-medium text-gray-900">{economy.totalVideosApproved || 0} approved</p>
                   </div>
                   {economy.website && (
                     <a
                       href={economy.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-bitcoin hover:underline flex items-center gap-1"
+                      className="text-bitcoin-600 hover:text-bitcoin-700 flex items-center gap-1 font-medium"
                     >
                       <ExternalLink className="w-3 h-3" />
                       Website
@@ -320,9 +363,4 @@ export default async function ReviewVideoPage({ params }: Props) {
       </div>
     </div>
   );
-}
-
-function extractYouTubeId(url: string): string {
-  const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-  return match ? match[1] : '';
 }

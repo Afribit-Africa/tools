@@ -1,21 +1,30 @@
-import { requireSuperAdmin } from '@/lib/auth/session';
+import { requireAdmin } from '@/lib/auth/session';
 import { getAvailablePeriods, getCurrentPeriod } from '@/lib/cbaf/ranking-calculator';
 import { getFundingDisbursements } from '@/lib/cbaf/funding-calculator';
-import { DollarSign, Download, CheckCircle, Clock, XCircle, Zap } from 'lucide-react';
+import { DollarSign, Download, CheckCircle, Clock, XCircle, Zap, Wallet } from 'lucide-react';
 import Link from 'next/link';
-import FundingAllocationPanel from './FundingAllocationPanel';
+import { redirect } from 'next/navigation';
+import FundingTabs from './FundingTabs';
+import { StatCard, EmptyState } from '@/components/cbaf';
+import FloatingNav from '@/components/ui/FloatingNav';
 
 interface PageProps {
-  searchParams: { period?: string };
+  searchParams: Promise<{ period?: string }>;
 }
 
 export default async function FundingAllocationPage({ searchParams }: PageProps) {
-  await requireSuperAdmin();
+  const session = await requireAdmin();
+  const params = await searchParams;
+
+  // Restrict to super_admin only for payment operations
+  if (session.user.role !== 'super_admin') {
+    redirect('/unauthorized');
+  }
 
   const availablePeriods = await getAvailablePeriods();
 
   // Determine which period to show
-  const requestedPeriod = searchParams.period;
+  const requestedPeriod = params.period;
   let period = availablePeriods.length > 0 ? availablePeriods[0] : getCurrentPeriod();
 
   if (requestedPeriod) {
@@ -35,17 +44,19 @@ export default async function FundingAllocationPage({ searchParams }: PageProps)
   const failedCount = existingDisbursements.filter(d => d.status === 'failed').length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-primary">
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <FloatingNav role={session.user.role} />
+
       {/* Header */}
-      <header className="border-b border-border-primary bg-bg-secondary/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+      <header className="bg-black text-white border-b border-gray-200 pt-28 pb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-heading font-bold flex items-center gap-3">
                 <DollarSign className="w-8 h-8 text-bitcoin" />
                 Funding Allocation & Payments
               </h1>
-              <p className="text-text-secondary mt-1">
+              <p className="text-gray-300 mt-1">
                 Allocate funds and export payment data for {period.monthName} {period.year}
               </p>
             </div>
@@ -56,7 +67,7 @@ export default async function FundingAllocationPage({ searchParams }: PageProps)
 
           {/* Period Selector */}
           {availablePeriods.length > 0 && (
-            <div className="mt-6">
+            <div>
               <label className="block text-sm font-medium mb-2">Period:</label>
               <div className="flex flex-wrap gap-2">
                 {availablePeriods.map((p) => (
@@ -64,9 +75,9 @@ export default async function FundingAllocationPage({ searchParams }: PageProps)
                     key={p.month}
                     href={`/cbaf/super-admin/funding/allocate?period=${p.month}`}
                     className={`px-4 py-2 rounded-lg border transition-colors ${
-                      searchParams.period === p.month || (!searchParams.period && p === availablePeriods[0])
+                      params.period === p.month || (!params.period && p === availablePeriods[0])
                         ? 'bg-bitcoin text-white border-bitcoin'
-                        : 'bg-bg-primary border-border-primary hover:border-bitcoin/50'
+                        : 'bg-white text-gray-900 border-gray-300 hover:border-bitcoin/50'
                     }`}
                   >
                     {p.monthName} {p.year}
@@ -80,10 +91,10 @@ export default async function FundingAllocationPage({ searchParams }: PageProps)
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {availablePeriods.length === 0 ? (
-          <div className="bg-bg-secondary border border-border-primary rounded-xl p-12 text-center">
-            <DollarSign className="w-16 h-16 text-text-muted mx-auto mb-4" />
+          <div className="card rounded-xl p-12 text-center">
+            <DollarSign className="w-16 h-16 text-gray-500 mx-auto mb-4" />
             <h2 className="text-xl font-heading font-bold mb-2">No Rankings Available</h2>
-            <p className="text-text-muted mb-6">
+            <p className="text-gray-500 mb-6">
               You need to calculate rankings before allocating funding.
             </p>
             <Link href="/cbaf/super-admin/funding" className="btn-primary">
@@ -95,53 +106,53 @@ export default async function FundingAllocationPage({ searchParams }: PageProps)
             {/* Statistics */}
             {hasExistingDisbursements && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div className="bg-bg-secondary border border-border-primary rounded-xl p-6">
+                <div className="card rounded-xl p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-text-muted text-sm">Total Amount</p>
+                    <p className="text-gray-500 text-sm">Total Amount</p>
                     <DollarSign className="w-5 h-5 text-bitcoin" />
                   </div>
                   <p className="text-2xl font-bold">{(totalAmount / 1_000_000).toFixed(2)}M</p>
-                  <p className="text-xs text-text-muted mt-1">sats</p>
+                  <p className="text-xs text-gray-500 mt-1">sats</p>
                 </div>
 
                 <div className="bg-bg-secondary border border-green-500/30 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-text-muted text-sm">Completed</p>
+                    <p className="text-gray-500 text-sm">Completed</p>
                     <CheckCircle className="w-5 h-5 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold text-green-500">{completedCount}</p>
-                  <p className="text-xs text-text-muted mt-1">payments</p>
+                  <p className="text-xs text-gray-500 mt-1">payments</p>
                 </div>
 
                 <div className="bg-bg-secondary border border-yellow-500/30 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-text-muted text-sm">Pending</p>
+                    <p className="text-gray-500 text-sm">Pending</p>
                     <Clock className="w-5 h-5 text-yellow-500" />
                   </div>
                   <p className="text-2xl font-bold text-yellow-500">{pendingCount}</p>
-                  <p className="text-xs text-text-muted mt-1">payments</p>
+                  <p className="text-xs text-gray-500 mt-1">payments</p>
                 </div>
 
                 <div className="bg-bg-secondary border border-red-500/30 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-text-muted text-sm">Failed</p>
+                    <p className="text-gray-500 text-sm">Failed</p>
                     <XCircle className="w-5 h-5 text-red-500" />
                   </div>
                   <p className="text-2xl font-bold text-red-500">{failedCount}</p>
-                  <p className="text-xs text-text-muted mt-1">payments</p>
+                  <p className="text-xs text-gray-500 mt-1">payments</p>
                 </div>
               </div>
             )}
 
-            {/* Funding Allocation Panel */}
-            <FundingAllocationPanel
+            {/* Funding Allocation Tabs */}
+            <FundingTabs
               period={period}
               existingDisbursements={existingDisbursements}
             />
 
             {/* Existing Disbursements */}
             {hasExistingDisbursements && (
-              <div className="mt-8 bg-bg-secondary border border-border-primary rounded-xl overflow-hidden">
+              <div className="mt-8 card rounded-xl overflow-hidden">
                 <div className="p-6 border-b border-border-primary">
                   <h2 className="text-xl font-heading font-bold">Payment History</h2>
                 </div>
@@ -161,17 +172,17 @@ export default async function FundingAllocationPage({ searchParams }: PageProps)
                         <tr key={disbursement.id} className="hover:bg-bg-primary/50">
                           <td className="p-4">
                             <div className="font-medium">{disbursement.economyName}</div>
-                            <div className="text-xs text-text-muted">
+                            <div className="text-xs text-gray-500">
                               {disbursement.paymentMethod === 'lightning' ? '⚡ Lightning' : '📝 Manual'}
                             </div>
                           </td>
                           <td className="p-4 text-center">
                             <div className="font-bold">{(disbursement.amountSats / 1000).toFixed(0)}k</div>
-                            <div className="text-xs text-text-muted">sats</div>
+                            <div className="text-xs text-gray-500">sats</div>
                           </td>
                           <td className="p-4 text-center text-sm">
                             <div>{disbursement.videosApproved} videos</div>
-                            <div className="text-text-muted">
+                            <div className="text-gray-500">
                               {disbursement.merchantsInvolved} merchants ({disbursement.newMerchants} new)
                             </div>
                           </td>
@@ -201,7 +212,7 @@ export default async function FundingAllocationPage({ searchParams }: PageProps)
                               </span>
                             )}
                           </td>
-                          <td className="p-4 text-center text-sm text-text-muted">
+                          <td className="p-4 text-center text-sm text-gray-500">
                             {new Date(disbursement.createdAt).toLocaleDateString()}
                           </td>
                         </tr>
@@ -215,7 +226,7 @@ export default async function FundingAllocationPage({ searchParams }: PageProps)
             {/* Info Box */}
             <div className="mt-8 p-6 bg-bitcoin/10 border border-bitcoin/30 rounded-xl">
               <h3 className="font-heading font-bold mb-2">💡 Payment Process</h3>
-              <ul className="text-sm text-text-muted space-y-1 list-disc list-inside">
+              <ul className="text-sm text-gray-500 space-y-1 list-disc list-inside">
                 <li><strong>Calculate Allocation:</strong> Distributes funds based on rankings (base + rank bonus + performance)</li>
                 <li><strong>Export CSV:</strong> Download payment data for Fastlight bulk payment tool</li>
                 <li><strong>Import to Fastlight:</strong> Use the CSV with Fastlight to process Lightning payments</li>

@@ -44,10 +44,18 @@ export async function requireBCE() {
 export async function requireAdmin() {
   const session = await requireAuth();
 
+  console.log('🔒 requireAdmin check:', {
+    email: session.user.email,
+    role: session.user.role,
+    hasSession: !!session
+  });
+
   if (session.user.role !== 'admin' && session.user.role !== 'super_admin') {
+    console.log('❌ Access denied - role mismatch');
     redirect('/unauthorized');
   }
 
+  console.log('✅ Admin access granted');
   return session;
 }
 
@@ -72,18 +80,26 @@ export async function requireSuperAdmin() {
 export async function requireBCEProfile() {
   const session = await requireAuth();
 
-  // Super admins can access everything
-  if (session.user.role === 'super_admin') {
+  console.log('🔍 requireBCEProfile check:', {
+    email: session.user.email,
+    role: session.user.role,
+    economyName: session.user.economyName,
+    economyId: session.user.economyId,
+  });
+
+  // Admins and super admins can access without BCE profile
+  if (session.user.role === 'admin' || session.user.role === 'super_admin') {
     return session;
   }
 
-  // Regular admins need BCE role check
+  // Regular BCE users need role check
   if (session.user.role !== 'bce') {
     redirect('/unauthorized');
   }
 
   // Check if economy name is set (indicates profile completion)
   if (!session.user.economyName) {
+    console.log('⚠️ No economy profile found, redirecting to setup');
     redirect('/cbaf/setup');
   }
 

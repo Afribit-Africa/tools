@@ -33,7 +33,18 @@ export interface FundingPool {
   baseAmount: number;
   rankBonusPool: number;
   performanceBonusPool: number;
+  rankBonusEnabled: boolean;
+  performanceBonusEnabled: boolean;
   allocations: FundingAllocation[];
+}
+
+export interface FundingCalculationConfig {
+  totalPool?: number; // Optional override for total pool
+  baseAmount: number;
+  rankBonusEnabled: boolean;
+  rankBonusPool: number;
+  performanceBonusEnabled: boolean;
+  performanceBonusPool: number;
 }
 
 export interface PaymentRecord {
@@ -61,7 +72,7 @@ export const DEFAULT_FUNDING_CONFIG = {
  */
 export async function calculateFundingAllocation(
   period: RankingPeriod,
-  config = DEFAULT_FUNDING_CONFIG
+  config: FundingCalculationConfig
 ): Promise<FundingPool> {
   // Get rankings for the period
   const [year, month] = period.month.split('-').map(Number);
@@ -93,31 +104,36 @@ export async function calculateFundingAllocation(
       throw new Error(`Economy not found for ranking ${ranking.id}`);
     }
 
-    // Base allocation: equal for all
+    // Base allocation: equal for all (can be 0 if disabled)
     const baseAllocation = config.baseAmount;
 
     // Rank bonus: inverse proportion (rank 1 gets most, last gets least)
-    // Using harmonic series for fair distribution
-    const rankWeight = 1 / ranking.overallRank!;
-    const totalRankWeight = rankings.reduce((sum, _, i) => sum + (1 / (i + 1)), 0);
-    const rankBonus = Math.floor((rankWeight / totalRankWeight) * config.rankBonusPool);
+    let rankBonus = 0;
+    if (config.rankBonusEnabled && config.rankBonusPool > 0) {
+      const rankWeight = 1 / ranking.overallRank!;
+      const totalRankWeight = rankings.reduce((sum, _, i) => sum + (1 / (i + 1)), 0);
+      rankBonus = Math.floor((rankWeight / totalRankWeight) * config.rankBonusPool);
+    }
 
     // Performance bonus: based on metrics
-    const videosWeight = (ranking.videosApproved || 0) * 0.4;
-    const merchantsWeight = (ranking.merchantsTotal || 0) * 0.3;
-    const newMerchantsWeight = (ranking.merchantsNew || 0) * 0.3 * 2; // 2x for new discoveries
+    let performanceBonus = 0;
+    if (config.performanceBonusEnabled && config.performanceBonusPool > 0) {
+      const videosWeight = (ranking.videosApproved || 0) * 0.4;
+      const merchantsWeight = (ranking.merchantsTotal || 0) * 0.3;
+      const newMerchantsWeight = (ranking.merchantsNew || 0) * 0.3 * 2; // 2x for new discoveries
 
-    const performanceScore = videosWeight + merchantsWeight + newMerchantsWeight;
-    const totalPerformanceScore = rankings.reduce((sum, { ranking: r }) => {
-      const vw = (r.videosApproved || 0) * 0.4;
-      const mw = (r.merchantsTotal || 0) * 0.3;
-      const nmw = (r.merchantsNew || 0) * 0.3 * 2;
-      return sum + vw + mw + nmw;
-    }, 0);
+      const performanceScore = videosWeight + merchantsWeight + newMerchantsWeight;
+      const totalPerformanceScore = rankings.reduce((sum, { ranking: r }) => {
+        const vw = (r.videosApproved || 0) * 0.4;
+        const mw = (r.merchantsTotal || 0) * 0.3;
+        const nmw = (r.merchantsNew || 0) * 0.3 * 2;
+        return sum + vw + mw + nmw;
+      }, 0);
 
-    const performanceBonus = totalPerformanceScore > 0
-      ? Math.floor((performanceScore / totalPerformanceScore) * config.performanceBonusPool)
-      : 0;
+      performanceBonus = totalPerformanceScore > 0
+        ? Math.floor((performanceScore / totalPerformanceScore) * config.performanceBonusPool)
+        : 0;
+    }
 
     // Total funding
     const totalFunding = baseAllocation + rankBonus + performanceBonus;
@@ -145,6 +161,8 @@ export async function calculateFundingAllocation(
     baseAmount: config.baseAmount,
     rankBonusPool: config.rankBonusPool,
     performanceBonusPool: config.performanceBonusPool,
+    rankBonusEnabled: config.rankBonusEnabled,
+    performanceBonusEnabled: config.performanceBonusEnabled,
     allocations,
   };
 }
@@ -261,6 +279,7 @@ export async function getFundingDisbursements(period: RankingPeriod) {
   return results.map(({ disbursement, economy }) => ({
     ...disbursement,
     economyName: economy?.economyName || 'Unknown',
+    lightningAddress: economy?.lightningAddress || null,
   }));
 }
 

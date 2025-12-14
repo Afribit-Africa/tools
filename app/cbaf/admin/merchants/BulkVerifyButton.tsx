@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Check, XCircle } from 'lucide-react';
 
 interface BulkVerifyButtonProps {
   economyId: string;
@@ -71,8 +71,16 @@ export default function BulkVerifyButton({ economyId, economyName }: BulkVerifyB
 
       {result && (
         <div className="text-xs text-center">
-          <p className="text-green-500">✓ {result.verified} verified</p>
-          {result.failed > 0 && <p className="text-red-500">✗ {result.failed} failed</p>}
+          <p className="text-green-500 inline-flex items-center gap-1">
+            <Check className="w-4 h-4" />
+            {result.verified} verified
+          </p>
+          {result.failed > 0 && (
+            <p className="text-red-500 inline-flex items-center gap-1">
+              <XCircle className="w-4 h-4" />
+              {result.failed} failed
+            </p>
+          )}
         </div>
       )}
     </div>

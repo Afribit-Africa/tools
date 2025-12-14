@@ -37,7 +37,7 @@ export default function VerifyMerchantButton({
       if (data.success) {
         setMessage({
           type: 'success',
-          text: `✓ Verified: ${data.merchant.merchantName || 'Merchant found'}`,
+          text: `Verified: ${data.merchant.merchantName || 'Merchant found'}`,
         });
         onVerificationComplete?.();
       } else {

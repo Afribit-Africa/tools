@@ -29,7 +29,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { videoUrl, videoTitle, videoDescription, merchantBtcmapUrls, merchantLocalNames } = body;
+    const {
+      videoUrl,
+      videoTitle,
+      videoDescription,
+      merchantBtcmapUrls,
+      merchantLocalNames,
+      merchantLightningAddresses,
+      merchantPaymentProviders
+    } = body;
 
     // Validation
     if (!videoUrl) {
@@ -119,6 +127,8 @@ export async function POST(request: NextRequest) {
       for (let i = 0; i < merchantBtcmapUrls.length; i++) {
         const btcmapUrl = merchantBtcmapUrls[i];
         const localName = merchantLocalNames?.[i] || null;
+        const lightningAddress = merchantLightningAddresses?.[i] || null;
+        const paymentProvider = merchantPaymentProviders?.[i] || null;
 
         if (!btcmapUrl || !btcmapUrl.trim()) continue;
 
@@ -161,6 +171,9 @@ export async function POST(request: NextRequest) {
                   ? `${verifiedInfo.address}${verifiedInfo.city ? `, ${verifiedInfo.city}` : ''}${verifiedInfo.country ? `, ${verifiedInfo.country}` : ''}`
                   : null,
                 localName: localName || null,
+                lightningAddress: lightningAddress || null,
+                paymentProvider: paymentProvider || null,
+                addressVerified: false, // Will be verified by admin
                 btcmapVerified: !!verifiedInfo,
                 verificationError,
                 lastVerifiedAt: verifiedInfo ? new Date() : null,
@@ -171,6 +184,19 @@ export async function POST(request: NextRequest) {
               .returning();
 
             merchant = Array.isArray(merchantResult) ? merchantResult[0] : merchantResult;
+          } else {
+            // Update existing merchant with new payment info if provided
+            if (lightningAddress || paymentProvider) {
+              await db
+                .update(merchants)
+                .set({
+                  lightningAddress: lightningAddress || merchant.lightningAddress,
+                  paymentProvider: paymentProvider || merchant.paymentProvider,
+                  addressVerified: false, // Reset verification when address changes
+                  updatedAt: new Date(),
+                })
+                .where(eq(merchants.id, merchant.id));
+            }
           }
 
           if (merchant && merchant.id) {

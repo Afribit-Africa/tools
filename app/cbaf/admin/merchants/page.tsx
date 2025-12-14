@@ -2,12 +2,14 @@ import { requireAdmin } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { merchants, economies } from '@/lib/db/schema';
 import { eq, isNull, or, desc, and } from 'drizzle-orm';
-import { CheckCircle, XCircle, Clock, RefreshCw, ExternalLink } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, RefreshCw, ExternalLink, Check } from 'lucide-react';
 import Link from 'next/link';
 import BulkVerifyButton from './BulkVerifyButton';
+import { StatCard, Badge } from '@/components/cbaf';
+import FloatingNav from '@/components/ui/FloatingNav';
 
 export default async function AdminMerchantsPage() {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   // Fetch all merchants with their economy information
   const allMerchants = await db
@@ -43,14 +45,16 @@ export default async function AdminMerchantsPage() {
   }, {} as Record<string, EconomyGroup>);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-primary">
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <FloatingNav role={session.user.role} />
+
       {/* Header */}
-      <header className="border-b border-border-primary bg-bg-secondary/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <header className="bg-black text-white border-b border-gray-200 pt-28 pb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-heading font-bold">Merchant Verification</h1>
-              <p className="text-text-secondary mt-1">
+              <p className="text-gray-300 mt-1">
                 Manage BTCMap verification for all registered merchants
               </p>
             </div>
@@ -61,45 +65,37 @@ export default async function AdminMerchantsPage() {
 
           {/* Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-bg-primary border border-border-primary rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-text-muted text-sm">Total Merchants</p>
-                  <p className="text-2xl font-bold">{totalMerchants}</p>
-                </div>
-                <RefreshCw className="w-8 h-8 text-text-muted" />
-              </div>
-            </div>
+            <StatCard
+              title="Total Merchants"
+              value={totalMerchants.toString()}
+              icon={RefreshCw}
+              iconBgColor="bg-gray-100"
+              iconColor="text-gray-600"
+            />
 
-            <div className="bg-bg-primary border border-green-500/30 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-text-muted text-sm">Verified</p>
-                  <p className="text-2xl font-bold text-green-500">{verifiedCount}</p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-green-500" />
-              </div>
-            </div>
+            <StatCard
+              title="Verified"
+              value={verifiedCount.toString()}
+              icon={CheckCircle}
+              iconBgColor="bg-green-100"
+              iconColor="text-green-600"
+            />
 
-            <div className="bg-bg-primary border border-red-500/30 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-text-muted text-sm">Errors</p>
-                  <p className="text-2xl font-bold text-red-500">{errorCount}</p>
-                </div>
-                <XCircle className="w-8 h-8 text-red-500" />
-              </div>
-            </div>
+            <StatCard
+              title="Errors"
+              value={errorCount.toString()}
+              icon={XCircle}
+              iconBgColor="bg-red-100"
+              iconColor="text-red-600"
+            />
 
-            <div className="bg-bg-primary border border-yellow-500/30 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-text-muted text-sm">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-500">{pendingCount}</p>
-                </div>
-                <Clock className="w-8 h-8 text-yellow-500" />
-              </div>
-            </div>
+            <StatCard
+              title="Pending"
+              value={pendingCount.toString()}
+              icon={Clock}
+              iconBgColor="bg-yellow-100"
+              iconColor="text-yellow-600"
+            />
           </div>
         </div>
       </header>
@@ -116,14 +112,23 @@ export default async function AdminMerchantsPage() {
 
               return (
                 <div
-                  key={key}
-                  className="bg-bg-secondary border border-border-primary rounded-lg p-4"
+                  key={economyId}
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:border-bitcoin-300 transition-colors"
                 >
-                  <h3 className="font-heading font-bold mb-2">{economyName}</h3>
+                  <h3 className="font-heading font-bold mb-2 text-gray-900">{economyName}</h3>
                   <div className="flex items-center gap-4 text-sm mb-3">
-                    <span className="text-green-500">✓ {economyVerified}</span>
-                    <span className="text-red-500">✗ {economyErrors}</span>
-                    <span className="text-yellow-500">⏳ {economyPending}</span>
+                    <span className="text-green-600 inline-flex items-center gap-1">
+                      <Check className="w-4 h-4" />
+                      {economyVerified}
+                    </span>
+                    <span className="text-red-600 inline-flex items-center gap-1">
+                      <XCircle className="w-4 h-4" />
+                      {economyErrors}
+                    </span>
+                    <span className="text-yellow-600 inline-flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {economyPending}
+                    </span>
                   </div>
                   <BulkVerifyButton economyId={economyId} economyName={economyName} />
                 </div>
@@ -134,62 +139,58 @@ export default async function AdminMerchantsPage() {
 
         {/* All Merchants Table */}
         <section>
-          <h2 className="text-xl font-heading font-bold mb-4">All Merchants</h2>
-          <div className="bg-bg-secondary border border-border-primary rounded-lg overflow-hidden">
+          <h2 className="text-xl font-heading font-bold mb-4 text-gray-900">All Merchants</h2>
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-bg-primary border-b border-border-primary">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="text-left p-4 font-medium">Merchant</th>
-                    <th className="text-left p-4 font-medium">Economy</th>
-                    <th className="text-left p-4 font-medium">Status</th>
-                    <th className="text-left p-4 font-medium">Location</th>
-                    <th className="text-left p-4 font-medium">Registered</th>
-                    <th className="text-left p-4 font-medium">Actions</th>
+                    <th className="text-left p-4 font-medium text-gray-900">Merchant</th>
+                    <th className="text-left p-4 font-medium text-gray-900">Economy</th>
+                    <th className="text-left p-4 font-medium text-gray-900">Status</th>
+                    <th className="text-left p-4 font-medium text-gray-900">Location</th>
+                    <th className="text-left p-4 font-medium text-gray-900">Registered</th>
+                    <th className="text-left p-4 font-medium text-gray-900">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border-primary">
+                <tbody className="divide-y divide-gray-200">
                   {allMerchants.map(({ merchant, economyName }) => (
-                    <tr key={merchant.id} className="hover:bg-bg-primary/50">
+                    <tr key={merchant.id} className="hover:bg-gray-50 transition-colors">
                       <td className="p-4">
                         <div>
-                          <p className="font-medium">
+                          <p className="font-medium text-gray-900">
                             {merchant.localName || merchant.merchantName || 'Unnamed'}
                           </p>
                           {merchant.merchantName && merchant.localName && (
-                            <p className="text-xs text-text-muted">{merchant.merchantName}</p>
+                            <p className="text-xs text-gray-500">{merchant.merchantName}</p>
                           )}
                           {merchant.category && (
-                            <p className="text-xs text-text-muted">{merchant.category}</p>
+                            <p className="text-xs text-gray-500">{merchant.category}</p>
                           )}
                         </div>
                       </td>
-                      <td className="p-4 text-sm">{economyName || 'Unknown'}</td>
+                      <td className="p-4 text-sm text-gray-900">{economyName || 'Unknown'}</td>
                       <td className="p-4">
                         {merchant.btcmapVerified ? (
-                          <div className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/10 rounded-full">
-                            <CheckCircle className="w-3 h-3 text-green-500" />
-                            <span className="text-xs text-green-500">Verified</span>
-                          </div>
+                          <Badge variant="success" icon={CheckCircle}>
+                            Verified
+                          </Badge>
                         ) : merchant.verificationError ? (
-                          <div
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-red-500/10 rounded-full cursor-help"
-                            title={merchant.verificationError}
-                          >
-                            <XCircle className="w-3 h-3 text-red-500" />
-                            <span className="text-xs text-red-500">Error</span>
+                          <div title={merchant.verificationError}>
+                            <Badge variant="error" icon={XCircle}>
+                              Error
+                            </Badge>
                           </div>
                         ) : (
-                          <div className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-500/10 rounded-full">
-                            <Clock className="w-3 h-3 text-yellow-500" />
-                            <span className="text-xs text-yellow-500">Pending</span>
-                          </div>
+                          <Badge variant="warning" icon={Clock}>
+                            Pending
+                          </Badge>
                         )}
                       </td>
-                      <td className="p-4 text-sm text-text-muted">
+                      <td className="p-4 text-sm text-gray-600">
                         {merchant.address || 'No address'}
                       </td>
-                      <td className="p-4 text-sm text-text-muted">
+                      <td className="p-4 text-sm text-gray-600">
                         {new Date(merchant.registeredAt).toLocaleDateString()}
                       </td>
                       <td className="p-4">
@@ -197,7 +198,7 @@ export default async function AdminMerchantsPage() {
                           href={merchant.btcmapUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-bitcoin hover:underline flex items-center gap-1"
+                          className="text-sm text-bitcoin-600 hover:text-bitcoin-700 flex items-center gap-1 font-medium"
                         >
                           <ExternalLink className="w-3 h-3" />
                           BTCMap
@@ -212,9 +213,9 @@ export default async function AdminMerchantsPage() {
         </section>
 
         {/* Info Box */}
-        <div className="mt-8 p-6 bg-bitcoin/10 border border-bitcoin/30 rounded-xl">
-          <h3 className="font-heading font-bold mb-2">ℹ️ About Verification</h3>
-          <ul className="text-sm text-text-muted space-y-1 list-disc list-inside">
+        <div className="mt-8 p-6 bg-bitcoin-50 border-2 border-bitcoin-200 rounded-xl">
+          <h3 className="font-heading font-bold mb-2 text-gray-900">ℹ️ About Verification</h3>
+          <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
             <li>Merchants are automatically verified on registration</li>
             <li>Verified merchants have their details auto-populated from BTCMap</li>
             <li>Use bulk verification to retry failed merchants or update stale data</li>

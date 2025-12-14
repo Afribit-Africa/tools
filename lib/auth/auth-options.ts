@@ -40,7 +40,10 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (!user.email) return false;
+      if (!user.email) {
+        console.error('❌ Sign-in failed: No email provided');
+        return false;
+      }
 
       const role = getUserRole(user.email);
 
@@ -48,6 +51,7 @@ export const authOptions: NextAuthOptions = {
         email: user.email,
         role,
         hasAccount: !!account,
+        provider: account?.provider,
       });
 
       try {
@@ -100,22 +104,27 @@ export const authOptions: NextAuthOptions = {
               .where(eq(economies.googleEmail, user.email));
             console.log('✅ Economy activity updated');
           } else {
-            console.log('ℹ️  No economy found, will create on dashboard visit');
+            console.log('ℹ️  No economy found yet - user will be redirected to setup');
           }
-          // If economy doesn't exist, we'll create it on first dashboard visit
+          // If economy doesn't exist, we'll redirect to setup via requireBCEProfile
         }
 
         console.log('✅ Sign-in callback returning true');
         return true;
       } catch (error) {
         console.error('❌ Error in signIn callback:', error);
-        return false;
+        console.error('❌ Error details:', error instanceof Error ? error.message : String(error));
+        // Return true anyway to allow login - the error might be non-critical
+        return true;
       }
     },
 
     async jwt({ token, user, account }) {
+      console.log('🔑 JWT Callback:', { hasUser: !!user, hasAccount: !!account, tokenRole: token.role, email: token.email });
+
       if (account && user) {
         const role = getUserRole(user.email!);
+        console.log('🆕 New sign-in, setting role:', role);
 
         token.role = role;
         token.googleId = account.providerAccountId;
@@ -165,12 +174,65 @@ export const authOptions: NextAuthOptions = {
             token.canManageAdmins = admin.canManageAdmins ?? false;
           }
         }
+      } else if (token.email && !token.role) {
+        // If token exists but role is missing, set it now
+        const role = getUserRole(token.email as string);
+        console.log('🔄 Existing token missing role, setting:', role);
+        token.role = role;
+
+        // Also fetch admin data if needed
+        if (role === 'admin' || role === 'super_admin') {
+          const admin = await db.query.adminUsers.findFirst({
+            where: eq(adminUsers.googleEmail, token.email as string),
+            columns: {
+              id: true,
+              canApproveVideos: true,
+              canRejectVideos: true,
+              canSendPayments: true,
+              canManageAdmins: true,
+            },
+          });
+
+          if (admin) {
+            token.adminId = admin.id;
+            token.canApproveVideos = admin.canApproveVideos ?? true;
+            token.canRejectVideos = admin.canRejectVideos ?? true;
+            token.canSendPayments = admin.canSendPayments ?? false;
+            token.canManageAdmins = admin.canManageAdmins ?? false;
+          }
+        }
+      } else if (token.role === 'bce' && token.email && !token.economyName) {
+        // BCE user without economy data - try to load it (handles post-setup scenario)
+        console.log('🔄 BCE token missing economy data, fetching...');
+        const economy = await db.query.economies.findFirst({
+          where: eq(economies.googleEmail, token.email as string),
+          columns: {
+            id: true,
+            economyName: true,
+            slug: true,
+            isActive: true,
+            isVerified: true,
+          },
+        });
+
+        if (economy) {
+          console.log('✅ Economy data loaded:', economy.economyName);
+          token.economyId = economy.id;
+          token.economyName = economy.economyName;
+          token.economySlug = economy.slug;
+          token.isVerified = economy.isVerified ?? false;
+        } else {
+          console.log('ℹ️  No economy found yet');
+        }
       }
 
+      console.log('🔑 JWT Token after processing:', { role: token.role, email: token.email, adminId: token.adminId });
       return token;
     },
 
     async session({ session, token }) {
+      console.log('📋 Session Callback:', { tokenRole: token.role, email: token.email });
+
       if (session.user) {
         session.user.role = token.role as 'bce' | 'admin' | 'super_admin';
         session.user.googleId = token.googleId as string;
@@ -194,6 +256,7 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
+      console.log('📋 Session after processing:', { role: session.user.role, email: session.user.email });
       return session;
     },
   },

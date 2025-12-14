@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Calculator, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calculator } from 'lucide-react';
+import { useConfirmation } from '@/components/ui/ConfirmationModal';
+import { useNotification } from '@/components/ui/NotificationSystem';
 
 interface CalculateRankingsButtonProps {
   year: number;
@@ -17,25 +19,16 @@ export default function CalculateRankingsButton({
   isCurrentMonth,
 }: CalculateRankingsButtonProps) {
   const [isCalculating, setIsCalculating] = useState(false);
-  const [result, setResult] = useState<{
-    success: boolean;
-    message: string;
-    count?: number;
-  } | null>(null);
+  const { confirm, ConfirmationDialog } = useConfirmation();
+  const { showSuccess, showError, showInfo } = useNotification();
 
-  const handleCalculate = async () => {
-    if (
-      !confirm(
-        `Calculate rankings for ${label}?\n\nThis will:\n- Analyze all approved videos\n- Calculate metrics and rankings\n- ${
-          isCurrentMonth ? 'Save' : 'Overwrite'
-        } results in database`
-      )
-    ) {
-      return;
-    }
-
+  const performCalculation = async () => {
     setIsCalculating(true);
-    setResult(null);
+
+    showInfo(
+      'Calculating Rankings',
+      `Processing ${label}... This may take a few moments.`
+    );
 
     try {
       const response = await fetch('/api/cbaf/rankings', {
@@ -50,32 +43,48 @@ export default function CalculateRankingsButton({
         throw new Error(data.error || 'Failed to calculate rankings');
       }
 
-      setResult({
-        success: true,
-        message: data.message || 'Rankings calculated successfully',
-        count: data.rankings?.length || 0,
-      });
+      const count = data.rankings?.length || 0;
+
+      showSuccess(
+        'Rankings Calculated Successfully',
+        `Ranked ${count} ${count === 1 ? 'economy' : 'economies'} for ${label}`
+      );
 
       // Refresh the page after a delay to show updated data
       setTimeout(() => {
         window.location.reload();
       }, 2000);
     } catch (error) {
-      setResult({
-        success: false,
-        message: error instanceof Error ? error.message : 'Calculation failed',
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Calculation failed';
+
+      showError(
+        'Ranking Calculation Failed',
+        errorMessage
+      );
     } finally {
       setIsCalculating(false);
     }
   };
 
+  const handleCalculate = () => {
+    confirm({
+      title: `Calculate Rankings for ${label}?`,
+      message: `This will:\n• Analyze all approved videos\n• Calculate metrics and rankings\n• ${
+        isCurrentMonth ? 'Save' : 'Overwrite'
+      } results in database\n\nThis operation may take a few moments.`,
+      confirmText: 'Calculate Rankings',
+      type: 'warning',
+      onConfirm: performCalculation,
+    });
+  };
+
   return (
-    <div className="space-y-2">
+    <>
+      {ConfirmationDialog}
       <button
         onClick={handleCalculate}
         disabled={isCalculating}
-        className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+        className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isCalculating ? (
           <>
@@ -89,36 +98,6 @@ export default function CalculateRankingsButton({
           </>
         )}
       </button>
-
-      {result && (
-        <div
-          className={`p-3 rounded-lg border flex items-start gap-2 ${
-            result.success
-              ? 'bg-green-500/10 border-green-500/30'
-              : 'bg-red-500/10 border-red-500/30'
-          }`}
-        >
-          {result.success ? (
-            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-          )}
-          <div className="flex-1">
-            <p
-              className={`text-sm font-medium ${
-                result.success ? 'text-green-500' : 'text-red-500'
-              }`}
-            >
-              {result.message}
-            </p>
-            {result.success && result.count !== undefined && (
-              <p className="text-xs text-text-muted mt-1">
-                Ranked {result.count} {result.count === 1 ? 'economy' : 'economies'}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
