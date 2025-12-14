@@ -33,15 +33,15 @@ export default async function EconomyEditPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
+    <div className="min-h-screen bg-black pb-20">
       <FloatingNav role={session.user.role} />
 
-      <header className="bg-gradient-to-r from-bitcoin-500 to-bitcoin-600 text-white shadow-xl pt-28 pb-8">
+      <header className="bg-gradient-to-r from-bitcoin-500/20 via-black to-bitcoin-500/20 text-white border-b border-white/10 pt-28 pb-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-heading font-bold mb-2">
+          <h1 className="text-4xl font-heading font-bold mb-2 text-white">
             Edit Economy Profile
           </h1>
-          <p className="text-bitcoin-100">
+          <p className="text-gray-300">
             Update {economy.economyName}'s information and settings
           </p>
         </div>

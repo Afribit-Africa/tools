@@ -147,22 +147,22 @@ export default function SetupPage() {
   // Show loading while session is being fetched
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-gray-200 border-t-bitcoin-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="w-16 h-16 border-4 border-white/10 border-t-bitcoin-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Black Header */}
-      <header className="bg-black text-white border-b border-gray-200">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-black">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-bitcoin-500/20 via-black to-bitcoin-500/20 border-b border-white/10">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h1 className="text-3xl font-heading font-bold mb-2">
+            <h1 className="text-3xl font-heading font-bold mb-2 text-white">
               Welcome to CBAF! 👋
             </h1>
             <p className="text-gray-300">
@@ -179,15 +179,15 @@ export default function SetupPage() {
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm space-y-6">
+        <form onSubmit={handleSubmit} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-8 shadow-xl space-y-6">
           {/* Basic Info */}
           <div>
-            <h2 className="text-xl font-heading font-semibold text-gray-900 mb-4">Basic Information</h2>
+            <h2 className="text-xl font-heading font-semibold text-white mb-4">Basic Information</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="label">
-                  Economy Name <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Economy Name <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
@@ -196,12 +196,12 @@ export default function SetupPage() {
                   onChange={handleChange}
                   placeholder="Bitcoin Ekasi"
                   required
-                  className="input"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:border-bitcoin-500/50 focus:outline-none focus:ring-1 focus:ring-bitcoin-500/50"
                 />
               </div>
 
               <div>
-                <label className="label">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Slug <span className="text-gray-500 text-xs font-normal">(auto-generated)</span>
                 </label>
                 <div className="relative">
@@ -213,8 +213,8 @@ export default function SetupPage() {
                     placeholder="bitcoin-ekasi"
                     required
                     title="Lowercase letters, numbers, and hyphens only"
-                    className={`input font-mono pr-10 ${
-                      slugError ? 'border-red-500 focus:ring-red-500' : ''
+                    className={`w-full px-4 py-2.5 bg-white/5 border rounded-lg text-white placeholder:text-gray-500 font-mono pr-10 focus:outline-none focus:ring-1 ${
+                      slugError ? 'border-red-500 focus:ring-red-500' : 'border-white/10 focus:border-bitcoin-500/50 focus:ring-bitcoin-500/50'
                     }`}
                   />
                   {checkingSlug && (
@@ -223,16 +223,16 @@ export default function SetupPage() {
                     </div>
                   )}
                   {!checkingSlug && slugError && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 text-xl">✗</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-400 text-xl">✗</span>
                   )}
                   {!checkingSlug && !slugError && formData.slug.length >= 3 && (
-                    <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                    <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400" />
                   )}
                 </div>
                 {slugError ? (
-                  <p className="error-text">{slugError}</p>
+                  <p className="text-red-400 text-xs mt-1">{slugError}</p>
                 ) : (
-                  <p className="helper-text">
+                  <p className="text-gray-500 text-xs mt-1">
                     URL: tools.afribit.africa/cbaf/{formData.slug || 'your-slug'}
                   </p>
                 )}
@@ -240,8 +240,8 @@ export default function SetupPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="label">
-                    Country <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Country <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
                     <select
@@ -249,11 +249,11 @@ export default function SetupPage() {
                       value={formData.country}
                       onChange={handleChange}
                       required
-                      className="select"
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:border-bitcoin-500/50 focus:outline-none focus:ring-1 focus:ring-bitcoin-500/50 appearance-none"
                     >
-                      <option value="">Select country...</option>
+                      <option value="" className="bg-gray-900">Select country...</option>
                       {africanCountries.map((country) => (
-                        <option key={country.isoCode} value={country.name}>
+                        <option key={country.isoCode} value={country.name} className="bg-gray-900">
                           {country.flag} {country.name}
                         </option>
                       ))}
@@ -263,7 +263,7 @@ export default function SetupPage() {
                 </div>
 
                 <div>
-                  <label className="label">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     City
                   </label>
                   <div className="relative">
@@ -273,11 +273,11 @@ export default function SetupPage() {
                           name="city"
                           value={formData.city}
                           onChange={handleChange}
-                          className="select"
+                          className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:border-bitcoin-500/50 focus:outline-none focus:ring-1 focus:ring-bitcoin-500/50 appearance-none"
                         >
-                          <option value="">Select city...</option>
+                          <option value="" className="bg-gray-900">Select city...</option>
                           {availableCities.map((city) => (
-                            <option key={city.name} value={city.name}>
+                            <option key={city.name} value={city.name} className="bg-gray-900">
                               {city.name}
                             </option>
                           ))}
@@ -292,18 +292,18 @@ export default function SetupPage() {
                         onChange={handleChange}
                         placeholder={formData.country ? "Enter city name" : "Select country first"}
                         disabled={!formData.country}
-                        className="input"
+                        className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:border-bitcoin-500/50 focus:outline-none focus:ring-1 focus:ring-bitcoin-500/50 disabled:opacity-50"
                       />
                     )}
                   </div>
                   {formData.country && availableCities.length === 0 && (
-                    <p className="helper-text">Enter your city manually</p>
+                    <p className="text-gray-500 text-xs mt-1">Enter your city manually</p>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="label">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Description
                 </label>
                 <textarea
@@ -312,7 +312,7 @@ export default function SetupPage() {
                   onChange={handleChange}
                   placeholder="Tell us about your circular economy..."
                   rows={3}
-                  className="textarea"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:border-bitcoin-500/50 focus:outline-none focus:ring-1 focus:ring-bitcoin-500/50 resize-none"
                 />
               </div>
             </div>
@@ -320,11 +320,11 @@ export default function SetupPage() {
 
           {/* Contact Info */}
           <div>
-            <h2 className="text-xl font-heading font-semibold text-gray-900 mb-4">Contact & Social</h2>
+            <h2 className="text-xl font-heading font-semibold text-white mb-4">Contact & Social</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="label">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   <Globe className="w-4 h-4 inline mr-1" />
                   Website
                 </label>
@@ -334,12 +334,12 @@ export default function SetupPage() {
                   value={formData.website}
                   onChange={handleChange}
                   placeholder="https://bitcoinekasi.com"
-                  className="input"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:border-bitcoin-500/50 focus:outline-none focus:ring-1 focus:ring-bitcoin-500/50"
                 />
               </div>
 
               <div>
-                <label className="label">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   <Twitter className="w-4 h-4 inline mr-1" />
                   Twitter/X Username
                 </label>
@@ -349,12 +349,12 @@ export default function SetupPage() {
                   value={formData.twitter}
                   onChange={handleChange}
                   placeholder="@BitcoinEkasi"
-                  className="input"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:border-bitcoin-500/50 focus:outline-none focus:ring-1 focus:ring-bitcoin-500/50"
                 />
               </div>
 
               <div>
-                <label className="label">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   <Send className="w-4 h-4 inline mr-1" />
                   Telegram Username
                 </label>
@@ -364,7 +364,7 @@ export default function SetupPage() {
                   value={formData.telegram}
                   onChange={handleChange}
                   placeholder="@YourTelegram"
-                  className="input"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:border-bitcoin-500/50 focus:outline-none focus:ring-1 focus:ring-bitcoin-500/50"
                 />
               </div>
             </div>
@@ -372,13 +372,13 @@ export default function SetupPage() {
 
           {/* Payment Info */}
           <div>
-            <h2 className="text-xl font-heading font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <h2 className="text-xl font-heading font-semibold text-white mb-4 flex items-center gap-2">
               <Zap className="w-5 h-5 text-bitcoin-500" />
               Payment Information
             </h2>
 
             <div>
-              <label className="label">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Lightning Address <span className="text-gray-500 text-xs font-normal">(for receiving funding)</span>
               </label>
               <input
@@ -387,20 +387,20 @@ export default function SetupPage() {
                 value={formData.lightningAddress}
                 onChange={handleChange}
                 placeholder="name@getalby.com"
-                className="input"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:border-bitcoin-500/50 focus:outline-none focus:ring-1 focus:ring-bitcoin-500/50"
               />
-              <p className="helper-text">
+              <p className="text-gray-500 text-xs mt-1">
                 This is where you'll receive CBAF funding when available
               </p>
             </div>
           </div>
 
           {/* Submit */}
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border-white/10">
             <button
               type="submit"
               disabled={loading || !formData.economyName || !formData.country || !!slugError}
-              className="btn-primary w-full"
+              className="w-full px-6 py-3 bg-gradient-to-r from-bitcoin-500 to-bitcoin-600 text-white font-semibold rounded-lg hover:from-bitcoin-600 hover:to-bitcoin-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
