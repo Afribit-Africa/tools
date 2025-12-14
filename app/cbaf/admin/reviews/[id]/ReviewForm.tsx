@@ -78,25 +78,25 @@ export default function ReviewForm({ videoId, currentStatus, currentComment, can
         variant={pendingAction === 'approve' ? 'success' : 'danger'}
         icon={
           pendingAction === 'approve' ? (
-            <CheckCircle className="w-6 h-6 text-green-600" />
+            <CheckCircle className="w-6 h-6 text-green-400" />
           ) : (
-            <XCircle className="w-6 h-6 text-red-600" />
+            <XCircle className="w-6 h-6 text-red-400" />
           )
         }
       />
 
-      <div className="card">
-      <h2 className="text-lg font-heading font-bold mb-4 text-gray-900">Review Actions</h2>
+      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+      <h2 className="text-lg font-heading font-bold mb-4 text-white">Review Actions</h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded text-sm text-red-400">
           {error}
         </div>
       )}
 
       {/* Comment */}
       <div className="mb-4">
-        <label className="label flex items-center gap-2">
+        <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
           <MessageSquare className="w-4 h-4" />
           Review Comment (Optional)
         </label>
@@ -106,9 +106,9 @@ export default function ReviewForm({ videoId, currentStatus, currentComment, can
           placeholder="Add feedback or reasoning for your decision..."
           rows={4}
           disabled={loading}
-          className="textarea"
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-bitcoin/50 focus:ring-1 focus:ring-bitcoin/30 transition-colors disabled:opacity-50"
         />
-        <p className="helper-text">
+        <p className="text-xs text-gray-500 mt-1">
           This comment will be visible to the BCE user
         </p>
       </div>
@@ -121,7 +121,7 @@ export default function ReviewForm({ videoId, currentStatus, currentComment, can
               <button
                 onClick={() => handleAction('approve')}
                 disabled={loading}
-                className="btn-primary w-full bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
+                className="w-full px-6 py-3 bg-green-500/80 hover:bg-green-500 text-white font-semibold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -141,7 +141,7 @@ export default function ReviewForm({ videoId, currentStatus, currentComment, can
               <button
                 onClick={() => handleAction('reject')}
                 disabled={loading}
-                className="btn-danger w-full flex items-center justify-center gap-2"
+                className="w-full px-6 py-3 bg-red-500/80 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -165,13 +165,13 @@ export default function ReviewForm({ videoId, currentStatus, currentComment, can
           </>
         ) : (
           <div className="text-center py-4">
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-sm text-gray-400 mb-2">
               This video has already been {currentStatus}
             </p>
             {currentComment && (
-              <div className="mt-3 p-3 bg-gray-50 rounded border border-gray-200 text-sm text-left">
-                <p className="text-gray-600 font-medium mb-1">Previous Comment:</p>
-                <p className="text-gray-900">{currentComment}</p>
+              <div className="mt-3 p-3 bg-white/5 rounded border border-white/10 text-sm text-left">
+                <p className="text-gray-400 font-medium mb-1">Previous Comment:</p>
+                <p className="text-white">{currentComment}</p>
               </div>
             )}
           </div>
@@ -180,9 +180,9 @@ export default function ReviewForm({ videoId, currentStatus, currentComment, can
 
       {/* Review Guidelines */}
       {currentStatus === 'pending' && (
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-xs font-medium mb-2 text-gray-900">Review Criteria:</p>
-          <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
+        <div className="mt-6 pt-6 border-t border-white/10">
+          <p className="text-xs font-medium mb-2 text-white">Review Criteria:</p>
+          <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside">
             <li>Video clearly shows merchants accepting Bitcoin</li>
             <li>Content is original (not a duplicate)</li>
             <li>All tagged merchants are visible in the video</li>

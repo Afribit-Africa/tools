@@ -23,21 +23,21 @@ export default async function EconomiesPage() {
   const verifiedCount = allEconomies.filter(e => e.isVerified).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
+    <div className="min-h-screen bg-black pb-20">
       <FloatingNav role={session.user.role} />
 
       {/* Hero Header */}
-      <header className="bg-gradient-to-r from-bitcoin-500 to-bitcoin-600 text-white shadow-xl pt-28 pb-8">
+      <header className="bg-gradient-to-r from-bitcoin/80 to-orange-600/80 backdrop-blur-xl border-b border-white/10 pt-28 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-heading font-bold flex items-center gap-3 mb-2">
+              <h1 className="text-4xl font-heading font-bold flex items-center gap-3 mb-2 text-white">
                 <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
                   <Globe className="w-8 h-8" />
                 </div>
                 Bitcoin Circular Economies
               </h1>
-              <p className="text-bitcoin-50 text-lg">
+              <p className="text-white/80 text-lg">
                 {allEconomies.length} {allEconomies.length === 1 ? 'economy' : 'economies'} across {uniqueCountries} {uniqueCountries === 1 ? 'country' : 'countries'}
               </p>
             </div>
@@ -47,7 +47,7 @@ export default async function EconomiesPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-4">
         {allEconomies.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-100 p-12">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-12">
             <EmptyState
               icon={Users}
               title="No economies registered"
@@ -59,65 +59,65 @@ export default async function EconomiesPage() {
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {/* Total Economies */}
-              <div className="bg-white rounded-xl p-6 border-2 border-gray-100 shadow-lg">
+              <div className="bg-blue-500/10 backdrop-blur-sm border border-blue-500/30 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 bg-blue-50 rounded-xl border-2 border-blue-100">
-                    <Users className="w-6 h-6 text-blue-600" />
+                  <div className="p-3 bg-blue-500/20 rounded-xl">
+                    <Users className="w-6 h-6 text-blue-400" />
                   </div>
-                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                  <span className="text-xs font-bold text-blue-400 bg-blue-500/20 px-2 py-1 rounded-full">
                     TOTAL
                   </span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900 mb-1">{allEconomies.length}</div>
-                <div className="text-sm text-gray-500 font-medium">
+                <div className="text-3xl font-bold text-white mb-1">{allEconomies.length}</div>
+                <div className="text-sm text-gray-400 font-medium">
                   {allEconomies.length === 1 ? 'Economy' : 'Economies'}
                 </div>
               </div>
 
               {/* Countries */}
-              <div className="bg-white rounded-xl p-6 border-2 border-gray-100 shadow-lg">
+              <div className="bg-green-500/10 backdrop-blur-sm border border-green-500/30 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 bg-green-50 rounded-xl border-2 border-green-100">
-                    <MapPin className="w-6 h-6 text-green-600" />
+                  <div className="p-3 bg-green-500/20 rounded-xl">
+                    <MapPin className="w-6 h-6 text-green-400" />
                   </div>
-                  <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                  <span className="text-xs font-bold text-green-400 bg-green-500/20 px-2 py-1 rounded-full">
                     REGIONS
                   </span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900 mb-1">{uniqueCountries}</div>
-                <div className="text-sm text-gray-500 font-medium">
+                <div className="text-3xl font-bold text-white mb-1">{uniqueCountries}</div>
+                <div className="text-sm text-gray-400 font-medium">
                   {uniqueCountries === 1 ? 'Country' : 'Countries'}
                 </div>
               </div>
 
               {/* Total Videos */}
-              <div className="bg-white rounded-xl p-6 border-2 border-gray-100 shadow-lg">
+              <div className="bg-purple-500/10 backdrop-blur-sm border border-purple-500/30 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 bg-purple-50 rounded-xl border-2 border-purple-100">
-                    <Video className="w-6 h-6 text-purple-600" />
+                  <div className="p-3 bg-purple-500/20 rounded-xl">
+                    <Video className="w-6 h-6 text-purple-400" />
                   </div>
-                  <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
+                  <span className="text-xs font-bold text-purple-400 bg-purple-500/20 px-2 py-1 rounded-full">
                     APPROVED
                   </span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900 mb-1">{totalVideos}</div>
-                <div className="text-sm text-gray-500 font-medium">
+                <div className="text-3xl font-bold text-white mb-1">{totalVideos}</div>
+                <div className="text-sm text-gray-400 font-medium">
                   {totalVideos === 1 ? 'Video' : 'Videos'}
                 </div>
               </div>
 
               {/* Total Merchants */}
-              <div className="bg-white rounded-xl p-6 border-2 border-gray-100 shadow-lg">
+              <div className="bg-bitcoin/10 backdrop-blur-sm border border-bitcoin/30 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 bg-bitcoin-50 rounded-xl border-2 border-bitcoin-200">
-                    <TrendingUp className="w-6 h-6 text-bitcoin-600" />
+                  <div className="p-3 bg-bitcoin/20 rounded-xl">
+                    <TrendingUp className="w-6 h-6 text-bitcoin" />
                   </div>
-                  <span className="text-xs font-bold text-bitcoin-600 bg-bitcoin-50 px-2 py-1 rounded-full">
+                  <span className="text-xs font-bold text-bitcoin bg-bitcoin/20 px-2 py-1 rounded-full">
                     MERCHANTS
                   </span>
                 </div>
-                <div className="text-3xl font-bold text-gray-900 mb-1">{totalMerchants}</div>
-                <div className="text-sm text-gray-500 font-medium">
+                <div className="text-3xl font-bold text-white mb-1">{totalMerchants}</div>
+                <div className="text-sm text-gray-400 font-medium">
                   Registered
                 </div>
               </div>

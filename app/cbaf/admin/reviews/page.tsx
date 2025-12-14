@@ -72,21 +72,21 @@ export default async function ReviewsPage({ searchParams }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-black pb-20">
       <FloatingNav role={session.user.role} />
 
       {/* Header */}
-      <header className="bg-black text-white border-b border-gray-200 pt-28 pb-6">
+      <header className="bg-black/80 backdrop-blur-xl border-b border-white/10 pt-28 pb-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-heading font-bold">Video Reviews</h1>
-              <p className="text-gray-300 mt-1">
+              <h1 className="text-3xl font-heading font-bold text-white">Video Reviews</h1>
+              <p className="text-gray-400 mt-1">
                 {statusFilter ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} submissions` : 'All submissions'}
               </p>
             </div>
-            <Link href="/cbaf/admin" className="btn-secondary">
-              ← Back to Dashboard
+            <Link href="/cbaf/dashboard" className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg transition-colors">
+              ← Dashboard
             </Link>
           </div>
         </div>
@@ -94,13 +94,13 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2 mb-8 overflow-x-auto">
+        <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
           <Link
             href="/cbaf/admin/reviews"
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               !statusFilter
-                ? 'bg-bitcoin-500 text-white'
-                : 'bg-white border border-gray-300 hover:border-bitcoin-400 text-gray-900'
+                ? 'bg-bitcoin text-white'
+                : 'bg-white/5 border border-white/10 hover:border-bitcoin/50 text-white'
             }`}
           >
             All ({counts.all})
@@ -109,8 +109,8 @@ export default async function ReviewsPage({ searchParams }: Props) {
             href="/cbaf/admin/reviews?status=pending"
             className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
               statusFilter === 'pending'
-                ? 'bg-yellow-500 text-white'
-                : 'bg-white border border-gray-300 hover:border-yellow-400 text-gray-900'
+                ? 'bg-yellow-500/80 text-white'
+                : 'bg-white/5 border border-white/10 hover:border-yellow-500/50 text-white'
             }`}
           >
             <Clock className="w-4 h-4" />
@@ -120,8 +120,8 @@ export default async function ReviewsPage({ searchParams }: Props) {
             href="/cbaf/admin/reviews?status=approved"
             className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
               statusFilter === 'approved'
-                ? 'bg-green-500 text-white'
-                : 'bg-white border border-gray-300 hover:border-green-400 text-gray-900'
+                ? 'bg-green-500/80 text-white'
+                : 'bg-white/5 border border-white/10 hover:border-green-500/50 text-white'
             }`}
           >
             <CheckCircle className="w-4 h-4" />
@@ -131,8 +131,8 @@ export default async function ReviewsPage({ searchParams }: Props) {
             href="/cbaf/admin/reviews?status=rejected"
             className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
               statusFilter === 'rejected'
-                ? 'bg-red-500 text-white'
-                : 'bg-white border border-gray-300 hover:border-red-400 text-gray-900'
+                ? 'bg-red-500/80 text-white'
+                : 'bg-white/5 border border-white/10 hover:border-red-500/50 text-white'
             }`}
           >
             <XCircle className="w-4 h-4" />
@@ -157,7 +157,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
               <Link
                 key={video.id}
                 href={`/cbaf/admin/reviews/${video.id}`}
-                className="block bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:border-bitcoin-300 hover:shadow-md transition-all"
+                className="block bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-bitcoin/30 hover:bg-white/10 transition-all"
               >
                 <div className="flex items-start gap-6">
                   {/* Video Thumbnail */}
@@ -166,11 +166,11 @@ export default async function ReviewsPage({ searchParams }: Props) {
                       <img
                         src={video.videoThumbnail}
                         alt={video.videoTitle || 'Video thumbnail'}
-                        className="w-40 h-24 object-cover rounded-lg border border-gray-300"
+                        className="w-40 h-24 object-cover rounded-lg border border-white/10"
                       />
                     ) : (
-                      <div className="w-40 h-24 bg-gray-100 rounded-lg border border-gray-300 flex items-center justify-center">
-                        <Video className="w-8 h-8 text-gray-400" />
+                      <div className="w-40 h-24 bg-white/5 rounded-lg border border-white/10 flex items-center justify-center">
+                        <Video className="w-8 h-8 text-gray-500" />
                       </div>
                     )}
                   </div>
@@ -179,11 +179,11 @@ export default async function ReviewsPage({ searchParams }: Props) {
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <h3 className="font-heading font-bold text-lg text-gray-900">
+                        <h3 className="font-heading font-bold text-lg text-white">
                           {video.videoTitle || 'Untitled Video'}
                         </h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          by <span className="font-medium">{economy?.economyName || 'Unknown'}</span>
+                        <p className="text-sm text-gray-400 mt-1">
+                          by <span className="font-medium text-gray-300">{economy?.economyName || 'Unknown'}</span>
                           {economy?.country && ` • ${economy.country}`}
                         </p>
                       </div>
@@ -208,7 +208,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
                     </div>
 
                     {video.videoDescription && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      <p className="text-sm text-gray-400 mb-3 line-clamp-2">
                         {video.videoDescription}
                       </p>
                     )}
@@ -232,7 +232,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
                     {/* Duplicate Warning */}
                     {video.isDuplicate && (
-                      <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700 flex items-center gap-2">
+                      <div className="mb-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-400 flex items-center gap-2">
                         <AlertTriangle className="w-3 h-3 flex-shrink-0" />
                         <span>Flagged as duplicate video</span>
                       </div>
@@ -248,7 +248,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
                   {/* Action Indicator */}
                   <div className="flex-shrink-0 flex items-center gap-2">
-                    <span className="text-bitcoin-600 text-sm font-medium">
+                    <span className="text-bitcoin text-sm font-medium">
                       {video.status === 'pending' ? 'Review →' : 'View Details →'}
                     </span>
                   </div>
@@ -265,12 +265,12 @@ export default async function ReviewsPage({ searchParams }: Props) {
             {currentPage > 1 ? (
               <Link
                 href={buildPageUrl(currentPage - 1)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
               >
                 ← Previous
               </Link>
             ) : (
-              <span className="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed">
+              <span className="px-4 py-2 text-sm font-medium text-gray-500 bg-white/5 border border-white/5 rounded-lg cursor-not-allowed">
                 ← Previous
               </span>
             )}
@@ -290,7 +290,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
                 if (showEllipsis) {
                   return (
-                    <span key={page} className="px-2 text-gray-400">
+                    <span key={page} className="px-2 text-gray-500">
                       ...
                     </span>
                   );
@@ -304,8 +304,8 @@ export default async function ReviewsPage({ searchParams }: Props) {
                     href={buildPageUrl(page)}
                     className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       page === currentPage
-                        ? 'bg-bitcoin-500 text-white'
-                        : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                        ? 'bg-bitcoin text-white'
+                        : 'text-white bg-white/5 border border-white/10 hover:bg-white/10'
                     }`}
                   >
                     {page}
@@ -318,12 +318,12 @@ export default async function ReviewsPage({ searchParams }: Props) {
             {currentPage < totalPages ? (
               <Link
                 href={buildPageUrl(currentPage + 1)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
               >
                 Next →
               </Link>
             ) : (
-              <span className="px-4 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed">
+              <span className="px-4 py-2 text-sm font-medium text-gray-500 bg-white/5 border border-white/5 rounded-lg cursor-not-allowed">
                 Next →
               </span>
             )}
@@ -332,7 +332,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
         {/* Pagination Info */}
         {totalCount > 0 && (
-          <div className="mt-4 text-center text-sm text-gray-600">
+          <div className="mt-4 text-center text-sm text-gray-400">
             Showing {offset + 1} to {Math.min(offset + ITEMS_PER_PAGE, totalCount)} of {totalCount} videos
           </div>
         )}

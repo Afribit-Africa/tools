@@ -141,8 +141,8 @@ export default function AddressVerificationPanel({
     return (
       <>
         {ConfirmationDialog}
-        <div className="card">
-          <h2 className="text-lg font-heading font-bold mb-4 text-gray-900">Payment Address Verification</h2>
+        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <h2 className="text-lg font-heading font-bold mb-4 text-white">Payment Address Verification</h2>
           <p className="text-sm text-gray-500">No payment addresses submitted for this video.</p>
         </div>
       </>
@@ -152,14 +152,14 @@ export default function AddressVerificationPanel({
   return (
     <>
       {ConfirmationDialog}
-      <div className="card">
+      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-heading font-bold text-gray-900">Payment Address Verification</h2>
+        <h2 className="text-lg font-heading font-bold text-white">Payment Address Verification</h2>
         {unverifiedCount > 0 && (
           <button
             onClick={handleVerifyAll}
             disabled={Object.keys(validating).length > 0}
-            className="btn-secondary text-sm"
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
           >
             <CheckCircle className="w-4 h-4" />
             Verify All
@@ -169,30 +169,30 @@ export default function AddressVerificationPanel({
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="text-center p-3 bg-green-50 border border-green-200 rounded-lg">
-          <div className="text-2xl font-bold text-green-700">{verifiedCount}</div>
-          <div className="text-xs text-green-600">Verified</div>
+        <div className="text-center p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+          <div className="text-2xl font-bold text-green-400">{verifiedCount}</div>
+          <div className="text-xs text-green-400/80">Verified</div>
         </div>
-        <div className="text-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="text-2xl font-bold text-yellow-700">{unverifiedCount}</div>
-          <div className="text-xs text-yellow-600">Pending</div>
+        <div className="text-center p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+          <div className="text-2xl font-bold text-yellow-400">{unverifiedCount}</div>
+          <div className="text-xs text-yellow-400/80">Pending</div>
         </div>
-        <div className="text-center p-3 bg-red-50 border border-red-200 rounded-lg">
-          <div className="text-2xl font-bold text-red-700">{invalidCount}</div>
-          <div className="text-xs text-red-600">Invalid</div>
+        <div className="text-center p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <div className="text-2xl font-bold text-red-400">{invalidCount}</div>
+          <div className="text-xs text-red-400/80">Invalid</div>
         </div>
       </div>
 
       {/* Merchant List */}
       <div className="space-y-3 mb-4">
         {merchantsWithAddresses.map((merchant) => (
-          <div key={merchant.id} className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <div key={merchant.id} className="p-3 bg-white/5 border border-white/10 rounded-lg">
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1">
-                <p className="font-medium text-sm text-gray-900">
+                <p className="font-medium text-sm text-white">
                   {merchant.localName || merchant.merchantName || 'Unnamed Merchant'}
                 </p>
-                <p className="text-xs text-gray-600 font-mono break-all mt-1">
+                <p className="text-xs text-gray-400 font-mono break-all mt-1">
                   {merchant.lightningAddress}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
@@ -201,14 +201,14 @@ export default function AddressVerificationPanel({
               </div>
 
               {merchant.addressVerified ? (
-                <div className="flex items-center gap-1 text-green-600 text-sm">
+                <div className="flex items-center gap-1 text-green-400 text-sm">
                   <CheckCircle className="w-4 h-4" />
                   <span className="text-xs">Verified</span>
                 </div>
               ) : validating[merchant.id] ? (
-                <Loader2 className="w-5 h-5 animate-spin text-bitcoin-500" />
+                <Loader2 className="w-5 h-5 animate-spin text-bitcoin" />
               ) : merchant.addressVerificationError ? (
-                <div className="flex items-center gap-1 text-red-600 text-sm">
+                <div className="flex items-center gap-1 text-red-400 text-sm">
                   <XCircle className="w-4 h-4" />
                   <span className="text-xs">Invalid</span>
                 </div>
@@ -219,7 +219,7 @@ export default function AddressVerificationPanel({
                     merchant.lightningAddress!,
                     merchant.paymentProvider || 'other'
                   )}
-                  className="text-xs px-3 py-1.5 bg-bitcoin-600 text-white rounded-lg hover:bg-bitcoin-700 transition-colors font-medium"
+                  className="text-xs px-3 py-1.5 bg-bitcoin hover:bg-bitcoin/80 text-white rounded-lg transition-colors font-medium"
                 >
                   Verify
                 </button>
@@ -227,7 +227,7 @@ export default function AddressVerificationPanel({
             </div>
 
             {merchant.addressVerificationError && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 flex items-start gap-1">
+              <div className="mt-2 p-2 bg-red-500/10 border border-red-500/30 rounded text-xs text-red-400 flex items-start gap-1">
                 <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
                 {merchant.addressVerificationError}
               </div>
@@ -238,11 +238,11 @@ export default function AddressVerificationPanel({
 
       {/* Email Action */}
       {invalidCount > 0 && economyEmail && (
-        <div className="border-t border-gray-200 pt-4">
+        <div className="border-t border-white/10 pt-4">
           <button
             onClick={handleSendCorrectionEmail}
             disabled={sendingEmail}
-            className="w-full btn-secondary flex items-center justify-center gap-2"
+            className="w-full px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
           >
             {sendingEmail ? (
               <>
@@ -263,8 +263,8 @@ export default function AddressVerificationPanel({
           {result && (
             <div className={`mt-3 p-3 rounded-lg text-sm ${
               result.success
-                ? 'bg-green-50 text-green-700 border border-green-200'
-                : 'bg-red-50 text-red-700 border border-red-200'
+                ? 'bg-green-500/10 text-green-400 border border-green-500/30'
+                : 'bg-red-500/10 text-red-400 border border-red-500/30'
             }`}>
               {result.message}
             </div>

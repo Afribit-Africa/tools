@@ -5,7 +5,7 @@ import { eq, isNull, or, desc, and } from 'drizzle-orm';
 import { CheckCircle, XCircle, Clock, RefreshCw, ExternalLink, Check } from 'lucide-react';
 import Link from 'next/link';
 import BulkVerifyButton from './BulkVerifyButton';
-import { StatCard, Badge } from '@/components/cbaf';
+import { Badge } from '@/components/cbaf';
 import FloatingNav from '@/components/ui/FloatingNav';
 
 export default async function AdminMerchantsPage() {
@@ -45,57 +45,73 @@ export default async function AdminMerchantsPage() {
   }, {} as Record<string, EconomyGroup>);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-black pb-20">
       <FloatingNav role={session.user.role} />
 
       {/* Header */}
-      <header className="bg-black text-white border-b border-gray-200 pt-28 pb-6">
+      <header className="bg-black/80 backdrop-blur-xl border-b border-white/10 pt-28 pb-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-heading font-bold">Merchant Verification</h1>
-              <p className="text-gray-300 mt-1">
+              <h1 className="text-3xl font-heading font-bold text-white">Merchant Verification</h1>
+              <p className="text-gray-400 mt-1">
                 Manage BTCMap verification for all registered merchants
               </p>
             </div>
-            <Link href="/cbaf/admin" className="btn-secondary">
-              ← Back to Admin
+            <Link href="/cbaf/dashboard" className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg transition-colors">
+              ← Dashboard
             </Link>
           </div>
 
           {/* Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-            <StatCard
-              title="Total Merchants"
-              value={totalMerchants.toString()}
-              icon={RefreshCw}
-              iconBgColor="bg-gray-100"
-              iconColor="text-gray-600"
-            />
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <RefreshCw className="w-5 h-5 text-gray-400" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white">{totalMerchants}</p>
+                  <p className="text-sm text-gray-500">Total Merchants</p>
+                </div>
+              </div>
+            </div>
 
-            <StatCard
-              title="Verified"
-              value={verifiedCount.toString()}
-              icon={CheckCircle}
-              iconBgColor="bg-green-100"
-              iconColor="text-green-600"
-            />
+            <div className="bg-green-500/10 backdrop-blur-sm border border-green-500/30 rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-500/20 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-green-400">{verifiedCount}</p>
+                  <p className="text-sm text-green-400/70">Verified</p>
+                </div>
+              </div>
+            </div>
 
-            <StatCard
-              title="Errors"
-              value={errorCount.toString()}
-              icon={XCircle}
-              iconBgColor="bg-red-100"
-              iconColor="text-red-600"
-            />
+            <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/30 rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-500/20 rounded-lg">
+                  <XCircle className="w-5 h-5 text-red-400" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-red-400">{errorCount}</p>
+                  <p className="text-sm text-red-400/70">Errors</p>
+                </div>
+              </div>
+            </div>
 
-            <StatCard
-              title="Pending"
-              value={pendingCount.toString()}
-              icon={Clock}
-              iconBgColor="bg-yellow-100"
-              iconColor="text-yellow-600"
-            />
+            <div className="bg-yellow-500/10 backdrop-blur-sm border border-yellow-500/30 rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-500/20 rounded-lg">
+                  <Clock className="w-5 h-5 text-yellow-400" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-yellow-400">{pendingCount}</p>
+                  <p className="text-sm text-yellow-400/70">Pending</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -103,7 +119,7 @@ export default async function AdminMerchantsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Bulk Verification by Economy */}
         <section className="mb-8">
-          <h2 className="text-xl font-heading font-bold mb-4">Bulk Verification by Economy</h2>
+          <h2 className="text-xl font-heading font-bold mb-4 text-white">Bulk Verification by Economy</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(economyGroups).map(([key, { economyId, economyName, merchants }]) => {
               const economyVerified = merchants.filter((m) => m.btcmapVerified).length;
@@ -113,19 +129,19 @@ export default async function AdminMerchantsPage() {
               return (
                 <div
                   key={economyId}
-                  className="bg-white border border-gray-200 rounded-lg p-4 hover:border-bitcoin-300 transition-colors"
+                  className="bg-white/5 border border-white/10 rounded-lg p-4 hover:border-bitcoin/30 transition-colors"
                 >
-                  <h3 className="font-heading font-bold mb-2 text-gray-900">{economyName}</h3>
+                  <h3 className="font-heading font-bold mb-2 text-white">{economyName}</h3>
                   <div className="flex items-center gap-4 text-sm mb-3">
-                    <span className="text-green-600 inline-flex items-center gap-1">
+                    <span className="text-green-400 inline-flex items-center gap-1">
                       <Check className="w-4 h-4" />
                       {economyVerified}
                     </span>
-                    <span className="text-red-600 inline-flex items-center gap-1">
+                    <span className="text-red-400 inline-flex items-center gap-1">
                       <XCircle className="w-4 h-4" />
                       {economyErrors}
                     </span>
-                    <span className="text-yellow-600 inline-flex items-center gap-1">
+                    <span className="text-yellow-400 inline-flex items-center gap-1">
                       <Clock className="w-4 h-4" />
                       {economyPending}
                     </span>
@@ -139,26 +155,26 @@ export default async function AdminMerchantsPage() {
 
         {/* All Merchants Table */}
         <section>
-          <h2 className="text-xl font-heading font-bold mb-4 text-gray-900">All Merchants</h2>
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+          <h2 className="text-xl font-heading font-bold mb-4 text-white">All Merchants</h2>
+          <div className="bg-white/5 border border-white/10 rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-white/5 border-b border-white/10">
                   <tr>
-                    <th className="text-left p-4 font-medium text-gray-900">Merchant</th>
-                    <th className="text-left p-4 font-medium text-gray-900">Economy</th>
-                    <th className="text-left p-4 font-medium text-gray-900">Status</th>
-                    <th className="text-left p-4 font-medium text-gray-900">Location</th>
-                    <th className="text-left p-4 font-medium text-gray-900">Registered</th>
-                    <th className="text-left p-4 font-medium text-gray-900">Actions</th>
+                    <th className="text-left p-4 font-medium text-gray-300">Merchant</th>
+                    <th className="text-left p-4 font-medium text-gray-300">Economy</th>
+                    <th className="text-left p-4 font-medium text-gray-300">Status</th>
+                    <th className="text-left p-4 font-medium text-gray-300">Location</th>
+                    <th className="text-left p-4 font-medium text-gray-300">Registered</th>
+                    <th className="text-left p-4 font-medium text-gray-300">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-white/5">
                   {allMerchants.map(({ merchant, economyName }) => (
-                    <tr key={merchant.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={merchant.id} className="hover:bg-white/5 transition-colors">
                       <td className="p-4">
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-white">
                             {merchant.localName || merchant.merchantName || 'Unnamed'}
                           </p>
                           {merchant.merchantName && merchant.localName && (
@@ -169,7 +185,7 @@ export default async function AdminMerchantsPage() {
                           )}
                         </div>
                       </td>
-                      <td className="p-4 text-sm text-gray-900">{economyName || 'Unknown'}</td>
+                      <td className="p-4 text-sm text-gray-300">{economyName || 'Unknown'}</td>
                       <td className="p-4">
                         {merchant.btcmapVerified ? (
                           <Badge variant="success" icon={CheckCircle}>
@@ -187,10 +203,10 @@ export default async function AdminMerchantsPage() {
                           </Badge>
                         )}
                       </td>
-                      <td className="p-4 text-sm text-gray-600">
+                      <td className="p-4 text-sm text-gray-400">
                         {merchant.address || 'No address'}
                       </td>
-                      <td className="p-4 text-sm text-gray-600">
+                      <td className="p-4 text-sm text-gray-400">
                         {new Date(merchant.registeredAt).toLocaleDateString()}
                       </td>
                       <td className="p-4">
@@ -198,7 +214,7 @@ export default async function AdminMerchantsPage() {
                           href={merchant.btcmapUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-bitcoin-600 hover:text-bitcoin-700 flex items-center gap-1 font-medium"
+                          className="text-sm text-bitcoin hover:text-bitcoin/80 flex items-center gap-1 font-medium"
                         >
                           <ExternalLink className="w-3 h-3" />
                           BTCMap
@@ -213,9 +229,9 @@ export default async function AdminMerchantsPage() {
         </section>
 
         {/* Info Box */}
-        <div className="mt-8 p-6 bg-bitcoin-50 border-2 border-bitcoin-200 rounded-xl">
-          <h3 className="font-heading font-bold mb-2 text-gray-900">ℹ️ About Verification</h3>
-          <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+        <div className="mt-8 p-6 bg-bitcoin/10 border border-bitcoin/30 rounded-xl">
+          <h3 className="font-heading font-bold mb-2 text-white">ℹ️ About Verification</h3>
+          <ul className="text-sm text-gray-300 space-y-1 list-disc list-inside">
             <li>Merchants are automatically verified on registration</li>
             <li>Verified merchants have their details auto-populated from BTCMap</li>
             <li>Use bulk verification to retry failed merchants or update stale data</li>
