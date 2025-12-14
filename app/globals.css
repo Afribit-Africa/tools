@@ -8,38 +8,225 @@
     --font-space-grotesk: 'Space Grotesk', system-ui, sans-serif;
     --font-jetbrains-mono: 'JetBrains Mono', 'Consolas', monospace;
     --font-audiowide: 'Audiowide', system-ui, sans-serif;
+    
+    /* Dark Theme Variables */
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --bg-tertiary: #111111;
+    --bg-card: #0d0d0d;
+    --bg-elevated: #141414;
+    --border-subtle: rgba(255, 255, 255, 0.05);
+    --border-default: rgba(255, 255, 255, 0.1);
+    --border-hover: rgba(255, 255, 255, 0.2);
+    --border-accent: rgba(247, 147, 26, 0.3);
   }
 
   * {
-    @apply border-gray-200;
+    @apply border-white/10;
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 font-sans antialiased;
+    @apply bg-black text-white font-sans antialiased;
   }
 
-  /* Custom scrollbar */
+  /* Dark scrollbar */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-gray-100;
+    @apply bg-black;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-lg;
+    @apply bg-white/20 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-bitcoin-600;
+    @apply bg-bitcoin-500;
   }
 }
 
 @layer components {
   /* ============================================
-     BUTTON COMPONENTS - Light Theme
+     DARK THEME COMPONENTS
+     ============================================ */
+  
+  /* Glass Card - Aceternity Style */
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl;
+  }
+  
+  .glass-card-hover {
+    @apply glass-card hover:bg-white/10 hover:border-white/20 transition-all duration-300;
+  }
+  
+  /* Gradient Card - PrismUI Style */
+  .gradient-card {
+    @apply relative overflow-hidden bg-black rounded-2xl border border-white/10;
+  }
+  
+  .gradient-card-glow {
+    @apply absolute inset-0 bg-gradient-to-br from-bitcoin-500/10 via-transparent to-orange-500/5 pointer-events-none;
+  }
+  
+  /* Dark Page Wrapper */
+  .dark-page {
+    @apply min-h-screen bg-black text-white;
+  }
+  
+  /* Dark Header */
+  .dark-header {
+    @apply bg-black/80 backdrop-blur-xl border-b border-white/10;
+  }
+
+  /* ============================================
+     DARK THEME BUTTONS
+     ============================================ */
+
+  /* Primary Button - Dark Theme */
+  .btn-primary-dark {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-bitcoin-500 to-orange-500 hover:from-bitcoin-400 hover:to-orange-400 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+  }
+
+  /* Secondary Button - Dark Theme */
+  .btn-secondary-dark {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-medium rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Ghost Button - Dark Theme */
+  .btn-ghost-dark {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Danger Button - Dark Theme */
+  .btn-danger-dark {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-400 font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* ============================================
+     DARK THEME FORM INPUTS
+     ============================================ */
+
+  .input-dark {
+    @apply w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-bitcoin-500/50 focus:border-bitcoin-500/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input-dark-error {
+    @apply input-dark border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50;
+  }
+
+  .select-dark {
+    @apply w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-bitcoin-500/50 focus:border-bitcoin-500/50 appearance-none cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .label-dark {
+    @apply block text-sm font-semibold text-white/80 mb-2;
+  }
+
+  /* ============================================
+     DARK THEME BADGES
+     ============================================ */
+
+  .badge-success-dark {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-semibold rounded-full;
+  }
+
+  .badge-warning-dark {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-semibold rounded-full;
+  }
+
+  .badge-error-dark {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-semibold rounded-full;
+  }
+
+  .badge-info-dark {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full;
+  }
+
+  .badge-bitcoin-dark {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-bitcoin-500/20 border border-bitcoin-500/30 text-bitcoin-400 text-xs font-semibold rounded-full;
+  }
+
+  /* ============================================
+     DARK THEME ALERTS
+     ============================================ */
+
+  .alert-success-dark {
+    @apply flex items-start gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-xl;
+  }
+
+  .alert-error-dark {
+    @apply flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl;
+  }
+
+  .alert-warning-dark {
+    @apply flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl;
+  }
+
+  .alert-info-dark {
+    @apply flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl;
+  }
+
+  /* ============================================
+     DARK THEME TABLE
+     ============================================ */
+
+  .table-dark-container {
+    @apply bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-sm;
+  }
+
+  .table-dark {
+    @apply w-full text-left;
+  }
+
+  .table-dark thead {
+    @apply bg-white/5 border-b border-white/10;
+  }
+
+  .table-dark th {
+    @apply px-6 py-4 text-white/60 font-semibold text-xs uppercase tracking-wider;
+  }
+
+  .table-dark td {
+    @apply px-6 py-4 border-b border-white/5 text-white text-sm;
+  }
+
+  .table-dark tbody tr:hover {
+    @apply bg-white/5;
+  }
+
+  .table-dark tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  /* ============================================
+     DARK THEME STAT CARDS
+     ============================================ */
+
+  .stat-card-dark {
+    @apply glass-card;
+  }
+
+  .stat-card-dark-success {
+    @apply bg-green-500/10 border border-green-500/30 rounded-2xl p-6;
+  }
+
+  .stat-card-dark-warning {
+    @apply bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6;
+  }
+
+  .stat-card-dark-error {
+    @apply bg-red-500/10 border border-red-500/30 rounded-2xl p-6;
+  }
+
+  .stat-card-dark-bitcoin {
+    @apply bg-bitcoin-500/10 border border-bitcoin-500/30 rounded-2xl p-6;
+  }
+
+  /* ============================================
+     BUTTON COMPONENTS - Light Theme (Legacy)
      ============================================ */
 
   /* Primary Button - Bitcoin Orange CTA */

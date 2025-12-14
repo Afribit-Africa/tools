@@ -1,164 +1,178 @@
 import { requireAdmin } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 import { getAvailablePeriods, getCurrentPeriod } from '@/lib/cbaf/ranking-calculator';
-import { Calculator, TrendingUp, Calendar, CheckCircle, DollarSign, Clock } from 'lucide-react';
+import { 
+  Calculator, 
+  TrendingUp, 
+  Calendar, 
+  CheckCircle, 
+  Send,
+  Clock,
+  BarChart3,
+  Users,
+  Zap,
+  ArrowRight,
+} from 'lucide-react';
 import Link from 'next/link';
 import CalculateRankingsButton from './CalculateRankingsButton';
 import CustomPeriodCalculator from './CustomPeriodCalculator';
 import FloatingNav from '@/components/ui/FloatingNav';
 
-export default async function FundingCalculatorPage() {
+export default async function FundingPage() {
   const session = await requireAdmin();
 
-  // Restrict to super_admin only for payment operations
+  // Restrict to super_admin only
   if (session.user.role !== 'super_admin') {
     redirect('/unauthorized');
   }
 
   const currentPeriod = getCurrentPeriod();
   const availablePeriods = await getAvailablePeriods();
-
-  // Check if current month has been calculated
   const currentMonthCalculated = availablePeriods.some(p => p.month === currentPeriod.month);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
+    <div className="dark-page min-h-screen pb-20">
       <FloatingNav role={session.user.role} />
 
       {/* Hero Header */}
-      <header className="bg-gradient-to-r from-bitcoin-500 to-bitcoin-600 text-white shadow-xl pt-28 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="dark-header pt-28 pb-8 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-4xl font-heading font-bold flex items-center gap-3 mb-2">
-                <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
-                  <Calculator className="w-8 h-8" />
+              <h1 className="text-4xl font-heading font-bold text-white flex items-center gap-3 mb-2">
+                <div className="p-2 bg-bitcoin-500/20 rounded-xl">
+                  <Calculator className="w-8 h-8 text-bitcoin-400" />
                 </div>
-                Rankings Calculator
+                Funding & Rankings
               </h1>
-              <p className="text-bitcoin-50 text-lg">
-                Calculate monthly rankings and prepare funding distribution
+              <p className="text-white/60 text-lg">
+                Calculate rankings and manage economy funding
               </p>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-4">
-        {/* Current Month - Elevated Card */}
-        <section className="mb-8">
-          <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-100">
-            {/* Card Header */}
-            <div className="bg-gradient-to-r from-bitcoin-50 to-orange-50 px-6 py-5 border-b-2 border-gray-100 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <Calendar className="w-6 h-6 text-bitcoin-600" />
-                    <h2 className="text-2xl font-heading font-bold text-gray-900">
-                      {currentPeriod.monthName} {currentPeriod.year}
-                    </h2>
-                  </div>
-                  <p className="text-gray-600 text-sm font-medium">
-                    Current ranking period
-                  </p>
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          {/* Bulk Payment Card */}
+          <Link
+            href="/cbaf/super-admin/funding/bulk-payment"
+            className="gradient-card group hover:border-bitcoin-500/50 transition-all duration-300"
+          >
+            <div className="gradient-card-glow" />
+            <div className="relative p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-bitcoin-500/20 rounded-xl">
+                  <Send className="w-8 h-8 text-bitcoin-400" />
                 </div>
-                {currentMonthCalculated ? (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-green-100 border-2 border-green-300 rounded-xl shadow-sm">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="text-sm text-green-700 font-bold">Calculated</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-yellow-100 border-2 border-yellow-300 rounded-xl shadow-sm">
-                    <Clock className="w-5 h-5 text-yellow-600" />
-                    <span className="text-sm text-yellow-700 font-bold">Pending</span>
-                  </div>
-                )}
+                <ArrowRight className="w-5 h-5 text-white/40 group-hover:text-bitcoin-400 group-hover:translate-x-1 transition-all" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Bulk Payment</h2>
+              <p className="text-white/60 mb-4">
+                Send batch payments to all economies via Lightning. Includes address verification and amount allocation.
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-sm text-white/50">
+                  <Zap className="w-4 h-4 text-bitcoin-400" />
+                  Lightning Fast
+                </div>
+                <div className="flex items-center gap-2 text-sm text-white/50">
+                  <Users className="w-4 h-4 text-green-400" />
+                  All Economies
+                </div>
               </div>
             </div>
+          </Link>
 
-            {/* Card Body */}
-            <div className="p-6">
-              <div className="grid md:grid-cols-3 gap-6 mb-6">
-                {/* What It Does */}
-                <div className="md:col-span-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border-2 border-blue-100">
-                  <h3 className="font-bold mb-3 text-gray-900 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-blue-600" />
-                    How It Works
-                  </h3>
-                  <ul className="text-sm text-gray-700 space-y-2">
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <span>Analyzes all approved videos for the month</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <span>Calculates metrics: videos, merchants, new discoveries</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <span>Ranks economies with weighted overall scores</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <span>Saves results for leaderboard display</span>
-                    </li>
-                  </ul>
+          {/* View Rankings Card */}
+          <Link
+            href="/cbaf/rankings"
+            className="gradient-card group hover:border-blue-500/50 transition-all duration-300"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/5 pointer-events-none" />
+            <div className="relative p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-blue-500/20 rounded-xl">
+                  <BarChart3 className="w-8 h-8 text-blue-400" />
                 </div>
-
-                {/* Quick Stats */}
-                <div className="bg-gradient-to-br from-bitcoin-50 to-orange-50 rounded-xl p-5 border-2 border-bitcoin-200">
-                  <h3 className="font-bold mb-3 text-gray-900 flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-bitcoin-600" />
-                    Quick Stats
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Status:</span>
-                      <span className="font-bold text-gray-900">
-                        {currentMonthCalculated ? '✅ Ready' : '⏳ Pending'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Period:</span>
-                      <span className="font-bold text-gray-900">{currentPeriod.month}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Type:</span>
-                      <span className="font-bold text-gray-900">Current</span>
-                    </div>
-                  </div>
+                <ArrowRight className="w-5 h-5 text-white/40 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">View Leaderboard</h2>
+              <p className="text-white/60 mb-4">
+                See economy rankings, merchant counts, and activity metrics. Rankings are for information only.
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-sm text-white/50">
+                  <TrendingUp className="w-4 h-4 text-blue-400" />
+                  Real-time Stats
+                </div>
+                <div className="flex items-center gap-2 text-sm text-white/50">
+                  <Calendar className="w-4 h-4 text-purple-400" />
+                  Monthly Periods
                 </div>
               </div>
+            </div>
+          </Link>
+        </div>
 
-              {/* Action Button */}
-              <CalculateRankingsButton
-                year={currentPeriod.year}
-                month={parseInt(currentPeriod.month.split('-')[1])}
-                label={`Calculate ${currentPeriod.monthName} ${currentPeriod.year}`}
-                isCurrentMonth={true}
-              />
-
-              {/* Footer Actions */}
-              <div className="flex items-center justify-between pt-6 mt-6 border-t-2 border-gray-100">
-                <span className="text-sm text-gray-500 font-medium">View results after calculation</span>
-                <div className="flex gap-3">
-                  <Link
-                    href="/cbaf/rankings"
-                    className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:border-bitcoin-300 hover:bg-bitcoin-50 transition-all"
-                  >
-                    View Leaderboard →
-                  </Link>
-                  {currentMonthCalculated && (
-                    <Link
-                      href={`/cbaf/super-admin/funding/allocate?period=${currentPeriod.month}`}
-                      className="px-4 py-2 text-sm font-semibold text-white bg-bitcoin-500 rounded-xl hover:bg-bitcoin-600 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-                    >
-                      <DollarSign className="w-4 h-4" />
-                      Allocate Funding
-                    </Link>
-                  )}
+        {/* Current Month Rankings */}
+        <section className="mb-8">
+          <div className="glass-card">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <Calendar className="w-6 h-6 text-bitcoin-400" />
+                  <h2 className="text-2xl font-heading font-bold text-white">
+                    {currentPeriod.monthName} {currentPeriod.year}
+                  </h2>
                 </div>
+                <p className="text-white/60 text-sm">Current ranking period</p>
               </div>
+              {currentMonthCalculated ? (
+                <div className="badge-success-dark flex items-center gap-2 px-4 py-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Calculated
+                </div>
+              ) : (
+                <div className="badge-warning-dark flex items-center gap-2 px-4 py-2">
+                  <Clock className="w-4 h-4" />
+                  Pending
+                </div>
+              )}
+            </div>
+
+            {/* Info Box */}
+            <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/10">
+              <h3 className="font-semibold text-white mb-2 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-blue-400" />
+                How Rankings Work
+              </h3>
+              <ul className="text-sm text-white/60 space-y-1">
+                <li>• Analyzes all approved videos for the month</li>
+                <li>• Calculates metrics: videos, merchants, new discoveries</li>
+                <li>• Rankings are <strong className="text-white">information only</strong> - funding is separate</li>
+              </ul>
+            </div>
+
+            {/* Calculate Button */}
+            <CalculateRankingsButton
+              year={currentPeriod.year}
+              month={parseInt(currentPeriod.month.split('-')[1])}
+              label={`Calculate ${currentPeriod.monthName} ${currentPeriod.year}`}
+              isCurrentMonth={true}
+            />
+
+            {/* Quick Links */}
+            <div className="flex items-center justify-between pt-6 mt-6 border-t border-white/10">
+              <span className="text-sm text-white/50">View results after calculation</span>
+              <Link
+                href="/cbaf/rankings"
+                className="btn-secondary-dark text-sm"
+              >
+                View Leaderboard →
+              </Link>
             </div>
           </div>
         </section>
@@ -166,50 +180,41 @@ export default async function FundingCalculatorPage() {
         {/* Previously Calculated Periods */}
         {availablePeriods.length > 0 && (
           <section className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-heading font-bold text-gray-900">Previously Calculated</h2>
-              <span className="text-sm text-gray-500 font-medium">{availablePeriods.length} periods</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <h2 className="text-xl font-heading font-bold text-white mb-4 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              Previously Calculated
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {availablePeriods.map((period) => (
                 <div
                   key={period.month}
-                  className="bg-white rounded-xl border-2 border-gray-200 hover:border-bitcoin-300 shadow-md hover:shadow-xl transition-all p-6 group"
+                  className="glass-card-hover group"
                 >
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-heading font-bold text-lg text-gray-900 group-hover:text-bitcoin-600 transition-colors">
+                      <h3 className="font-bold text-white group-hover:text-bitcoin-400 transition-colors">
                         {period.monthName} {period.year}
                       </h3>
-                      <p className="text-xs text-gray-500 font-medium mt-1">Rankings available</p>
+                      <p className="text-xs text-white/50">Rankings available</p>
                     </div>
-                    <div className="p-2 bg-green-50 rounded-lg border border-green-200">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    <div className="p-2 bg-green-500/20 rounded-lg">
+                      <CheckCircle className="w-4 h-4 text-green-400" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Link
                       href={`/cbaf/rankings?period=${period.month}`}
-                      className="block w-full text-center px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-50 border-2 border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all"
+                      className="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all"
                     >
                       View Rankings
                     </Link>
-                    <Link
-                      href={`/cbaf/super-admin/funding/allocate?period=${period.month}`}
-                      className="block w-full text-center px-4 py-2.5 text-sm font-semibold text-white bg-bitcoin-500 rounded-lg hover:bg-bitcoin-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                    >
-                      <DollarSign className="w-4 h-4" />
-                      Allocate Funding
-                    </Link>
-                    <div className="pt-2 border-t border-gray-100">
-                      <CalculateRankingsButton
-                        year={period.year}
-                        month={parseInt(period.month.split('-')[1])}
-                        label="Recalculate"
-                        isCurrentMonth={false}
-                      />
-                    </div>
+                    <CalculateRankingsButton
+                      year={period.year}
+                      month={parseInt(period.month.split('-')[1])}
+                      label="Recalculate"
+                      isCurrentMonth={false}
+                    />
                   </div>
                 </div>
               ))}
@@ -218,71 +223,18 @@ export default async function FundingCalculatorPage() {
         )}
 
         {/* Custom Period Calculator */}
-        <section className="mb-8">
-          <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl border-2 border-bitcoin-200">
-            <div className="bg-gradient-to-r from-bitcoin-500 to-orange-500 px-6 py-4 rounded-t-2xl">
-              <h2 className="text-xl font-heading font-bold flex items-center gap-2 text-white">
-                <TrendingUp className="w-6 h-6" />
-                Calculate Custom Period
-              </h2>
-              <p className="text-bitcoin-50 text-sm mt-1">
-                Calculate rankings for any past month (historical data or corrections)
-              </p>
-            </div>
-
-            <div className="p-6">
-              <CustomPeriodCalculator currentYear={currentPeriod.year} />
-            </div>
+        <section>
+          <div className="glass-card">
+            <h2 className="text-xl font-heading font-bold text-white mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-bitcoin-400" />
+              Calculate Custom Period
+            </h2>
+            <p className="text-white/60 text-sm mb-6">
+              Calculate rankings for any past month (historical data or corrections)
+            </p>
+            <CustomPeriodCalculator currentYear={currentPeriod.year} />
           </div>
         </section>
-
-        {/* Best Practices Info */}
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200 shadow-lg">
-          <h3 className="font-heading font-bold mb-4 text-gray-900 flex items-center gap-2 text-lg">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              💡
-            </div>
-            Best Practices
-          </h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                1
-              </div>
-              <div>
-                <h4 className="font-bold text-gray-900 mb-1">End of Month</h4>
-                <p className="text-sm text-gray-600">Calculate rankings after the month ends when all videos are reviewed</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                2
-              </div>
-              <div>
-                <h4 className="font-bold text-gray-900 mb-1">Recalculation</h4>
-                <p className="text-sm text-gray-600">You can recalculate any period if new videos are approved retroactively</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                3
-              </div>
-              <div>
-                <h4 className="font-bold text-gray-900 mb-1">Funding Impact</h4>
-                <p className="text-sm text-gray-600">Rankings determine funding allocation for CBAF program</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                4
-              </div>
-              <div>
-                <h4 className="font-bold text-gray-900 mb-1">Transparency</h4>
-                <p className="text-sm text-gray-600">All users can view rankings on the public leaderboard</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );
