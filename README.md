@@ -1,54 +1,88 @@
 # Afribitools
 
-<div align="center">
-
-![Afribitools Logo](https://img.shields.io/badge/⚡-Afribitools-F7931A?style=for-the-badge)
-
-**All-in-one solution for Bitcoin circular economy organizations**
+All-in-one solution for Bitcoin circular economy organizations.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8)](https://tailwindcss.com)
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Contributing](#-contributing)
-
-</div>
-
 ---
 
-## 🎯 Overview
+## Overview
 
-Afribitools is a suite of web-based tools designed to streamline operations for Bitcoin circular economy organizations. Built with modern web technologies and Bitcoin-first design principles.
+Afribitools is a suite of web-based tools designed to streamline operations for Bitcoin circular economy organizations. Built with modern web technologies and Bitcoin-first design principles, it provides essential utilities for managing Lightning address verification, merchant management, and funding allocation.
 
-## ⚡ Modules
+## Available Modules
 
 ### Fastlight
-**Bulk Blink Lightning Address Validator**
 
-- 📤 Upload CSV/XLSX files with lightning addresses
-- 🔍 Real-time validation via Blink API
-- 🧹 Automatic whitespace cleaning
-- 📊 Live statistics and progress tracking
-- 💾 Export valid addresses or full reports
+Bulk Blink Lightning Address Validator with batch payment support.
 
-**Perfect for**: Organizations onboarding users, cleaning address databases, validating payment lists
+**Features:**
+- Upload CSV/XLSX files containing lightning addresses
+- Real-time validation via Blink API
+- Multiple provider support (Blink, with extensibility for Fedi and custom providers)
+- Automatic whitespace cleaning and address correction suggestions
+- Live statistics and progress tracking with filtering (Valid/Invalid)
+- Export valid addresses, invalid addresses, or full reports
+- Batch payment processing for verified addresses
 
-## ✨ Features
+**Use Cases:** Organizations onboarding users, cleaning address databases, validating payment lists before bulk disbursements.
 
-- **⚡ Fast**: Validates ~20 addresses/second with intelligent rate limiting
-- **🎨 Beautiful**: Dark Bitcoin-themed UI with custom typography
-- **📱 Responsive**: Works seamlessly on desktop and mobile
-- **🔒 Private**: All validation happens in real-time, no data stored
-- **🚀 Modern**: Built with Next.js 14, TypeScript, and Tailwind CSS
-- **💾 Persistent**: Optional session tracking with Neon PostgreSQL
+### CBAF Manager
 
-## 🚀 Quick Start
+Circular Bitcoin Africa Fund management system for tracking merchant engagement and funding allocation.
+
+**Features:**
+- Economy setup and administration with Google OAuth authentication
+- Merchant registration and verification
+- Video submission tracking for content creators
+- Merit-based ranking system with weighted scoring
+- Funding calculation and allocation tools
+- Batch payment processing with verification
+- Admin dashboard with email notifications
+- CSV import/export for merchant data
+
+**Use Cases:** Community organizations managing Bitcoin circular economies, tracking merchant participation, and distributing funding based on engagement metrics.
+
+## Technology Stack
+
+### Frontend
+| Category | Technology |
+|----------|------------|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS 3 |
+| UI Components | Lucide React Icons |
+| File Parsing | PapaParse (CSV), xlsx (Excel) |
+
+### Backend
+| Category | Technology |
+|----------|------------|
+| Runtime | Node.js 18+ |
+| API | Next.js Route Handlers (API Routes) |
+| Database | Neon PostgreSQL (Serverless) |
+| ORM | Drizzle ORM |
+| Authentication | NextAuth.js (Google OAuth) |
+| Payment API | Blink GraphQL API |
+| Email | Nodemailer (SMTP) |
+
+### Infrastructure
+| Category | Technology |
+|----------|------------|
+| Deployment | Vercel |
+| Version Control | Git/GitHub |
+| Package Manager | npm |
+
+## Quick Start
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 18 or higher
 - npm or yarn
-- Neon PostgreSQL account (free tier works)
+- Neon PostgreSQL account (free tier available)
+- Blink API key (for Lightning address verification)
+- Google OAuth credentials (for CBAF authentication)
 
 ### Installation
 
@@ -62,7 +96,7 @@ npm install
 
 # Set up environment variables
 cp .env.example .env
-# Edit .env and add your DATABASE_URL
+# Edit .env with your configuration
 
 # Generate and run database migrations
 npm run db:generate
@@ -72,165 +106,147 @@ npm run db:migrate
 npm run dev
 ```
 
-Visit **http://localhost:3000** 🎉
+Access the application at http://localhost:3000
 
-**Need detailed setup instructions?** See [QUICKSTART.md](QUICKSTART.md)
+## Environment Variables
 
-## 📚 Documentation
+Create a `.env` file with the following variables:
 
-- [Quick Start Guide](QUICKSTART.md) - Get up and running in 5 minutes
-- [Setup Guide](SETUP.md) - Detailed configuration instructions
-- [Testing Guide](TESTING.md) - How to test the application
-- [Contributing](CONTRIBUTING.md) - Guidelines for contributors
+```env
+# Database
+DATABASE_URL=postgresql://...
 
-## 🛠️ Tech Stack
+# NextAuth (for CBAF)
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key
 
-| Category | Technology |
-|----------|------------|
-| **Framework** | Next.js 14 (App Router) |
-| **Language** | TypeScript 5 |
-| **Styling** | Tailwind CSS 3 |
-| **Database** | Neon PostgreSQL |
-| **ORM** | Drizzle ORM |
-| **API** | Blink GraphQL API |
-| **File Parsing** | PapaParse, xlsx |
-| **UI Components** | Radix UI |
-| **Icons** | Lucide React |
-| **Deployment** | Vercel |
+# Google OAuth (for CBAF)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-## 📁 Project Structure
+# Blink API (for Lightning payments)
+BLINK_API_KEY=your-blink-api-key
+BLINK_WALLET_ID=your-wallet-id
+
+# Email (optional, for admin notifications)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+```
+
+## Project Structure
 
 ```
 afribitools/
-├── app/                    # Next.js App Router pages
-│   ├── fastlight/         # Fastlight module
-│   ├── api/               # API routes
-│   └── page.tsx           # Home page
-├── components/            # React components
-│   └── modules/           # Module-specific components
-├── lib/                   # Core business logic
-│   ├── blink/            # Blink API integration
-│   ├── db/               # Database client & schema
-│   ├── parsers/          # File parsing utilities
-│   └── utils.ts          # Helper functions
-├── types/                # TypeScript type definitions
-├── config/               # Site configuration
-└── public/               # Static assets
+├── app/                      # Next.js App Router pages
+│   ├── fastlight/           # Fastlight module
+│   ├── cbaf/                # CBAF module
+│   │   ├── dashboard/       # Main dashboard
+│   │   ├── admin/           # Admin pages
+│   │   ├── setup/           # Economy setup
+│   │   └── merchants/       # Merchant management
+│   ├── api/                 # API route handlers
+│   └── page.tsx             # Home page
+├── components/              # React components
+│   └── modules/             # Module-specific components
+│       ├── fastlight/       # Fastlight UI components
+│       └── cbaf/            # CBAF UI components
+├── lib/                     # Core business logic
+│   ├── blink/              # Blink API integration
+│   ├── db/                 # Database client and schema
+│   ├── parsers/            # File parsing utilities
+│   └── utils.ts            # Helper functions
+├── types/                   # TypeScript type definitions
+├── config/                  # Site configuration
+├── migrations/              # Database migrations
+├── drizzle/                 # Drizzle ORM configuration
+├── scripts/                 # Utility scripts
+└── public/                  # Static assets
 ```
 
-## 🎨 Design System
+## Development
 
-**Color Palette**
-- Bitcoin Orange: `#F7931A`
-- Background: `#0A0A0A`
-- Success: `#00CC66`
-- Error: `#FF4444`
-- Warning: `#FFB020`
+### Available Scripts
 
-**Typography**
+```bash
+npm run dev          # Start development server with Turbopack
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run db:generate  # Generate Drizzle migrations
+npm run db:migrate   # Run database migrations
+npm run db:studio    # Open Drizzle Studio for database inspection
+```
+
+### Design System
+
+**Color Palette:**
+- Bitcoin Orange: #F7931A
+- Background: #0A0A0A (Dark theme)
+- Success: #00CC66
+- Error: #FF4444
+- Warning: #FFB020
+
+**Typography:**
 - Code/Numbers: JetBrains Mono
 - Headings: Space Grotesk
 - Body: Inter
 - Brand: Audiowide
 
-## 🔧 Development
-
-### Available Scripts
-
-```bash
-npm run dev          # Start dev server (localhost:3000)
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run db:generate  # Generate migrations
-npm run db:migrate   # Run migrations
-npm run db:studio    # Open Drizzle Studio
-```
-
-### Environment Variables
-
-```env
-DATABASE_URL=postgresql://...  # Neon PostgreSQL connection string
-```
-
-## 🚢 Deployment
+## Deployment
 
 ### Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Afribit-Africa/tools)
+1. Push your code to GitHub
+2. Import the repository in Vercel
+3. Configure environment variables
+4. Deploy
 
-1. Click the deploy button above
-2. Connect your GitHub account
-3. Add `DATABASE_URL` environment variable
-4. Deploy!
+Vercel automatically detects Next.js and handles the build configuration.
 
-Vercel automatically detects Next.js and handles the build.
-
-**Manual Deployment**: See [SETUP.md](SETUP.md#deployment) for detailed instructions.
-
-## 🧪 Testing
+### Manual Deployment
 
 ```bash
-# Run the development server
-npm run dev
-
-# Test with sample data
-# Upload the file: sample-data/addresses.csv
-
-# Check API endpoint
-curl -X POST http://localhost:3000/api/fastlight/verify \
-  -H "Content-Type: application/json" \
-  -d '{"username":"alice"}'
+npm run build
+npm run start
 ```
 
-See [TESTING.md](TESTING.md) for comprehensive test scenarios.
+Ensure all environment variables are configured in your production environment.
 
-## 🤝 Contributing
+## API Endpoints
 
-We welcome contributions! Here's how:
+### Fastlight
+- `POST /api/fastlight/verify` - Verify a single Lightning address
+- `POST /api/fastlight/verify-batch` - Verify multiple addresses
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### CBAF
+- `POST /api/cbaf/economy/setup` - Create a new economy
+- `GET /api/cbaf/merchants/list` - List merchants for an economy
+- `POST /api/cbaf/merchants/register` - Register a new merchant
+- `POST /api/cbaf/funding/calculate` - Calculate funding allocation
+- `POST /api/cbaf/payments/process` - Process batch payments
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+## Contributing
 
-## 🗺️ Roadmap
+We welcome contributions from the community. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
 
-### Upcoming Modules
+## License
 
-- **📊 Analytics Dashboard** - Track circular economy metrics
-- **👥 User Manager** - Bulk user operations
-- **💰 Payment Tracker** - Monitor lightning payments
-- **📧 Newsletter Tool** - Manage subscriber lists
-- **🔗 Link Shortener** - Bitcoin-branded short links
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## 📄 License
+## Support
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- GitHub Issues: [Report a bug or request a feature](https://github.com/Afribit-Africa/tools/issues)
+- Email: tools@afribit.africa
+- Twitter: [@afribitafrica](https://twitter.com/afribitafrica)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- [Blink](https://blink.sv) - For the excellent Lightning wallet API
-- [Afribit Africa](https://afribit.africa) - Supporting Bitcoin adoption in Africa
-- All [contributors](https://github.com/Afribit-Africa/tools/graphs/contributors)
-
-## 📞 Support
-
-- 📧 Email: tools@afribit.africa
-- 🐦 Twitter: [@afribitafrica](https://twitter.com/afribitafrica)
-- 💬 GitHub Issues: [Report a bug](https://github.com/Afribit-Africa/tools/issues)
-
-## ⚡ Built by the Bitcoin Community
-
-Made with ⚡ and 🧡 for the Bitcoin circular economy
+- [Blink](https://blink.sv) for the Lightning wallet API
+- [Afribit Africa](https://afribit.africa) for supporting Bitcoin adoption in Africa
+- All contributors to this project
 
 ---
 
-<div align="center">
-
-**[Website](https://afribit.africa)** • **[Documentation](QUICKSTART.md)** • **[Contributing](CONTRIBUTING.md)**
-
-</div>
+Built for the Bitcoin circular economy by Afribit Africa.

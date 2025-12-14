@@ -1,21 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Zap, Send, Clock } from 'lucide-react';
+import { ArrowLeft, Zap, Send, Clock, Filter, Download, ChevronDown } from 'lucide-react';
 import { FileUploader } from '@/components/modules/fastlight/FileUploader';
 import { ValidationTable } from '@/components/modules/fastlight/ValidationTable';
 import { StatsCards } from '@/components/modules/fastlight/StatsCards';
 import { ProgressBar } from '@/components/modules/fastlight/ProgressBar';
-import { ExportButton } from '@/components/modules/fastlight/ExportButton';
 import { WalletConnector } from '@/components/modules/fastlight/WalletConnector';
 import { BatchPaymentPanel } from '@/components/modules/fastlight/BatchPaymentPanel';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
-import { parseCSVFile, parseXLSXFile } from '@/lib/parsers';
+import { parseCSVFile, parseXLSXFile, convertToCSV } from '@/lib/parsers';
 import { sanitizeAddress, parseBlinkAddress, extractUsername } from '@/lib/blink';
+import { downloadFile } from '@/lib/utils';
 import type { ValidationRecord, ValidationStats, BlinkAccount } from '@/types';
-import { ValidationBatchProcessor, OptimizedBatchProcessor } from '@/lib/utils/batch-processor';
+import { ValidationBatchProcessor } from '@/lib/utils/batch-processor';
 import { useSecureStorage } from '@/lib/utils/secure-storage';
+
+type FilterType = 'all' | 'valid' | 'invalid' | 'fixed' | 'pending';
+type ProviderType = 'blink' | 'machankura' | 'lnurl';
+
+const PROVIDERS = [
+  { id: 'blink', name: 'Blink', description: 'Verify @blink.sv addresses' },
+  { id: 'machankura', name: 'Machankura', description: 'Coming soon' },
+  { id: 'lnurl', name: 'LNURL', description: 'Coming soon' },
+] as const;
 
 function detectAmountColumn(headers: string[]): number | undefined {
   const amountKeywords = ['amount', 'sats', 'satoshis', 'payment', 'value', 'total', 'sum'];
@@ -42,10 +51,23 @@ export default function FastlightPage() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [apiKey, setApiKey] = useState<string>('');
   const [account, setAccount] = useState<BlinkAccount | undefined>();
-  const [showPaymentPanel, setShowPaymentPanel] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [filter, setFilter] = useState<FilterType>('all');
+  const [provider, setProvider] = useState<ProviderType>('blink');
+  const [showProviderDropdown, setShowProviderDropdown] = useState(false);
   const secureStorage = useSecureStorage();
+
+  // Filter records based on current filter
+  const filteredRecords = useMemo(() => {
+    if (filter === 'all') return records;
+    return records.filter(r => r.status === filter);
+  }, [records, filter]);
+
+  // Get valid records for auto-pick
+  const validRecords = useMemo(() => {
+    return records.filter(r => r.status === 'valid' || r.status === 'fixed');
+  }, [records]);
 
   const handleFileUpload = async (file: File) => {
     setFileName(file.name);
@@ -54,7 +76,6 @@ export default function FastlightPage() {
     setError('');
 
     try {
-      // Parse file based on type
       const extension = file.name.split('.').pop()?.toLowerCase();
       let addresses: string[] = [];
       let amounts: number[] = [];
@@ -79,7 +100,6 @@ export default function FastlightPage() {
         data = parsed.data;
       }
 
-      // Detect amount column
       amountColumn = detectAmountColumn(headers);
       if (amountColumn !== undefined) {
         amounts = data.slice(1).map(row => {
@@ -89,14 +109,11 @@ export default function FastlightPage() {
         });
       }
 
-      // Store detected headers info
       setDetectedHeaders({ headers, addressColumn, amountColumn });
       setLoadingState(`Found ${addresses.length} addresses in column "${headers[addressColumn]}"${amountColumn !== undefined ? ` and amounts in "${headers[amountColumn]}"` : ''}`);
 
-      // Small delay to show the detection
       await new Promise(resolve => setTimeout(resolve, 800));
 
-      // Initialize records as pending
       const initialRecords: ValidationRecord[] = addresses.map((addr, index) => ({
         id: `record-${index}`,
         original: addr,
@@ -119,12 +136,10 @@ export default function FastlightPage() {
 
       setLoadingState('Starting validation...');
 
-      // Calculate estimated time
       const estimated = ValidationBatchProcessor.calculateEstimatedTime(addresses.length);
       setEstimatedTime(estimated.formattedTime);
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Start validation
       await validateAddresses(initialRecords);
     } catch (error) {
       console.error('File processing error:', error);
@@ -154,25 +169,20 @@ export default function FastlightPage() {
     let invalidCount = 0;
     let fixedCount = 0;
 
-    // Create batch processor
     const processor = new ValidationBatchProcessor();
 
-    // Convert records to batch items
     const batchItems = updatedRecords.map((record, index) => ({
       id: `record-${index}`,
       data: record,
     }));
 
-    // Process validation function
     const processRecord = async (item: { id: string; data: ValidationRecord }): Promise<void> => {
       const record = item.data;
 
-      // Sanitize address
       const sanitized = sanitizeAddress(record.original);
       record.cleaned = sanitized.cleaned;
       record.issues = sanitized.issues;
 
-      // Parse and validate Blink address format
       const parsed = parseBlinkAddress(sanitized.cleaned);
 
       if (!parsed.isValid) {
@@ -182,7 +192,6 @@ export default function FastlightPage() {
         return;
       }
 
-      // Call Blink API to verify
       try {
         const username = extractUsername(sanitized.cleaned);
         if (!username) {
@@ -234,7 +243,6 @@ export default function FastlightPage() {
       }
     };
 
-    // Set progress callback
     processor.setProgressCallback((processed: number, total: number, item?: any) => {
       if (item?.data) {
         setLoadingState(`Validating address ${processed}/${total}: ${item.data.original || ''}`);
@@ -251,7 +259,6 @@ export default function FastlightPage() {
       });
     });
 
-    // Process all records with batch processor
     await processor.process(batchItems, processRecord);
 
     setLoadingState('Validation complete!');
@@ -268,7 +275,7 @@ export default function FastlightPage() {
 
   const handlePaymentComplete = (results: any[]) => {
     const updatedRecords = [...records];
-    results.forEach((result, index) => {
+    results.forEach((result) => {
       const record = updatedRecords.find(r => r.cleaned === result.address);
       if (record) {
         record.paymentStatus = result.success ? 'success' : 'failed';
@@ -286,47 +293,133 @@ export default function FastlightPage() {
     setWalletConnected(false);
   };
 
+  // Export functions
+  const handleExportValid = useCallback(() => {
+    const validRecs = records.filter(r => r.status === 'valid' || r.status === 'fixed');
+    const data = [
+      ['Address', 'Amount'],
+      ...validRecs.map(r => [r.cleaned || r.original, r.amount?.toString() || '']),
+    ];
+    const csv = convertToCSV(data);
+    downloadFile(csv, `${fileName.replace(/\.[^/.]+$/, '')}_valid.csv`, 'text/csv');
+  }, [records, fileName]);
+
+  const handleExportInvalid = useCallback(() => {
+    const invalidRecs = records.filter(r => r.status === 'invalid');
+    const data = [
+      ['Original Address', 'Error'],
+      ...invalidRecs.map(r => [r.original, r.error || '']),
+    ];
+    const csv = convertToCSV(data);
+    downloadFile(csv, `${fileName.replace(/\.[^/.]+$/, '')}_invalid.csv`, 'text/csv');
+  }, [records, fileName]);
+
+  const handleExportAll = useCallback(() => {
+    const data = [
+      ['Original Address', 'Cleaned Address', 'Status', 'Issues', 'Error', 'Amount'],
+      ...records.map(r => [
+        r.original,
+        r.cleaned || '',
+        r.status,
+        r.issues.join('; '),
+        r.error || '',
+        r.amount?.toString() || '',
+      ]),
+    ];
+    const csv = convertToCSV(data);
+    downloadFile(csv, `${fileName.replace(/\.[^/.]+$/, '')}_report.csv`, 'text/csv');
+  }, [records, fileName]);
+
+  const resetState = () => {
+    setRecords([]);
+    setFileName('');
+    setDetectedHeaders(null);
+    setLoadingState('');
+    setWalletConnected(false);
+    setApiKey('');
+    setAccount(undefined);
+    setFilter('all');
+    setStats({
+      total: 0,
+      valid: 0,
+      invalid: 0,
+      fixed: 0,
+      pending: 0,
+      progress: 0,
+    });
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-bg-primary">
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="border-b border-border bg-bg-secondary/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="bg-black/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/" className="btn-ghost px-3 py-2">
+              <Link href="/" className="p-2 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                 <ArrowLeft className="w-5 h-5" />
               </Link>
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-bitcoin/20 rounded-lg flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-bitcoin" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-bitcoin-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <Zap className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-heading font-bold">Fastlight</h1>
-                  <p className="text-xs text-text-secondary">
-                    Bulk Blink Address Validator
+                  <h1 className="text-xl font-heading font-bold text-white">Fastlight</h1>
+                  <p className="text-xs text-gray-400">
+                    Bulk Lightning Address Validator
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Provider Selector */}
+            <div className="relative">
+              <button
+                onClick={() => setShowProviderDropdown(!showProviderDropdown)}
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all"
+              >
+                <span className="text-sm">Provider: {PROVIDERS.find(p => p.id === provider)?.name}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {showProviderDropdown && (
+                <div className="absolute right-0 mt-2 w-64 bg-gray-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                  {PROVIDERS.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        setProvider(p.id as ProviderType);
+                        setShowProviderDropdown(false);
+                      }}
+                      disabled={p.id !== 'blink'}
+                      className={`w-full px-4 py-3 text-left hover:bg-white/5 transition-colors ${
+                        provider === p.id ? 'bg-bitcoin-500/20 text-bitcoin-400' : 'text-white'
+                      } ${p.id !== 'blink' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <div className="font-medium">{p.name}</div>
+                      <div className="text-xs text-gray-400">{p.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         {records.length === 0 ? (
           /* Upload View */
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-heading font-bold mb-4">
+              <h2 className="text-4xl font-heading font-bold mb-4 text-white">
                 Verify Lightning Addresses
               </h2>
-              <p className="text-text-secondary text-lg">
-                Upload your file with Blink addresses and we'll verify each one
+              <p className="text-gray-400 text-lg">
+                Upload your file with lightning addresses and we will verify each one
               </p>
             </div>
 
-            {/* Error Display */}
             {error && (
               <ErrorAlert
                 title="Error"
@@ -339,38 +432,37 @@ export default function FastlightPage() {
             <FileUploader onFileUpload={handleFileUpload} />
 
             {/* How it Works */}
-            <div className="mt-12 card">
-              <h3 className="text-xl font-heading font-bold mb-4">How it works</h3>
-              <ol className="space-y-3 text-text-secondary">
-                <li className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-bitcoin/20 rounded-full flex items-center justify-center text-bitcoin text-sm font-bold">
+            <div className="mt-12 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8">
+              <h3 className="text-xl font-heading font-bold mb-6 text-white">How it works</h3>
+              <ol className="space-y-4 text-gray-300">
+                <li className="flex items-start gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 bg-bitcoin-500/20 rounded-full flex items-center justify-center text-bitcoin-400 text-sm font-bold">
                     1
                   </span>
-                  <span>Upload a CSV or XLSX file containing Blink lightning addresses</span>
+                  <span>Upload a CSV or XLSX file containing lightning addresses</span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-bitcoin/20 rounded-full flex items-center justify-center text-bitcoin text-sm font-bold">
+                <li className="flex items-start gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 bg-bitcoin-500/20 rounded-full flex items-center justify-center text-bitcoin-400 text-sm font-bold">
                     2
                   </span>
                   <span>
-                    We automatically trim whitespace and verify each address against the Blink
-                    API
+                    We automatically detect, clean, and verify each address against the selected provider
                   </span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-bitcoin/20 rounded-full flex items-center justify-center text-bitcoin text-sm font-bold">
+                <li className="flex items-start gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 bg-bitcoin-500/20 rounded-full flex items-center justify-center text-bitcoin-400 text-sm font-bold">
                     3
                   </span>
                   <span>
-                    Download cleaned addresses or a full report with validation status
+                    Filter results, export valid or invalid addresses separately
                   </span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-bitcoin/20 rounded-full flex items-center justify-center text-bitcoin text-sm font-bold">
+                <li className="flex items-start gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 bg-bitcoin-500/20 rounded-full flex items-center justify-center text-bitcoin-400 text-sm font-bold">
                     4
                   </span>
                   <span>
-                    <strong className="text-bitcoin">New!</strong> Connect your Blink wallet to send batch payments directly
+                    Connect your Blink wallet and auto-pick valid addresses for batch payments
                   </span>
                 </li>
               </ol>
@@ -381,17 +473,17 @@ export default function FastlightPage() {
           <div className="space-y-6">
             {/* Header Detection Info */}
             {detectedHeaders && (
-              <div className="card bg-bitcoin/5 border-bitcoin/20">
+              <div className="bg-bitcoin-500/10 border border-bitcoin-500/30 rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-bitcoin/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-bitcoin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex-shrink-0 w-8 h-8 bg-bitcoin-500/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-bitcoin-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-sm mb-1">Headers Detected</h4>
-                    <p className="text-sm text-text-secondary mb-2">
-                      Found {detectedHeaders.headers.length} columns. Using <span className="font-mono text-bitcoin font-semibold">"{detectedHeaders.headers[detectedHeaders.addressColumn]}"</span> for addresses.
+                    <h4 className="font-semibold text-sm text-white mb-1">Headers Detected</h4>
+                    <p className="text-sm text-gray-400 mb-2">
+                      Found {detectedHeaders.headers.length} columns. Using <span className="font-mono text-bitcoin-400 font-semibold">&quot;{detectedHeaders.headers[detectedHeaders.addressColumn]}&quot;</span> for addresses.
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {detectedHeaders.headers.map((header, idx) => (
@@ -399,8 +491,8 @@ export default function FastlightPage() {
                           key={idx}
                           className={`px-2 py-1 rounded text-xs ${
                             idx === detectedHeaders.addressColumn
-                              ? 'bg-bitcoin/20 text-bitcoin font-semibold'
-                              : 'bg-bg-tertiary text-text-muted'
+                              ? 'bg-bitcoin-500/20 text-bitcoin-400 font-semibold'
+                              : 'bg-white/5 text-gray-500'
                           }`}
                         >
                           {header || `Column ${idx + 1}`}
@@ -419,17 +511,17 @@ export default function FastlightPage() {
             {isValidating && (
               <div className="space-y-4">
                 {estimatedTime && (
-                  <div className="card bg-bitcoin/5 border-bitcoin/20">
+                  <div className="bg-bitcoin-500/10 border border-bitcoin-500/30 rounded-xl p-4">
                     <div className="flex items-center gap-3">
-                      <Clock className="w-5 h-5 text-bitcoin" />
+                      <Clock className="w-5 h-5 text-bitcoin-400" />
                       <div>
-                        <p className="text-sm font-semibold">Estimated Time</p>
-                        <p className="text-xs text-text-secondary">{estimatedTime} for {stats.total} addresses</p>
+                        <p className="text-sm font-semibold text-white">Estimated Time</p>
+                        <p className="text-xs text-gray-400">{estimatedTime} for {stats.total} addresses</p>
                       </div>
                     </div>
                   </div>
                 )}
-                <div className="card">
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4">
                   <ProgressBar
                     current={stats.total - stats.pending}
                     total={stats.total}
@@ -439,32 +531,94 @@ export default function FastlightPage() {
               </div>
             )}
 
-            {/* Actions */}
+            {/* Filter & Export Controls */}
+            {!isValidating && (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4">
+                {/* Filter Tabs */}
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-gray-400" />
+                  <div className="flex bg-white/5 rounded-lg p-1">
+                    {(['all', 'valid', 'fixed', 'invalid', 'pending'] as FilterType[]).map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setFilter(f)}
+                        className={`px-3 py-1.5 text-sm rounded-md transition-all ${
+                          filter === f
+                            ? 'bg-bitcoin-500 text-white'
+                            : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        {f.charAt(0).toUpperCase() + f.slice(1)}
+                        {f !== 'all' && (
+                          <span className="ml-1 text-xs opacity-70">
+                            ({f === 'valid' ? stats.valid : f === 'fixed' ? stats.fixed : f === 'invalid' ? stats.invalid : stats.pending})
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Export Buttons */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleExportValid}
+                    disabled={validRecords.length === 0}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Download className="w-4 h-4" />
+                    Valid ({validRecords.length})
+                  </button>
+                  <button
+                    onClick={handleExportInvalid}
+                    disabled={stats.invalid === 0}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Download className="w-4 h-4" />
+                    Invalid ({stats.invalid})
+                  </button>
+                  <button
+                    onClick={handleExportAll}
+                    disabled={records.length === 0}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Download className="w-4 h-4" />
+                    Full Report
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Results Header */}
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-heading font-bold">
+              <h3 className="text-xl font-heading font-bold text-white">
                 Validation Results
-                {fileName && <span className="text-text-secondary ml-2">• {fileName}</span>}
+                {fileName && <span className="text-gray-400 ml-2 text-base font-normal">- {fileName}</span>}
               </h3>
-              <ExportButton
-                records={records}
-                fileName={fileName.replace(/\.[^/.]+$/, '')}
-                disabled={isValidating}
-              />
+              <span className="text-sm text-gray-400">
+                Showing {filteredRecords.length} of {records.length} records
+              </span>
             </div>
 
-            {/* Table */}
-            <ValidationTable records={records} isValidating={isValidating} />
+            {/* Table with scroll */}
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden">
+              <div className="max-h-[600px] overflow-y-auto">
+                <ValidationTable records={filteredRecords} isValidating={isValidating} />
+              </div>
+            </div>
 
             {/* Wallet Connection & Batch Payments */}
             {!isValidating && (
               <div className="space-y-6">
-                {/* Wallet Connector */}
-                <div>
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <Send className="w-5 h-5 text-bitcoin" />
-                    <h3 className="text-xl font-heading font-bold">Batch Payments</h3>
-                    <span className="badge-success text-xs">NEW</span>
+                    <Send className="w-5 h-5 text-bitcoin-400" />
+                    <h3 className="text-xl font-heading font-bold text-white">Batch Payments</h3>
+                    <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full font-medium">Auto-Pick</span>
                   </div>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Connect your Blink wallet to send payments. Valid addresses ({validRecords.length}) will be automatically selected.
+                  </p>
                   <WalletConnector
                     onConnect={handleWalletConnect}
                     onDisconnect={handleWalletDisconnect}
@@ -473,10 +627,9 @@ export default function FastlightPage() {
                   />
                 </div>
 
-                {/* Batch Payment Panel */}
                 {walletConnected && account && apiKey && (
                   <BatchPaymentPanel
-                    records={records}
+                    records={validRecords}
                     account={account}
                     apiKey={apiKey}
                     onPaymentComplete={handlePaymentComplete}
@@ -487,27 +640,10 @@ export default function FastlightPage() {
 
             {/* Start Over */}
             {!isValidating && (
-              <div className="text-center">
+              <div className="text-center pt-4">
                 <button
-                  onClick={() => {
-                    setRecords([]);
-                    setFileName('');
-                    setDetectedHeaders(null);
-                    setLoadingState('');
-                    setWalletConnected(false);
-                    setApiKey('');
-                    setAccount(undefined);
-                    setShowPaymentPanel(false);
-                    setStats({
-                      total: 0,
-                      valid: 0,
-                      invalid: 0,
-                      fixed: 0,
-                      pending: 0,
-                      progress: 0,
-                    });
-                  }}
-                  className="btn-secondary"
+                  onClick={resetState}
+                  className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium rounded-xl transition-all"
                 >
                   Validate Another File
                 </button>
@@ -518,11 +654,11 @@ export default function FastlightPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-bg-secondary py-6 mt-12">
-        <div className="container mx-auto px-4 text-center text-text-muted text-sm">
+      <footer className="border-t border-white/10 bg-black py-6 mt-12">
+        <div className="container mx-auto px-4 text-center text-gray-500 text-sm">
           <p>
             Powered by{' '}
-            <a href="https://blink.sv" target="_blank" rel="noopener noreferrer" className="text-bitcoin hover:text-bitcoin-light">
+            <a href="https://blink.sv" target="_blank" rel="noopener noreferrer" className="text-bitcoin-400 hover:text-bitcoin-300">
               Blink API
             </a>
           </p>

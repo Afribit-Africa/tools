@@ -58,29 +58,29 @@ function SignInContent() {
 
           {/* Nav Links */}
           <div className="flex items-center gap-6">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors"
             >
               <Home className="w-4 h-4" />
               <span>Home</span>
             </Link>
-            <Link 
-              href="/fastlight" 
+            <Link
+              href="/fastlight"
               className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors"
             >
               <Zap className="w-4 h-4" />
               <span>Fastlight</span>
             </Link>
-            <Link 
-              href="https://github.com/Afribit-Africa/tools" 
+            <Link
+              href="https://github.com/Afribit-Africa/tools"
               target="_blank"
               className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors"
             >
               <Github className="w-4 h-4" />
               <span>GitHub</span>
             </Link>
-            <Link 
+            <Link
               href="mailto:support@afribit.africa"
               className="flex items-center gap-2 px-4 py-2 bg-bitcoin-500 hover:bg-bitcoin-600 text-white rounded-full text-sm font-medium transition-colors"
             >
@@ -191,7 +191,7 @@ function SignInContent() {
             transform: translateX(-50%);
           }
         }
-        
+
         .animate-scroll-slow {
           animation: scroll-slow 25s linear infinite;
         }

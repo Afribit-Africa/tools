@@ -95,12 +95,12 @@ export function BatchPaymentPanel({
 
   if (!hasRecordsWithAmounts) {
     return (
-      <div className="card bg-status-warning/10 border-status-warning/30">
+      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
         <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-status-warning flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
           <div>
-            <h4 className="font-semibold mb-1">No Payment Amounts Found</h4>
-            <p className="text-sm text-text-secondary">
+            <h4 className="font-semibold mb-1 text-white">No Payment Amounts Found</h4>
+            <p className="text-sm text-gray-400">
               Your CSV file needs an "Amount" column with payment amounts in satoshis.
               Add an amount column to your file and re-upload to enable batch payments.
             </p>
@@ -113,30 +113,30 @@ export function BatchPaymentPanel({
   return (
     <div className="space-y-6">
       {/* Payment Summary */}
-      <div className="card">
-        <h3 className="text-lg font-heading font-bold mb-4">Batch Payment Summary</h3>
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
+        <h3 className="text-lg font-heading font-bold mb-4 text-white">Batch Payment Summary</h3>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div>
-            <p className="text-sm text-text-secondary mb-1">Recipients</p>
-            <p className="text-2xl font-bold text-bitcoin">{validRecords.length}</p>
+            <p className="text-sm text-gray-400 mb-1">Recipients</p>
+            <p className="text-2xl font-bold text-bitcoin-400">{validRecords.length}</p>
           </div>
           <div>
-            <p className="text-sm text-text-secondary mb-1">Total Amount</p>
-            <p className="text-2xl font-bold font-mono">
+            <p className="text-sm text-gray-400 mb-1">Total Amount</p>
+            <p className="text-2xl font-bold font-mono text-white">
               {totalAmount.toLocaleString()} sats
             </p>
           </div>
           <div>
-            <p className="text-sm text-text-secondary mb-1">Est. Fees</p>
-            <p className="text-2xl font-bold font-mono text-status-success">
+            <p className="text-sm text-gray-400 mb-1">Est. Fees</p>
+            <p className="text-2xl font-bold font-mono text-green-400">
               ~0 sats
             </p>
-            <p className="text-xs text-text-muted">Free for Blink users</p>
+            <p className="text-xs text-gray-500">Free for Blink users</p>
           </div>
           <div>
-            <p className="text-sm text-text-secondary mb-1">Wallet Balance</p>
-            <p className="text-2xl font-bold font-mono">
+            <p className="text-sm text-gray-400 mb-1">Wallet Balance</p>
+            <p className="text-2xl font-bold font-mono text-white">
               {selectedWallet?.balance.toLocaleString()} sats
             </p>
           </div>
@@ -144,15 +144,15 @@ export function BatchPaymentPanel({
 
         {/* Wallet Selection */}
         <div className="space-y-2 mb-6">
-          <label className="text-sm font-medium">Select Wallet</label>
+          <label className="text-sm font-medium text-gray-300">Select Wallet</label>
           <select
             value={selectedWalletId}
             onChange={(e) => setSelectedWalletId(e.target.value)}
-            className="input w-full"
+            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:border-bitcoin-500/50 focus:outline-none appearance-none"
             disabled={isProcessing}
           >
             {account.wallets.map((wallet) => (
-              <option key={wallet.id} value={wallet.id}>
+              <option key={wallet.id} value={wallet.id} className="bg-gray-900">
                 {wallet.walletCurrency} Wallet ({wallet.balance.toLocaleString()}{' '}
                 {wallet.walletCurrency === 'BTC' ? 'sats' : 'cents'})
               </option>
@@ -162,10 +162,10 @@ export function BatchPaymentPanel({
 
         {/* Balance Warning */}
         {selectedWallet && totalAmount > selectedWallet.balance && (
-          <div className="bg-status-error/10 border border-status-error/30 rounded-lg p-3 mb-6">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-6">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-status-error flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-status-error">
+              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-400">
                 Insufficient balance. You need {totalAmount.toLocaleString()} sats but only
                 have {selectedWallet.balance.toLocaleString()} sats available.
               </p>
@@ -193,7 +193,7 @@ export function BatchPaymentPanel({
             totalAmount > selectedWallet.balance ||
             validRecords.length === 0
           }
-          className="btn-primary w-full flex items-center justify-center gap-2"
+          className="w-full px-6 py-3 bg-gradient-to-r from-bitcoin-500 to-orange-500 hover:from-bitcoin-400 hover:to-orange-400 text-white font-semibold rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isProcessing ? (
             <>
@@ -209,10 +209,10 @@ export function BatchPaymentPanel({
         </button>
 
         {/* Info */}
-        <div className="mt-4 bg-bitcoin/5 border border-bitcoin/20 rounded-lg p-3">
-          <p className="text-xs text-text-secondary">
+        <div className="mt-4 bg-bitcoin-500/10 border border-bitcoin-500/20 rounded-lg p-3">
+          <p className="text-xs text-gray-400">
             Payments will be sent sequentially with a small delay between each to ensure
-            reliability. All payments to Blink addresses are <strong>free</strong> with no
+            reliability. All payments to Blink addresses are <strong className="text-white">free</strong> with no
             transaction fees.
           </p>
         </div>
@@ -220,21 +220,21 @@ export function BatchPaymentPanel({
 
       {/* Results */}
       {stats.progress === 100 && !isProcessing && (
-        <div className="card">
-          <h3 className="text-lg font-heading font-bold mb-4">Payment Results</h3>
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
+          <h3 className="text-lg font-heading font-bold mb-4 text-white">Payment Results</h3>
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-status-success/10 border border-status-success/30 rounded-lg p-4">
-              <p className="text-sm text-text-secondary mb-1">Successful</p>
-              <p className="text-3xl font-bold text-status-success">{stats.successful}</p>
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+              <p className="text-sm text-gray-400 mb-1">Successful</p>
+              <p className="text-3xl font-bold text-green-400">{stats.successful}</p>
             </div>
-            <div className="bg-status-error/10 border border-status-error/30 rounded-lg p-4">
-              <p className="text-sm text-text-secondary mb-1">Failed</p>
-              <p className="text-3xl font-bold text-status-error">{stats.failed}</p>
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+              <p className="text-sm text-gray-400 mb-1">Failed</p>
+              <p className="text-3xl font-bold text-red-400">{stats.failed}</p>
             </div>
-            <div className="bg-bitcoin/10 border border-bitcoin/30 rounded-lg p-4">
-              <p className="text-sm text-text-secondary mb-1">Total Sent</p>
-              <p className="text-2xl font-bold font-mono">{stats.totalAmount.toLocaleString()}</p>
-              <p className="text-xs text-text-muted">sats</p>
+            <div className="bg-bitcoin-500/10 border border-bitcoin-500/30 rounded-lg p-4">
+              <p className="text-sm text-gray-400 mb-1">Total Sent</p>
+              <p className="text-2xl font-bold font-mono text-white">{stats.totalAmount.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">sats</p>
             </div>
           </div>
         </div>

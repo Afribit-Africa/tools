@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const processedEconomies = allEconomies.map((economy) => {
       const originalAddress = economy.lightningAddress || '';
       const sanitized = sanitizeAddress(originalAddress);
-      
+
       return {
         id: economy.id,
         economyName: economy.economyName,

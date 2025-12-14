@@ -147,7 +147,7 @@ export default function BulkPaymentPage() {
   // Send batch payments
   const sendPayments = async () => {
     const selectedEconomies = economies.filter(e => e.selected && e.status === 'valid');
-    
+
     if (selectedEconomies.length === 0) {
       alert('No valid economies selected for payment');
       return;
@@ -192,14 +192,14 @@ export default function BulkPaymentPage() {
 
   // Toggle economy selection
   const toggleSelection = (id: string) => {
-    setEconomies(prev => prev.map(e => 
+    setEconomies(prev => prev.map(e =>
       e.id === id ? { ...e, selected: !e.selected } : e
     ));
   };
 
   // Update individual amount
   const updateAmount = (id: string, amount: number) => {
-    setEconomies(prev => prev.map(e => 
+    setEconomies(prev => prev.map(e =>
       e.id === id ? { ...e, amount } : e
     ));
   };
@@ -213,8 +213,8 @@ export default function BulkPaymentPage() {
   const toggleAllValid = () => {
     const validEconomies = economies.filter(e => e.status === 'valid');
     const allSelected = validEconomies.every(e => e.selected);
-    
-    setEconomies(prev => prev.map(e => 
+
+    setEconomies(prev => prev.map(e =>
       e.status === 'valid' ? { ...e, selected: !allSelected } : e
     ));
   };

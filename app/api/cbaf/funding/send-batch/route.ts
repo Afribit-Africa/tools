@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     const apiKey = decrypt(apiKeySetting[0].encryptedValue);
-    
+
     // Get wallet ID from settings metadata
     let walletId: string | undefined;
     if (apiKeySetting[0].metadata) {
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       try {
         // Send payment via Blink API
         const paymentMemo = memo || `CBAF Funding - ${fundingMonth}`;
-        
+
         const response = await fetch('https://api.blink.sv/graphql', {
           method: 'POST',
           headers: {
@@ -139,10 +139,10 @@ export async function POST(request: NextRequest) {
         const data = await response.json();
 
         if (data.errors || data.data?.intraLedgerPaymentSend?.errors?.length > 0) {
-          const errorMsg = data.errors?.[0]?.message || 
+          const errorMsg = data.errors?.[0]?.message ||
                           data.data?.intraLedgerPaymentSend?.errors?.[0]?.message ||
                           'Payment failed';
-          
+
           results.push({
             economyId,
             economyName,
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
           });
         } else {
           const status = data.data?.intraLedgerPaymentSend?.status;
-          
+
           results.push({
             economyId,
             economyName,

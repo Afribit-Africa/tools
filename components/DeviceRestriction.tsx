@@ -9,20 +9,20 @@ export function DeviceRestriction() {
   useEffect(() => {
     const checkDevice = () => {
       const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-      
+
       // Check if mobile device
       const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
       const isMobileDevice = mobileRegex.test(userAgent);
-      
+
       // Also check screen size
       const isSmallScreen = window.innerWidth < 768;
-      
+
       setIsMobile(isMobileDevice || isSmallScreen);
     };
 
     checkDevice();
     window.addEventListener('resize', checkDevice);
-    
+
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 

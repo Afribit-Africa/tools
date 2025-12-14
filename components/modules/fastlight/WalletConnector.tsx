@@ -119,17 +119,17 @@ export function WalletConnector({ onConnect, onDisconnect, isConnected, account 
     const isExpiringSoon = timeRemaining < 5 * 60 * 1000; // Less than 5 minutes
 
     return (
-      <div className={`card ${isExpiringSoon ? 'bg-status-warning/10 border-status-warning/30' : 'bg-status-success/10 border-status-success/30'}`}>
+      <div className={`bg-white/5 backdrop-blur-xl border rounded-xl p-4 ${isExpiringSoon ? 'border-yellow-500/30' : 'border-green-500/30'}`}>
         <div className="flex items-start gap-4">
-          <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${isExpiringSoon ? 'bg-status-warning/20' : 'bg-status-success/20'}`}>
-            <CheckCircle2 className={`w-6 h-6 ${isExpiringSoon ? 'text-status-warning' : 'text-status-success'}`} />
+          <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${isExpiringSoon ? 'bg-yellow-500/20' : 'bg-green-500/20'}`}>
+            <CheckCircle2 className={`w-6 h-6 ${isExpiringSoon ? 'text-yellow-400' : 'text-green-400'}`} />
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-semibold">Wallet Connected</h4>
+              <h4 className="font-semibold text-white">Wallet Connected</h4>
               <button
                 onClick={handleDisconnect}
-                className="text-xs text-text-muted hover:text-status-error transition-colors"
+                className="text-xs text-gray-500 hover:text-red-400 transition-colors"
               >
                 Disconnect
               </button>
@@ -137,22 +137,22 @@ export function WalletConnector({ onConnect, onDisconnect, isConnected, account 
 
             {/* API Key Display */}
             <div className="mb-3 flex items-center gap-2 text-xs">
-              <span className="text-text-muted">API Key:</span>
-              <code className="font-mono text-text-secondary">{maskApiKey(storedKey || '')}</code>
+              <span className="text-gray-500">API Key:</span>
+              <code className="font-mono text-gray-400">{maskApiKey(storedKey || '')}</code>
             </div>
 
             {/* Session Timer */}
             <div className="mb-3 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
-                <Clock className={`w-4 h-4 ${isExpiringSoon ? 'text-status-warning' : 'text-text-muted'}`} />
-                <span className={isExpiringSoon ? 'text-status-warning font-semibold' : 'text-text-muted'}>
+                <Clock className={`w-4 h-4 ${isExpiringSoon ? 'text-yellow-400' : 'text-gray-500'}`} />
+                <span className={isExpiringSoon ? 'text-yellow-400 font-semibold' : 'text-gray-500'}>
                   Session expires in: {formatTimeRemaining(timeRemaining)}
                 </span>
               </div>
               {isExpiringSoon && (
                 <button
                   onClick={handleExtendSession}
-                  className="flex items-center gap-1 text-bitcoin hover:text-bitcoin-light transition-colors"
+                  className="flex items-center gap-1 text-bitcoin-400 hover:text-bitcoin-300 transition-colors"
                 >
                   <RefreshCw className="w-3 h-3" />
                   Extend
@@ -164,10 +164,10 @@ export function WalletConnector({ onConnect, onDisconnect, isConnected, account 
             <div className="space-y-2">
               {account.wallets.map((wallet) => (
                 <div key={wallet.id} className="flex items-center justify-between text-sm">
-                  <span className="text-text-secondary">
+                  <span className="text-gray-400">
                     {wallet.walletCurrency} Wallet:
                   </span>
-                  <span className="font-mono font-bold text-bitcoin">
+                  <span className="font-mono font-bold text-bitcoin-400">
                     {wallet.walletCurrency === 'BTC'
                       ? `${wallet.balance.toLocaleString()} sats`
                       : `$${(wallet.balance / 100).toFixed(2)}`}
@@ -182,21 +182,21 @@ export function WalletConnector({ onConnect, onDisconnect, isConnected, account 
   }
 
   return (
-    <div className="card">
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4">
       <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 w-10 h-10 bg-bitcoin/20 rounded-lg flex items-center justify-center">
-          <Wallet className="w-6 h-6 text-bitcoin" />
+        <div className="flex-shrink-0 w-10 h-10 bg-bitcoin-500/20 rounded-lg flex items-center justify-center">
+          <Wallet className="w-6 h-6 text-bitcoin-400" />
         </div>
         <div className="flex-1 space-y-4">
           <div>
-            <h4 className="font-semibold mb-1">Connect Blink Wallet</h4>
-            <p className="text-sm text-text-secondary">
+            <h4 className="font-semibold mb-1 text-white">Connect Blink Wallet</h4>
+            <p className="text-sm text-gray-400">
               Enter your Blink API key to enable batch payments.{' '}
               <a
                 href="https://dashboard.blink.sv/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-bitcoin hover:text-bitcoin-light underline"
+                className="text-bitcoin-400 hover:text-bitcoin-300 underline"
               >
                 Get API key
               </a>
@@ -209,11 +209,11 @@ export function WalletConnector({ onConnect, onDisconnect, isConnected, account 
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="blink_..."
-              className="input w-full font-mono"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:border-bitcoin-500/50 focus:outline-none focus:ring-1 focus:ring-bitcoin-500/50 font-mono"
               disabled={isConnecting}
             />
             {error && (
-              <div className="flex items-center gap-2 text-status-error text-sm">
+              <div className="flex items-center gap-2 text-red-400 text-sm">
                 <AlertCircle className="w-4 h-4" />
                 <span>{error}</span>
               </div>
@@ -223,7 +223,7 @@ export function WalletConnector({ onConnect, onDisconnect, isConnected, account 
           <button
             onClick={handleConnect}
             disabled={isConnecting || !apiKey.trim()}
-            className="btn-primary w-full"
+            className="w-full px-6 py-3 bg-gradient-to-r from-bitcoin-500 to-orange-500 hover:from-bitcoin-400 hover:to-orange-400 text-white font-semibold rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isConnecting ? (
               <>
@@ -235,9 +235,9 @@ export function WalletConnector({ onConnect, onDisconnect, isConnected, account 
             )}
           </button>
 
-          <div className="bg-bitcoin/5 border border-bitcoin/20 rounded-lg p-3">
-            <p className="text-xs text-text-secondary">
-              <strong className="text-status-warning">Security Note:</strong> Your API key is only
+          <div className="bg-bitcoin-500/10 border border-bitcoin-500/20 rounded-lg p-3">
+            <p className="text-xs text-gray-400">
+              <strong className="text-yellow-400">Security Note:</strong> Your API key is only
               used for this session and is not stored anywhere. Make sure to use an API key with
               <strong> Write</strong> scope to send payments.
             </p>
