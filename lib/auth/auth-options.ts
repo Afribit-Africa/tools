@@ -120,9 +120,10 @@ export const authOptions: NextAuthOptions = {
     },
 
     async jwt({ token, user, account }) {
-      console.log('🔑 JWT Callback:', { hasUser: !!user, hasAccount: !!account, tokenRole: token.role, email: token.email });
+      try {
+        console.log('🔑 JWT Callback:', { hasUser: !!user, hasAccount: !!account, tokenRole: token.role, email: token.email });
 
-      if (account && user) {
+        if (account && user) {
         const role = getUserRole(user.email!);
         console.log('🆕 New sign-in, setting role:', role);
 
@@ -226,14 +227,21 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      console.log('🔑 JWT Token after processing:', { role: token.role, email: token.email, adminId: token.adminId });
-      return token;
+        console.log('🔑 JWT Token after processing:', { role: token.role, email: token.email, adminId: token.adminId });
+        return token;
+      } catch (error) {
+        console.error('❌ Error in JWT callback:', error);
+        console.error('❌ Error details:', error instanceof Error ? error.message : String(error));
+        // Return token as-is to prevent auth failure, but log the error
+        return token;
+      }
     },
 
     async session({ session, token }) {
-      console.log('📋 Session Callback:', { tokenRole: token.role, email: token.email });
+      try {
+        console.log('📋 Session Callback:', { tokenRole: token.role, email: token.email });
 
-      if (session.user) {
+        if (session.user) {
         session.user.role = token.role as 'bce' | 'admin' | 'super_admin';
         session.user.googleId = token.googleId as string;
         session.user.email = token.email as string;
@@ -256,8 +264,14 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      console.log('📋 Session after processing:', { role: session.user.role, email: session.user.email });
-      return session;
+        console.log('📋 Session after processing:', { role: session.user.role, email: session.user.email });
+        return session;
+      } catch (error) {
+        console.error('❌ Error in session callback:', error);
+        console.error('❌ Error details:', error instanceof Error ? error.message : String(error));
+        // Return session as-is to prevent auth failure
+        return session;
+      }
     },
   },
 

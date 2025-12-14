@@ -8,14 +8,14 @@ import { describe, test, expect, jest } from '@jest/globals';
 describe('Authentication', () => {
   describe('Role-Based Access Control', () => {
     type UserRole = 'bce' | 'admin' | 'super_admin';
-    
+
     const hasPermission = (userRole: UserRole, requiredRole: UserRole): boolean => {
       const roleHierarchy: Record<UserRole, number> = {
         'bce': 1,
         'admin': 2,
         'super_admin': 3,
       };
-      
+
       return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
     };
 
@@ -124,7 +124,7 @@ describe('OAuth Flow', () => {
       };
 
       const userInfo = extractUserInfo(googleProfile);
-      
+
       expect(userInfo.email).toBe('user@gmail.com');
       expect(userInfo.name).toBe('Test User');
       expect(userInfo.image).toBe('https://lh3.googleusercontent.com/a/photo');
@@ -142,7 +142,7 @@ describe('OAuth Flow', () => {
       };
 
       const userInfo = extractUserInfo(incompleteProfile);
-      
+
       expect(userInfo.email).toBe('user@gmail.com');
       expect(userInfo.name).toBe('Unknown User');
       expect(userInfo.image).toBeNull();

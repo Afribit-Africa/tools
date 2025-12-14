@@ -18,14 +18,14 @@ describe('Merchant Registration', () => {
   describe('BTCMap URL Validation', () => {
     test('should extract OSM node ID from valid BTCMap URL', () => {
       const { extractOsmNodeId } = require('@/lib/btcmap/verify-merchant');
-      
+
       expect(extractOsmNodeId('https://btcmap.org/merchant/12345')).toBe('12345');
       expect(extractOsmNodeId('https://btcmap.org/merchant/27154')).toBe('27154');
     });
 
     test('should return null for invalid BTCMap URL', () => {
       const { extractOsmNodeId } = require('@/lib/btcmap/verify-merchant');
-      
+
       expect(extractOsmNodeId('https://google.com')).toBeNull();
       expect(extractOsmNodeId('invalid-url')).toBeNull();
       expect(extractOsmNodeId('')).toBeNull();
@@ -33,10 +33,10 @@ describe('Merchant Registration', () => {
 
     test('should handle various BTCMap URL formats', () => {
       const { extractOsmNodeId } = require('@/lib/btcmap/verify-merchant');
-      
+
       // Standard format
       expect(extractOsmNodeId('https://btcmap.org/merchant/12345')).toBe('12345');
-      
+
       // With trailing slash
       expect(extractOsmNodeId('https://btcmap.org/merchant/12345/')).toBe('12345');
     });
@@ -81,20 +81,20 @@ describe('Merchant Registration', () => {
     test('should mark merchant as verified when BTCMap URL is valid', () => {
       const { extractOsmNodeId } = require('@/lib/btcmap/verify-merchant');
       const url = 'https://btcmap.org/merchant/27154';
-      
+
       const osmNodeId = extractOsmNodeId(url);
       const btcmapVerified = osmNodeId !== null;
-      
+
       expect(btcmapVerified).toBe(true);
     });
 
     test('should not verify merchant with invalid URL', () => {
       const { extractOsmNodeId } = require('@/lib/btcmap/verify-merchant');
       const url = 'https://invalid-url.com';
-      
+
       const osmNodeId = extractOsmNodeId(url);
       const btcmapVerified = osmNodeId !== null;
-      
+
       expect(btcmapVerified).toBe(false);
     });
   });

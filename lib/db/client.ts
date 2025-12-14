@@ -3,7 +3,9 @@ import { neon } from '@neondatabase/serverless';
 import * as schema from './schema';
 
 if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is not set');
+  console.error('❌ CRITICAL: DATABASE_URL environment variable is not set');
+  console.error('❌ Please check your environment variables in production');
+  throw new Error('DATABASE_URL environment variable is not set. Please configure your database connection.');
 }
 
 const sql = neon(process.env.DATABASE_URL);

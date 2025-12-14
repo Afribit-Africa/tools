@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:check": "tsx scripts/check-production.ts && next build",
     "start": "next start",
     "lint": "next lint",
+    "check:env": "tsx scripts/check-production.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",

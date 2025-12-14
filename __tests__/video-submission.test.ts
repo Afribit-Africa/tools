@@ -9,9 +9,9 @@ describe('Video URL Validation', () => {
   describe('Platform Detection', () => {
     const detectPlatform = (url: string): string => {
       if (!url) return 'other';
-      
+
       const urlLower = url.toLowerCase();
-      
+
       if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) {
         return 'youtube';
       }
@@ -24,7 +24,7 @@ describe('Video URL Validation', () => {
       if (urlLower.includes('instagram.com')) {
         return 'instagram';
       }
-      
+
       return 'other';
     };
 
@@ -127,14 +127,14 @@ describe('Video Submission Validation', () => {
   test('should require video URL', () => {
     const validateSubmission = (data: { videoUrl?: string; merchantIds?: string[] }) => {
       const errors: string[] = [];
-      
+
       if (!data.videoUrl || data.videoUrl.trim() === '') {
         errors.push('Video URL is required');
       }
       if (!data.merchantIds || data.merchantIds.length === 0) {
         errors.push('At least one merchant must be selected');
       }
-      
+
       return errors;
     };
 
@@ -162,7 +162,7 @@ describe('Video Submission Validation', () => {
 describe('Merchant Selection', () => {
   test('should allow multiple merchant selection', () => {
     const selectedMerchants: string[] = [];
-    
+
     const toggleMerchant = (id: string) => {
       const index = selectedMerchants.indexOf(id);
       if (index > -1) {
@@ -174,10 +174,10 @@ describe('Merchant Selection', () => {
 
     toggleMerchant('merchant-1');
     expect(selectedMerchants).toContain('merchant-1');
-    
+
     toggleMerchant('merchant-2');
     expect(selectedMerchants).toHaveLength(2);
-    
+
     toggleMerchant('merchant-1');
     expect(selectedMerchants).not.toContain('merchant-1');
     expect(selectedMerchants).toHaveLength(1);

@@ -22,7 +22,7 @@ describe('Funding Distribution', () => {
     test('should calculate per-merchant base distribution', () => {
       const baseAmount = 5000;
       const video = { id: 'v1', merchantIds: ['m1', 'm2', 'm3'] };
-      
+
       const perMerchant = baseAmount / video.merchantIds.length;
       expect(perMerchant).toBeCloseTo(1666.67, 1);
     });
@@ -45,7 +45,7 @@ describe('Funding Distribution', () => {
       }));
 
       const totalInverse = inverseRanks.reduce((sum, e) => sum + e.inverseRank, 0);
-      
+
       const distributions = inverseRanks.map(e => ({
         economy: e.slug,
         share: (e.inverseRank / totalInverse) * rankBonusPool
@@ -78,9 +78,9 @@ describe('Funding Distribution', () => {
       ];
 
       const totalNewMerchants = videos.reduce((sum, v) => sum + v.newMerchantCount, 0);
-      
+
       const bonusPerNewMerchant = performanceBonusPool / totalNewMerchants;
-      
+
       const distributions = videos.map(v => ({
         videoId: v.id,
         bonus: v.newMerchantCount * bonusPerNewMerchant
@@ -99,15 +99,15 @@ describe('Funding Distribution', () => {
       ];
 
       const totalNewMerchants = videos.reduce((sum, v) => sum + v.newMerchantCount, 0);
-      
+
       // If no new merchants, pool should remain undistributed or rollover
       expect(totalNewMerchants).toBe(0);
-      
+
       // No division by zero
-      const bonusPerNewMerchant = totalNewMerchants > 0 
-        ? performanceBonusPool / totalNewMerchants 
+      const bonusPerNewMerchant = totalNewMerchants > 0
+        ? performanceBonusPool / totalNewMerchants
         : 0;
-      
+
       expect(bonusPerNewMerchant).toBe(0);
     });
   });
@@ -117,7 +117,7 @@ describe('Funding Distribution', () => {
       const isValidFundingMonth = (month: string) => {
         const regex = /^\d{4}-\d{2}$/;
         if (!regex.test(month)) return false;
-        
+
         const [year, monthNum] = month.split('-').map(Number);
         return year >= 2024 && year <= 2030 && monthNum >= 1 && monthNum <= 12;
       };
@@ -132,7 +132,7 @@ describe('Funding Distribution', () => {
     test('should prevent double-funding for same month', () => {
       const processedMonths = ['2025-01', '2025-02'];
       const requestedMonth = '2025-01';
-      
+
       const alreadyProcessed = processedMonths.includes(requestedMonth);
       expect(alreadyProcessed).toBe(true);
     });
@@ -149,9 +149,9 @@ describe('Funding Distribution', () => {
 
       const approvedVideoCount = 20;
       const baseTotal = config.baseAmount * approvedVideoCount;
-      
+
       const calculatedTotal = baseTotal + config.rankBonusPool + config.performanceBonusPool;
-      
+
       // Custom totalPool can override calculated
       expect(config.totalPool).toBeGreaterThan(calculatedTotal);
     });
@@ -173,7 +173,7 @@ describe('Funding Distribution', () => {
 describe('Satoshi Calculations', () => {
   test('should handle satoshi rounding', () => {
     const roundSats = (sats: number) => Math.floor(sats);
-    
+
     expect(roundSats(1666.67)).toBe(1666);
     expect(roundSats(1666.99)).toBe(1666);
     expect(roundSats(1667.0)).toBe(1667);
