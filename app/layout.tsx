@@ -5,6 +5,7 @@ import { NetworkMonitor } from '@/components/NetworkMonitor';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import SessionProvider from '@/lib/auth/SessionProvider';
 import { NotificationProvider } from '@/components/ui/NotificationSystem';
+import { DeviceRestriction } from '@/components/DeviceRestriction';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -56,6 +57,7 @@ export default function RootLayout({
         <SessionProvider>
           <NotificationProvider>
             <ErrorBoundary>
+              <DeviceRestriction />
               <NetworkMonitor />
               {children}
             </ErrorBoundary>

@@ -19,7 +19,7 @@ function SignInContent() {
     signIn('google', { callbackUrl });
   };
 
-  // Logo images for mini carousel
+  // Logo images
   const logos = [
     { src: '/logos/afribit-logo.png', alt: 'Afribit' },
     { src: '/logos/blink-dark-bg.png', alt: 'Blink' },
@@ -94,20 +94,20 @@ function SignInContent() {
       {/* Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-6 py-24">
         <div className="w-full max-w-md">
-          {/* Mini Logo Carousel - Above Card */}
+          {/* Logo Carousel - Minimalistic */}
           <div className="mb-8 overflow-hidden">
-            <div className="flex gap-4 animate-scroll-slow items-center justify-center">
+            <div className="flex gap-6 animate-scroll-slow items-center justify-center py-4">
               {[...logos, ...logos].map((logo, index) => (
                 <div
                   key={index}
-                  className="flex-shrink-0 w-12 h-12 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-1.5 flex items-center justify-center"
+                  className="flex-shrink-0 w-16 h-16 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-2 flex items-center justify-center"
                 >
                   <Image
                     src={logo.src}
                     alt={logo.alt}
-                    width={40}
-                    height={40}
-                    className="object-contain opacity-60 hover:opacity-100 transition-opacity"
+                    width={48}
+                    height={48}
+                    className="object-contain opacity-70 hover:opacity-100 transition-opacity"
                   />
                 </div>
               ))}
@@ -131,11 +131,6 @@ function SignInContent() {
 
           {/* Sign In Card - Glass Effect */}
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-heading font-bold text-white mb-2">Welcome</h2>
-              <p className="text-white/60">Sign in to access your dashboard</p>
-            </div>
-
             <button
               onClick={handleSignIn}
               className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-800 font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02]"
@@ -193,7 +188,7 @@ function SignInContent() {
         }
         
         .animate-scroll-slow {
-          animation: scroll-slow 25s linear infinite;
+          animation: scroll-slow 30s linear infinite;
         }
       `}</style>
     </div>
