@@ -11,7 +11,7 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <Link 
+        <Link
           href="/"
           className="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary mb-8 transition-colors"
         >
@@ -20,7 +20,7 @@ export default function TermsPage() {
         </Link>
 
         <h1 className="text-4xl font-heading font-bold mb-6">Terms of Service</h1>
-        
+
         <div className="prose prose-invert max-w-none">
           <p className="text-text-secondary mb-6">
             Last updated: December 14, 2025
@@ -63,7 +63,7 @@ export default function TermsPage() {
 
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">4. User Roles and Responsibilities</h2>
-            
+
             <h3 className="text-xl font-semibold mb-3 mt-4">4.1 Bitcoin Circular Economy (BCE) Users</h3>
             <ul className="list-disc list-inside text-text-secondary space-y-2 ml-4 mb-4">
               <li>Register and manage merchants in your economy</li>

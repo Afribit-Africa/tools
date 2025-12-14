@@ -11,7 +11,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <Link 
+        <Link
           href="/"
           className="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary mb-8 transition-colors"
         >
@@ -20,7 +20,7 @@ export default function PrivacyPage() {
         </Link>
 
         <h1 className="text-4xl font-heading font-bold mb-6">Privacy Policy</h1>
-        
+
         <div className="prose prose-invert max-w-none">
           <p className="text-text-secondary mb-6">
             Last updated: December 14, 2025

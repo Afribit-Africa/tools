@@ -63,7 +63,16 @@ export async function GET() {
   }
 
   // Check 4: Summary
-  const allEnvVarsSet = Object.values(checks.checks.envVars).every(v => v === true);
+  const envVarsToCheck = {
+    DATABASE_URL: checks.checks.envVars.DATABASE_URL,
+    NEXTAUTH_URL: checks.checks.envVars.NEXTAUTH_URL,
+    NEXTAUTH_SECRET: checks.checks.envVars.NEXTAUTH_SECRET,
+    GOOGLE_CLIENT_ID: checks.checks.envVars.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: checks.checks.envVars.GOOGLE_CLIENT_SECRET,
+    CBAF_SUPER_ADMIN_EMAILS: checks.checks.envVars.CBAF_SUPER_ADMIN_EMAILS,
+    CBAF_ADMIN_EMAILS: checks.checks.envVars.CBAF_ADMIN_EMAILS,
+  };
+  const allEnvVarsSet = Object.values(envVarsToCheck).every(v => v === true);
   const nextAuthUrlValid = checks.checks.nextAuthUrlValidation.isSet &&
                            checks.checks.nextAuthUrlValidation.hasProtocol &&
                            !checks.checks.nextAuthUrlValidation.hasTrailingSlash &&
