@@ -3,10 +3,17 @@ import { HTMLAttributes, ReactNode } from 'react';
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   hover?: boolean;
+  darkMode?: boolean;
 }
 
-export function Card({ children, hover = false, className = '', ...props }: CardProps) {
-  const classes = hover ? `card-hover ${className}` : `card ${className}`;
+export function Card({ children, hover = false, darkMode = true, className = '', ...props }: CardProps) {
+  let classes = '';
+  
+  if (darkMode) {
+    classes = hover ? `glass-card-hover ${className}` : `glass-card ${className}`;
+  } else {
+    classes = hover ? `card-hover ${className}` : `card ${className}`;
+  }
 
   return (
     <div className={classes} {...props}>
@@ -29,11 +36,13 @@ export function CardHeader({ children, className = '', ...props }: CardHeaderPro
 
 export interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
   children: ReactNode;
+  darkMode?: boolean;
 }
 
-export function CardTitle({ children, className = '', ...props }: CardTitleProps) {
+export function CardTitle({ children, darkMode = true, className = '', ...props }: CardTitleProps) {
+  const textColor = darkMode ? 'text-white' : 'text-gray-900';
   return (
-    <h3 className={`text-lg font-heading font-semibold text-gray-900 ${className}`} {...props}>
+    <h3 className={`text-lg font-heading font-semibold ${textColor} ${className}`} {...props}>
       {children}
     </h3>
   );
@@ -53,11 +62,13 @@ export function CardContent({ children, className = '', ...props }: CardContentP
 
 export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
+  darkMode?: boolean;
 }
 
-export function CardFooter({ children, className = '', ...props }: CardFooterProps) {
+export function CardFooter({ children, darkMode = true, className = '', ...props }: CardFooterProps) {
+  const borderColor = darkMode ? 'border-white/10' : 'border-gray-200';
   return (
-    <div className={`mt-4 pt-4 border-t border-gray-200 ${className}`} {...props}>
+    <div className={`mt-4 pt-4 border-t ${borderColor} ${className}`} {...props}>
       {children}
     </div>
   );
