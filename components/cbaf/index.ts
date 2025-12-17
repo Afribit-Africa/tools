@@ -39,6 +39,18 @@ export type { HeaderProps } from './layout/Header';
 export { default as Container } from './layout/Container';
 export type { ContainerProps } from './layout/Container';
 
+export { default as Sidebar, BCESidebarSections, AdminSidebarSections, SuperAdminSidebarSections } from './layout/Sidebar';
+export type { SidebarProps, SidebarItem, SidebarSection } from './layout/Sidebar';
+
+export { default as Breadcrumbs, generateBreadcrumbs } from './layout/Breadcrumbs';
+export type { BreadcrumbsProps, BreadcrumbItem } from './layout/Breadcrumbs';
+
+export { default as PageHeader } from './layout/PageHeader';
+export type { PageHeaderProps } from './layout/PageHeader';
+
+export { default as DashboardLayout } from './layout/DashboardLayout';
+export type { DashboardLayoutProps } from './layout/DashboardLayout';
+
 // Export shared components
 export { default as StatCard } from './shared/StatCard';
 export type { StatCardProps } from './shared/StatCard';
