@@ -31,8 +31,8 @@ export async function parseCSVFile(file: File): Promise<ParsedCSV> {
           // Try to detect the address column
           const headers = data[0];
           const detectedColumns = detectAllAddressColumns(headers, data);
-          const addressColumnIndex = detectedColumns.length > 0 
-            ? detectedColumns[0].index 
+          const addressColumnIndex = detectedColumns.length > 0
+            ? detectedColumns[0].index
             : 0;
 
           // Extract addresses (skip header row)
@@ -64,16 +64,16 @@ export async function parseCSVFile(file: File): Promise<ParsedCSV> {
  */
 function detectAllAddressColumns(headers: string[], data: string[][]): ColumnDetection[] {
   const detections: ColumnDetection[] = [];
-  
+
   // Priority keywords - higher priority = lightning-specific terms
   const highPriorityKeywords = ['lightning', 'ln', 'blink', 'lnurl', 'lightning_address', 'ln_address'];
   const mediumPriorityKeywords = ['address', 'recipient', 'payee', 'wallet'];
   const lowPriorityKeywords = ['username', 'email', 'user', 'contact'];
-  
+
   headers.forEach((header, index) => {
     const headerLower = String(header).toLowerCase().trim();
     const sampleValues = data.slice(1, 4).map(row => row[index] || '').filter(v => v);
-    
+
     // Check high priority (lightning-specific)
     if (highPriorityKeywords.some(kw => headerLower.includes(kw))) {
       detections.push({
@@ -85,11 +85,11 @@ function detectAllAddressColumns(headers: string[], data: string[][]): ColumnDet
       });
       return;
     }
-    
+
     // Check if values look like lightning addresses (contain @)
     const hasAtSymbol = sampleValues.some(v => v.includes('@'));
     const hasBlinkDomain = sampleValues.some(v => v.includes('@blink.sv') || v.includes('@blink'));
-    
+
     if (hasBlinkDomain) {
       detections.push({
         index,
@@ -100,7 +100,7 @@ function detectAllAddressColumns(headers: string[], data: string[][]): ColumnDet
       });
       return;
     }
-    
+
     // Check medium priority
     if (mediumPriorityKeywords.some(kw => headerLower.includes(kw))) {
       detections.push({
@@ -112,20 +112,20 @@ function detectAllAddressColumns(headers: string[], data: string[][]): ColumnDet
       });
       return;
     }
-    
+
     // Check low priority - be careful with "email" columns
     if (lowPriorityKeywords.some(kw => headerLower.includes(kw))) {
       // If it's explicitly an email column and values have common email domains, lower confidence
-      const hasEmailDomains = sampleValues.some(v => 
-        v.includes('@gmail.') || v.includes('@yahoo.') || v.includes('@outlook.') || 
+      const hasEmailDomains = sampleValues.some(v =>
+        v.includes('@gmail.') || v.includes('@yahoo.') || v.includes('@outlook.') ||
         v.includes('@hotmail.') || v.includes('@proton.')
       );
-      
+
       if (headerLower.includes('email') && hasEmailDomains) {
         // Skip - this is likely a regular email column, not lightning addresses
         return;
       }
-      
+
       if (hasAtSymbol) {
         detections.push({
           index,
@@ -137,11 +137,11 @@ function detectAllAddressColumns(headers: string[], data: string[][]): ColumnDet
       }
     }
   });
-  
+
   // Sort by confidence (high > medium > low)
   const confidenceOrder = { high: 0, medium: 1, low: 2 };
   detections.sort((a, b) => confidenceOrder[a.confidence] - confidenceOrder[b.confidence]);
-  
+
   return detections;
 }
 

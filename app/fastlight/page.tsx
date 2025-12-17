@@ -51,12 +51,12 @@ export default function FastlightPage() {
   const [isValidating, setIsValidating] = useState(false);
   const [loadingState, setLoadingState] = useState<string>('');
   const [detectedHeaders, setDetectedHeaders] = useState<{headers: string[], addressColumn: number, amountColumn?: number} | null>(null);
-  
+
   // Column selection state
   const [showColumnSelector, setShowColumnSelector] = useState(false);
   const [parsedFileData, setParsedFileData] = useState<ParsedFileData | null>(null);
   const [selectedAddressColumn, setSelectedAddressColumn] = useState<number>(0);
-  
+
   const [stats, setStats] = useState<ValidationStats>({
     total: 0,
     valid: 0,
@@ -119,7 +119,7 @@ export default function FastlightPage() {
       }
 
       amountColumn = detectAmountColumn(headers);
-      
+
       // Extract amounts if column detected
       let amounts: number[] = [];
       if (amountColumn !== undefined) {
@@ -141,12 +141,12 @@ export default function FastlightPage() {
         amounts,
       });
       setSelectedAddressColumn(addressColumn);
-      
+
       // Show column selector if there are multiple potential columns or low confidence
       const hasMultipleOptions = detectedColumns.length > 1;
       const hasLowConfidence = detectedColumns.length > 0 && detectedColumns[0].confidence !== 'high';
       const hasNoDetection = detectedColumns.length === 0;
-      
+
       if (hasMultipleOptions || hasLowConfidence || hasNoDetection) {
         setShowColumnSelector(true);
         setLoadingState('');
@@ -175,37 +175,37 @@ export default function FastlightPage() {
       setLoadingState('');
     }
   };
-  
+
   const handleColumnConfirm = async () => {
     if (!parsedFileData) return;
-    
+
     setShowColumnSelector(false);
-    
+
     // Re-extract addresses from the selected column
     const addresses = parsedFileData.data
       .slice(1)
       .map(row => row[selectedAddressColumn])
       .filter(addr => addr && String(addr).trim().length > 0)
       .map(addr => String(addr));
-    
+
     await proceedWithValidation(
-      selectedAddressColumn, 
-      parsedFileData.data, 
-      parsedFileData.headers, 
-      parsedFileData.amountColumn, 
+      selectedAddressColumn,
+      parsedFileData.data,
+      parsedFileData.headers,
+      parsedFileData.amountColumn,
       parsedFileData.amounts
     );
   };
-  
+
   const proceedWithValidation = async (
-    addressColumn: number, 
-    data: string[][], 
-    headers: string[], 
-    amountColumn: number | undefined, 
+    addressColumn: number,
+    data: string[][],
+    headers: string[],
+    amountColumn: number | undefined,
     amounts: number[]
   ) => {
     setIsValidating(true);
-    
+
     // Extract addresses from the selected column
     const addresses = data
       .slice(1)
@@ -519,7 +519,7 @@ export default function FastlightPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="p-6 max-h-[60vh] overflow-y-auto">
                 {/* Auto-detected suggestions */}
                 {parsedFileData.detectedColumns.length > 0 && (
@@ -539,8 +539,8 @@ export default function FastlightPage() {
                           <div className="flex items-center justify-between mb-2">
                             <span className="font-semibold text-white">{col.header}</span>
                             <span className={`px-2 py-0.5 text-xs rounded-full ${
-                              col.confidence === 'high' 
-                                ? 'bg-green-500/20 text-green-400' 
+                              col.confidence === 'high'
+                                ? 'bg-green-500/20 text-green-400'
                                 : col.confidence === 'medium'
                                   ? 'bg-yellow-500/20 text-yellow-400'
                                   : 'bg-gray-500/20 text-gray-400'
@@ -561,7 +561,7 @@ export default function FastlightPage() {
                     </div>
                   </div>
                 )}
-                
+
                 {/* All columns */}
                 <div>
                   <h4 className="text-sm font-semibold text-gray-300 mb-3">All Columns</h4>
@@ -570,7 +570,7 @@ export default function FastlightPage() {
                       const samples = getColumnSamples(idx);
                       const isSelected = selectedAddressColumn === idx;
                       const isSuggested = parsedFileData.detectedColumns.some(c => c.index === idx);
-                      
+
                       return (
                         <button
                           key={idx}
@@ -603,7 +603,7 @@ export default function FastlightPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="p-6 border-t border-white/10 flex items-center justify-between">
                 <button
                   onClick={resetState}
