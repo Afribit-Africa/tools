@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Video, Users, Loader2, ArrowLeft, CheckCircle, AlertCircle, Check, Calendar } from 'lucide-react';
-import { Alert } from '@/components/cbaf';
+import { Alert, Input, Button } from '@/components/cbaf';
 import Link from 'next/link';
 
 interface RegisteredMerchant {
@@ -165,16 +165,16 @@ export default function SubmitVideoPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white border-2 border-green-200 rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+      <div className="min-h-screen bg-black flex items-center justify-center px-4">
+        <div className="glass-card border-2 border-emerald-500/30 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl backdrop-blur-xl">
+          <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-emerald-400" />
           </div>
-          <h2 className="text-2xl font-heading font-bold text-gray-900 mb-2">Video Submitted!</h2>
-          <p className="text-gray-600 mb-4">
+          <h2 className="text-2xl font-heading font-bold text-white mb-2">Video Submitted!</h2>
+          <p className="text-white/70 mb-4">
             Your video has been submitted for review. You'll be notified once it's approved.
           </p>
-          <p className="text-sm text-gray-500">Redirecting to dashboard...</p>
+          <p className="text-sm text-white/50">Redirecting to dashboard...</p>
         </div>
       </div>
     );
@@ -184,12 +184,12 @@ export default function SubmitVideoPage() {
   const needsMoreMerchants = registeredMerchants.length < 5;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-black py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
           <Link
             href="/cbaf/dashboard"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium"
+            className="inline-flex items-center gap-2 text-white/60 hover:text-white font-medium transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
@@ -197,15 +197,15 @@ export default function SubmitVideoPage() {
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-heading font-bold text-gray-900 mb-2">Submit Video</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-heading font-bold text-white mb-2">Submit Video</h1>
+          <p className="text-white/70">
             Upload proof-of-work showcasing merchants in your circular economy
           </p>
         </div>
 
         {needsMoreMerchants && (
           <div className="mb-6">
-            <Alert variant="warning" title="Register More Merchants">
+            <Alert variant="warning" title="Register More Merchants" darkMode={true}>
               <div className="space-y-2">
                 <div className="text-sm">
                   You have {registeredMerchants.length} merchant{registeredMerchants.length !== 1 ? 's' : ''} registered.
@@ -213,7 +213,7 @@ export default function SubmitVideoPage() {
                 </div>
                 <Link
                   href="/cbaf/merchants/register"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-bitcoin-600 hover:text-bitcoin-700"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-bitcoin-400 hover:text-bitcoin-300"
                 >
                   <Users className="w-4 h-4" />
                   Register Merchants →
@@ -225,7 +225,7 @@ export default function SubmitVideoPage() {
 
         {error && (
           <div className="mb-6">
-            <Alert variant="error" title="Error">
+            <Alert variant="error" title="Error" darkMode={true}>
               {error}
             </Alert>
           </div>
@@ -233,14 +233,14 @@ export default function SubmitVideoPage() {
 
         {duplicateInfo?.isDuplicate && (
           <div className="mb-6">
-            <Alert variant="warning" title="Duplicate Video Detected">
+            <Alert variant="warning" title="Duplicate Video Detected" darkMode={true}>
               <div className="space-y-1">
                 <div className="text-sm">
                   This video was already submitted by{' '}
                   <span className="font-medium">{duplicateInfo.originalEconomy}</span> on{' '}
                   {new Date(duplicateInfo.submittedAt).toLocaleDateString()}.
                 </div>
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-white/50">
                   Time since original: {duplicateInfo.timeSinceSubmission}
                 </div>
               </div>
@@ -248,11 +248,11 @@ export default function SubmitVideoPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm space-y-6">
+        <form onSubmit={handleSubmit} className="glass-card rounded-2xl p-8 shadow-2xl space-y-6 backdrop-blur-xl">
           {/* Video URL */}
           <div>
-            <label className="label">
-              Video URL <span className="text-red-500">*</span>
+            <label className="label-dark">
+              Video URL <span className="text-red-400">*</span>
             </label>
             <div className="relative">
               <input
@@ -261,21 +261,21 @@ export default function SubmitVideoPage() {
                 onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
                 placeholder="https://youtube.com/watch?v=..."
                 required
-                className="input pr-10"
+                className="input-dark w-full pr-10"
               />
               {checkingDuplicate && (
-                <Loader2 className="absolute right-3 top-3.5 w-5 h-5 text-bitcoin-500 animate-spin" />
+                <Loader2 className="absolute right-3 top-3.5 w-5 h-5 text-bitcoin-400 animate-spin" />
               )}
             </div>
-            <p className="helper-text">
+            <p className="text-sm text-white/50 mt-1">
               Supports YouTube, Twitter, TikTok, Instagram
             </p>
           </div>
 
           {/* Video Title */}
           <div>
-            <label className="label">
-              Video Title <span className="text-red-500">*</span>
+            <label className="label-dark">
+              Video Title <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -283,27 +283,27 @@ export default function SubmitVideoPage() {
               onChange={(e) => setFormData({ ...formData, videoTitle: e.target.value })}
               placeholder="Merchant showcase - December 2025"
               required
-              className="input"
+              className="input-dark w-full"
             />
           </div>
 
           {/* Video Description */}
           <div>
-            <label className="label">Description</label>
+            <label className="label-dark">Description</label>
             <textarea
               value={formData.videoDescription}
               onChange={(e) => setFormData({ ...formData, videoDescription: e.target.value })}
               placeholder="Describe what's shown in this video..."
               rows={3}
-              className="textarea"
+              className="input-dark w-full resize-none"
             />
           </div>
 
           {/* Funding Month */}
           <div>
-            <label className="label flex items-center gap-2">
+            <label className="label-dark flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              Funding Month <span className="text-red-500">*</span>
+              Funding Month <span className="text-red-400">*</span>
             </label>
             <div className="relative">
               <input
@@ -311,11 +311,11 @@ export default function SubmitVideoPage() {
                 value={formData.fundingMonth}
                 onChange={(e) => setFormData({ ...formData, fundingMonth: e.target.value })}
                 required
-                className="input pl-10"
+                className="input-dark w-full pl-10"
               />
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 pointer-events-none" />
             </div>
-            <p className="helper-text">
+            <p className="text-sm text-white/50 mt-1">
               Select the month this video is being submitted for
             </p>
           </div>
@@ -323,32 +323,32 @@ export default function SubmitVideoPage() {
           {/* Merchant Selection */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="label">
+              <label className="label-dark">
                 <Users className="w-4 h-4 inline mr-1" />
-                Select Merchants Featured <span className="text-red-500">*</span>
+                Select Merchants Featured <span className="text-red-400">*</span>
               </label>
               <Link
                 href="/cbaf/merchants/register"
-                className="text-sm text-bitcoin-600 hover:text-bitcoin-700 font-medium"
+                className="text-sm text-bitcoin-400 hover:text-bitcoin-300 font-medium transition-colors"
               >
                 + Add New Merchant
               </Link>
             </div>
 
             {loadingMerchants ? (
-              <div className="flex items-center justify-center py-12 bg-gray-50 rounded-xl border border-gray-200">
-                <Loader2 className="w-6 h-6 text-bitcoin-500 animate-spin" />
+              <div className="flex items-center justify-center py-12 bg-white/5 rounded-xl border border-white/10">
+                <Loader2 className="w-6 h-6 text-bitcoin-400 animate-spin" />
               </div>
             ) : registeredMerchants.length === 0 ? (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
-                <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-                <p className="font-medium text-gray-900 mb-2">No Merchants Registered</p>
-                <p className="text-sm text-gray-600 mb-4">
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 text-center backdrop-blur-xl">
+                <AlertCircle className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
+                <p className="font-medium text-white mb-2">No Merchants Registered</p>
+                <p className="text-sm text-white/70 mb-4">
                   You need to register at least one merchant before submitting a video.
                 </p>
                 <Link
                   href="/cbaf/merchants/register"
-                  className="btn-primary inline-flex items-center gap-2"
+                  className="btn-primary-dark inline-flex items-center gap-2"
                 >
                   <Users className="w-4 h-4" />
                   Register Your First Merchant
@@ -362,31 +362,31 @@ export default function SubmitVideoPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search merchants..."
-                  className="input mb-3"
+                  className="input-dark w-full mb-3"
                 />
 
                 {/* Merchant List */}
-                <div className="border border-gray-200 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
+                <div className="border border-white/10 rounded-xl overflow-hidden max-h-96 overflow-y-auto bg-white/5 backdrop-blur-xl">
                   {filteredMerchants.length === 0 ? (
-                    <div className="p-6 text-center text-gray-500 text-sm">
+                    <div className="p-6 text-center text-white/50 text-sm">
                       No merchants found matching "{searchQuery}"
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-200">
+                    <div className="divide-y divide-white/10">
                       {filteredMerchants.map((merchant) => {
                         const isSelected = selectedMerchantIds.includes(merchant.id);
                         return (
                           <label
                             key={merchant.id}
-                            className={`flex items-start gap-3 p-4 cursor-pointer transition-colors hover:bg-gray-50 ${
-                              isSelected ? 'bg-bitcoin-50 hover:bg-bitcoin-100' : ''
+                            className={`flex items-start gap-3 p-4 cursor-pointer transition-all hover:bg-white/10 ${
+                              isSelected ? 'bg-bitcoin-500/20 hover:bg-bitcoin-500/30' : ''
                             }`}
                           >
                             <div className="flex-shrink-0 mt-1">
                               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                                 isSelected
                                   ? 'bg-bitcoin-500 border-bitcoin-500'
-                                  : 'border-gray-300 bg-white'
+                                  : 'border-white/30 bg-white/5'
                               }`}>
                                 {isSelected && <Check className="w-3 h-3 text-white" />}
                               </div>
@@ -398,14 +398,14 @@ export default function SubmitVideoPage() {
                               className="sr-only"
                             />
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium text-gray-900">
+                              <div className="font-medium text-white">
                                 {merchant.localName || merchant.merchantName || 'Unnamed Merchant'}
                               </div>
-                              <div className="text-sm text-gray-600 truncate">
+                              <div className="text-sm text-white/60 truncate">
                                 {merchant.lightningAddress || 'No payment address'}
                               </div>
                               {merchant.paymentProvider && (
-                                <div className="text-xs text-gray-500 mt-1">
+                                <div className="text-xs text-white/50 mt-1">
                                   {merchant.paymentProvider === 'blink' && '⚡ Blink'}
                                   {merchant.paymentProvider === 'fedi' && '🏛️ Fedi'}
                                   {merchant.paymentProvider === 'machankura' && '📱 Machankura'}
@@ -420,7 +420,7 @@ export default function SubmitVideoPage() {
                   )}
                 </div>
 
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-white/60 mt-2">
                   {selectedMerchantIds.length} merchant{selectedMerchantIds.length !== 1 ? 's' : ''} selected
                 </p>
               </>
@@ -428,11 +428,11 @@ export default function SubmitVideoPage() {
           </div>
 
           {/* Submit Button */}
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border-white/10">
             <button
               type="submit"
               disabled={loading || duplicateInfo?.isDuplicate || selectedMerchantIds.length === 0}
-              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center"
+              className="w-full btn-primary-dark disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center"
             >
               {loading ? (
                 <>
@@ -449,7 +449,7 @@ export default function SubmitVideoPage() {
           </div>
         </form>
 
-        <p className="text-center text-xs text-gray-500 mt-4">
+        <p className="text-center text-xs text-white/50 mt-4">
           Videos will be reviewed by CBAF admins before approval
         </p>
       </div>
