@@ -16,7 +16,7 @@ import {
 import Link from 'next/link';
 import CalculateRankingsButton from './CalculateRankingsButton';
 import CustomPeriodCalculator from './CustomPeriodCalculator';
-import FloatingNav from '@/components/ui/FloatingNav';
+import { DashboardLayout, SuperAdminSidebarSections, PageHeader } from '@/components/cbaf';
 
 export default async function FundingPage() {
   const session = await requireAdmin();
@@ -31,40 +31,34 @@ export default async function FundingPage() {
   const currentMonthCalculated = availablePeriods.some(p => p.month === currentPeriod.month);
 
   return (
-    <div className="dark-page min-h-screen pb-20">
-      <FloatingNav role={session.user.role} />
+    <DashboardLayout
+      sidebar={{
+        sections: SuperAdminSidebarSections,
+        userRole: 'super_admin'
+      }}
+    >
+      <PageHeader
+        title="Funding & Rankings"
+        description="Calculate rankings and manage economy funding"
+        icon={Calculator}
+        breadcrumbs={[
+          { label: 'Super Admin', href: '/cbaf/super-admin' },
+          { label: 'Funding' }
+        ]}
+      />
 
-      {/* Hero Header */}
-      <header className="dark-header pt-28 pb-8 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-4xl font-heading font-bold text-white flex items-center gap-3 mb-2">
-                <div className="p-2 bg-bitcoin-500/20 rounded-xl">
-                  <Calculator className="w-8 h-8 text-bitcoin-400" />
-                </div>
-                Funding & Rankings
-              </h1>
-              <p className="text-white/60 text-lg">
-                Calculate rankings and manage economy funding
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto">
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Bulk Payment Card */}
           <Link
             href="/cbaf/super-admin/funding/bulk-payment"
-            className="gradient-card group hover:border-bitcoin-500/50 transition-all duration-300"
+            className="glass-card rounded-xl p-6 backdrop-blur-xl group hover:border-bitcoin-500/50 transition-all duration-300 relative overflow-hidden"
           >
-            <div className="gradient-card-glow" />
-            <div className="relative p-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-bitcoin-500/10 via-transparent to-bitcoin-500/5 pointer-events-none" />
+            <div className="relative">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-bitcoin-500/20 rounded-xl">
+                <div className="p-3 bg-bitcoin-500/20 rounded-xl border border-bitcoin-500/30">
                   <Send className="w-8 h-8 text-bitcoin-400" />
                 </div>
                 <ArrowRight className="w-5 h-5 text-white/40 group-hover:text-bitcoin-400 group-hover:translate-x-1 transition-all" />
@@ -79,7 +73,7 @@ export default async function FundingPage() {
                   Lightning Fast
                 </div>
                 <div className="flex items-center gap-2 text-sm text-white/50">
-                  <Users className="w-4 h-4 text-green-400" />
+                  <Users className="w-4 h-4 text-emerald-400" />
                   All Economies
                 </div>
               </div>
@@ -89,12 +83,12 @@ export default async function FundingPage() {
           {/* View Rankings Card */}
           <Link
             href="/cbaf/rankings"
-            className="gradient-card group hover:border-blue-500/50 transition-all duration-300"
+            className="glass-card rounded-xl p-6 backdrop-blur-xl group hover:border-blue-500/50 transition-all duration-300 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/5 pointer-events-none" />
-            <div className="relative p-6">
+            <div className="relative">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-blue-500/20 rounded-xl">
+                <div className="p-3 bg-blue-500/20 rounded-xl border border-blue-500/30">
                   <BarChart3 className="w-8 h-8 text-blue-400" />
                 </div>
                 <ArrowRight className="w-5 h-5 text-white/40 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
@@ -119,7 +113,7 @@ export default async function FundingPage() {
 
         {/* Current Month Rankings */}
         <section className="mb-8">
-          <div className="glass-card">
+          <div className="glass-card rounded-xl p-6 backdrop-blur-xl">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-1">
@@ -181,14 +175,14 @@ export default async function FundingPage() {
         {availablePeriods.length > 0 && (
           <section className="mb-8">
             <h2 className="text-xl font-heading font-bold text-white mb-4 flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-400" />
+              <CheckCircle className="w-5 h-5 text-emerald-400" />
               Previously Calculated
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {availablePeriods.map((period) => (
                 <div
                   key={period.month}
-                  className="glass-card-hover group"
+                  className="glass-card-hover rounded-xl p-6 backdrop-blur-xl group"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -197,8 +191,8 @@ export default async function FundingPage() {
                       </h3>
                       <p className="text-xs text-white/50">Rankings available</p>
                     </div>
-                    <div className="p-2 bg-green-500/20 rounded-lg">
-                      <CheckCircle className="w-4 h-4 text-green-400" />
+                    <div className="p-2 bg-emerald-500/20 rounded-lg border border-emerald-500/30">
+                      <CheckCircle className="w-4 h-4 text-emerald-400" />
                     </div>
                   </div>
 
@@ -224,7 +218,7 @@ export default async function FundingPage() {
 
         {/* Custom Period Calculator */}
         <section>
-          <div className="glass-card">
+          <div className="glass-card rounded-xl p-6 backdrop-blur-xl">
             <h2 className="text-xl font-heading font-bold text-white mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-bitcoin-400" />
               Calculate Custom Period
@@ -235,7 +229,7 @@ export default async function FundingPage() {
             <CustomPeriodCalculator currentYear={currentPeriod.year} />
           </div>
         </section>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
