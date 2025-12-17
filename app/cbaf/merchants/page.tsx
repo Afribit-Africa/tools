@@ -1,13 +1,12 @@
 import { requireBCEProfile } from '@/lib/auth/session';
 import { db } from '@/lib/db';
-import { merchants } from '@/lib/db/schema';
+import { merchants, economies } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
-import { Users, ExternalLink, MapPin, TrendingUp, CheckCircle, XCircle, Clock, Plus, Zap } from 'lucide-react';
+import { Users, ExternalLink, MapPin, TrendingUp, CheckCircle, XCircle, Clock, Plus, Zap, Home } from 'lucide-react';
 import Link from 'next/link';
-import { Badge, EmptyState } from '@/components/cbaf';
+import { Badge, EmptyState, DashboardLayout, BCESidebarSections, PageHeader, Button } from '@/components/cbaf';
 import CSVUploadButton from './CSVUploadButton';
 import CSVExportButton from './CSVExportButton';
-import FloatingNav from '@/components/ui/FloatingNav';
 
 export default async function MerchantsPage() {
   const session = await requireBCEProfile();
@@ -19,6 +18,11 @@ export default async function MerchantsPage() {
     orderBy: [desc(merchants.registeredAt)],
   });
 
+  // Fetch economy for sidebar
+  const economy = await db.query.economies.findFirst({
+    where: eq(economies.id, economyId),
+  });
+
   const stats = {
     total: economyMerchants.length,
     verified: economyMerchants.filter(m => m.btcmapVerified).length,
@@ -26,60 +30,52 @@ export default async function MerchantsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black pb-20">
-      <FloatingNav role={session.user.role} />
-
-      {/* Header */}
-      <header className="bg-black/80 backdrop-blur-xl border-b border-white/10 pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-heading font-bold text-white">Your Merchants</h1>
-              <p className="text-gray-400 mt-1">
-                Manage your registered merchants and their payment details
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link
-                href="/cbaf/dashboard"
-                className="px-3 py-2 text-sm font-medium text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors inline-flex items-center gap-2"
-              >
-                ← Back
-              </Link>
-              <CSVExportButton economyId={economyId} />
-              <CSVUploadButton economyId={economyId} variant="secondary" />
-              <Link
-                href="/cbaf/merchants/register"
-                className="px-3 py-2 text-sm font-medium text-white bg-bitcoin hover:bg-bitcoin/80 rounded-lg transition-colors inline-flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
+    <DashboardLayout
+      sidebar={{
+        sections: BCESidebarSections,
+        userRole: 'bce',
+        economyName: economy?.economyName,
+      }}
+    >
+      <PageHeader
+        title="Your Merchants"
+        description="Manage your registered merchants and their payment details"
+        icon={Users}
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/cbaf/dashboard' },
+          { label: 'Merchants' },
+        ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <CSVExportButton economyId={economyId} />
+            <CSVUploadButton economyId={economyId} variant="secondary" />
+            <Link href="/cbaf/merchants/register">
+              <Button variant="primary" icon={Plus} darkMode={true}>
                 Add Merchant
-              </Link>
-            </div>
+              </Button>
+            </Link>
           </div>
+        }
+      />
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3">
-              <div className="text-gray-400 text-xs mb-1">Total Merchants</div>
-              <div className="text-2xl font-bold text-white">{stats.total}</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3">
-              <div className="text-gray-400 text-xs mb-1">BTCMap Verified</div>
-              <div className="text-2xl font-bold text-white">{stats.verified}</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3">
-              <div className="text-gray-400 text-xs mb-1 flex items-center gap-1">
-                <Zap className="w-3 h-3" />
-                With Blink Address
-              </div>
-              <div className="text-2xl font-bold text-white">{stats.withBlink}</div>
-            </div>
-          </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="glass-card rounded-lg p-4">
+          <div className="text-white/60 text-sm mb-1">Total Merchants</div>
+          <div className="text-3xl font-bold text-white">{stats.total}</div>
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="glass-card rounded-lg p-4">
+          <div className="text-white/60 text-sm mb-1">BTCMap Verified</div>
+          <div className="text-3xl font-bold text-white">{stats.verified}</div>
+        </div>
+        <div className="glass-card rounded-lg p-4">
+          <div className="text-white/60 text-sm mb-1 flex items-center gap-1">
+            <Zap className="w-4 h-4" />
+            With Blink Address
+          </div>
+          <div className="text-3xl font-bold text-white">{stats.withBlink}</div>
+        </div>
+      </div>
         {economyMerchants.length === 0 ? (
           <EmptyState
             icon={Users}
@@ -112,15 +108,15 @@ export default async function MerchantsPage() {
                     )}
                   </div>
                   {merchant.btcmapVerified ? (
-                    <Badge variant="success" icon={CheckCircle}>
+                    <Badge variant="success" icon={CheckCircle} darkMode={true}>
                       Verified
                     </Badge>
                   ) : merchant.verificationError ? (
-                    <Badge variant="error" icon={XCircle}>
+                    <Badge variant="error" icon={XCircle} darkMode={true}>
                       Error
                     </Badge>
                   ) : (
-                    <Badge variant="warning" icon={Clock}>
+                    <Badge variant="warning" icon={Clock} darkMode={true}>
                       Pending
                     </Badge>
                   )}
@@ -201,9 +197,9 @@ export default async function MerchantsPage() {
 
         {/* Info Box */}
         {economyMerchants.length > 0 && (
-          <div className="mt-8 p-6 bg-bitcoin/10 border border-bitcoin/30 rounded-xl">
+          <div className="mt-8 p-6 bg-bitcoin-500/10 border border-bitcoin-500/30 rounded-xl backdrop-blur-xl">
             <h3 className="font-heading font-bold text-white mb-2">💡 Growing Your Network</h3>
-            <ul className="text-sm text-gray-300 space-y-1 list-disc list-inside">
+            <ul className="text-sm text-white/70 space-y-1 list-disc list-inside">
               <li>Feature merchants in your video submissions to increase their appearance count</li>
               <li>More merchant appearances = higher rankings = more funding</li>
               <li>Verified merchants from BTCMap count toward your credibility score</li>
@@ -211,7 +207,6 @@ export default async function MerchantsPage() {
             </ul>
           </div>
         )}
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }
