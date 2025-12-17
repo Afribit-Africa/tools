@@ -2,10 +2,9 @@ import { requireAdmin } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { videoSubmissions, economies, videoMerchants, merchants } from '@/lib/db/schema';
 import { eq, desc, and, sql } from 'drizzle-orm';
-import { Video, ExternalLink, Users, Calendar, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Video, ExternalLink, Users, Calendar, CheckCircle, XCircle, Clock, AlertTriangle, Home, Shield } from 'lucide-react';
 import Link from 'next/link';
-import { Badge, EmptyState } from '@/components/cbaf';
-import FloatingNav from '@/components/ui/FloatingNav';
+import { Badge, EmptyState, DashboardLayout, AdminSidebarSections, PageHeader, Button } from '@/components/cbaf';
 
 interface Props {
   searchParams: Promise<{ status?: string; page?: string }>;
@@ -72,45 +71,39 @@ export default async function ReviewsPage({ searchParams }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-black pb-20">
-      <FloatingNav role={session.user.role} />
-
-      {/* Header */}
-      <header className="bg-black/80 backdrop-blur-xl border-b border-white/10 pt-28 pb-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-heading font-bold text-white">Video Reviews</h1>
-              <p className="text-gray-400 mt-1">
-                {statusFilter ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} submissions` : 'All submissions'}
-              </p>
-            </div>
-            <Link href="/cbaf/dashboard" className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg transition-colors">
-              ← Dashboard
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout
+      sidebar={{
+        sections: AdminSidebarSections,
+        userRole: 'admin',
+      }}
+    >
+      <PageHeader
+        title="Video Reviews"
+        description={statusFilter ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} submissions` : 'All submissions'}
+        icon={Video}
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/cbaf/dashboard' },
+          { label: 'Reviews' },
+        ]}
+      />
         {/* Filter Tabs */}
         <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
           <Link
             href="/cbaf/admin/reviews"
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
               !statusFilter
-                ? 'bg-bitcoin text-white'
-                : 'bg-white/5 border border-white/10 hover:border-bitcoin/50 text-white'
+                ? 'bg-gradient-to-r from-bitcoin-500 to-bitcoin-600 text-white shadow-lg shadow-bitcoin-500/20'
+                : 'glass-card hover:bg-white/10 text-white'
             }`}
           >
             All ({counts.all})
           </Link>
           <Link
             href="/cbaf/admin/reviews?status=pending"
-            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
               statusFilter === 'pending'
-                ? 'bg-yellow-500/80 text-white'
-                : 'bg-white/5 border border-white/10 hover:border-yellow-500/50 text-white'
+                ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg shadow-yellow-500/20'
+                : 'glass-card hover:bg-white/10 text-white'
             }`}
           >
             <Clock className="w-4 h-4" />
@@ -118,10 +111,10 @@ export default async function ReviewsPage({ searchParams }: Props) {
           </Link>
           <Link
             href="/cbaf/admin/reviews?status=approved"
-            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
               statusFilter === 'approved'
-                ? 'bg-green-500/80 text-white'
-                : 'bg-white/5 border border-white/10 hover:border-green-500/50 text-white'
+                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20'
+                : 'glass-card hover:bg-white/10 text-white'
             }`}
           >
             <CheckCircle className="w-4 h-4" />
@@ -129,10 +122,10 @@ export default async function ReviewsPage({ searchParams }: Props) {
           </Link>
           <Link
             href="/cbaf/admin/reviews?status=rejected"
-            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
               statusFilter === 'rejected'
-                ? 'bg-red-500/80 text-white'
-                : 'bg-white/5 border border-white/10 hover:border-red-500/50 text-white'
+                ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/20'
+                : 'glass-card hover:bg-white/10 text-white'
             }`}
           >
             <XCircle className="w-4 h-4" />
@@ -157,7 +150,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
               <Link
                 key={video.id}
                 href={`/cbaf/admin/reviews/${video.id}`}
-                className="block bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-bitcoin/30 hover:bg-white/10 transition-all"
+                className="block glass-card-hover rounded-xl p-6 transition-all"
               >
                 <div className="flex items-start gap-6">
                   {/* Video Thumbnail */}
@@ -170,7 +163,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
                       />
                     ) : (
                       <div className="w-40 h-24 bg-white/5 rounded-lg border border-white/10 flex items-center justify-center">
-                        <Video className="w-8 h-8 text-gray-500" />
+                        <Video className="w-8 h-8 text-white/40" />
                       </div>
                     )}
                   </div>
@@ -182,12 +175,13 @@ export default async function ReviewsPage({ searchParams }: Props) {
                         <h3 className="font-heading font-bold text-lg text-white">
                           {video.videoTitle || 'Untitled Video'}
                         </h3>
-                        <p className="text-sm text-gray-400 mt-1">
-                          by <span className="font-medium text-gray-300">{economy?.economyName || 'Unknown'}</span>
+                        <p className="text-sm text-white/60 mt-1">
+                          by <span className="font-medium text-white/80">{economy?.economyName || 'Unknown'}</span>
                           {economy?.country && ` • ${economy.country}`}
                         </p>
                       </div>
                       <Badge
+                        darkMode={true}
                         variant={
                           video.status === 'approved'
                             ? 'success'
@@ -208,12 +202,12 @@ export default async function ReviewsPage({ searchParams }: Props) {
                     </div>
 
                     {video.videoDescription && (
-                      <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                      <p className="text-sm text-white/60 mb-3 line-clamp-2">
                         {video.videoDescription}
                       </p>
                     )}
 
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                    <div className="flex items-center gap-4 text-sm text-white/50 mb-3">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(video.submittedAt).toLocaleDateString()}
@@ -232,7 +226,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
                     {/* Duplicate Warning */}
                     {video.isDuplicate && (
-                      <div className="mb-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-400 flex items-center gap-2">
+                      <div className="mb-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-400 flex items-center gap-2 backdrop-blur-xl">
                         <AlertTriangle className="w-3 h-3 flex-shrink-0" />
                         <span>Flagged as duplicate video</span>
                       </div>
@@ -240,7 +234,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
                     {/* Review Info */}
                     {video.reviewedBy && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-white/40">
                         Reviewed {new Date(video.reviewedAt!).toLocaleDateString()}
                       </p>
                     )}
@@ -248,7 +242,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
                   {/* Action Indicator */}
                   <div className="flex-shrink-0 flex items-center gap-2">
-                    <span className="text-bitcoin text-sm font-medium">
+                    <span className="text-bitcoin-400 text-sm font-medium">
                       {video.status === 'pending' ? 'Review →' : 'View Details →'}
                     </span>
                   </div>
@@ -265,12 +259,12 @@ export default async function ReviewsPage({ searchParams }: Props) {
             {currentPage > 1 ? (
               <Link
                 href={buildPageUrl(currentPage - 1)}
-                className="px-4 py-2 text-sm font-medium text-white bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white glass-card hover:bg-white/10 rounded-lg transition-colors"
               >
                 ← Previous
               </Link>
             ) : (
-              <span className="px-4 py-2 text-sm font-medium text-gray-500 bg-white/5 border border-white/5 rounded-lg cursor-not-allowed">
+              <span className="px-4 py-2 text-sm font-medium text-white/30 glass-card rounded-lg cursor-not-allowed">
                 ← Previous
               </span>
             )}
@@ -290,7 +284,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
                 if (showEllipsis) {
                   return (
-                    <span key={page} className="px-2 text-gray-500">
+                    <span key={page} className="px-2 text-white/40">
                       ...
                     </span>
                   );
@@ -302,10 +296,10 @@ export default async function ReviewsPage({ searchParams }: Props) {
                   <Link
                     key={page}
                     href={buildPageUrl(page)}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                       page === currentPage
-                        ? 'bg-bitcoin text-white'
-                        : 'text-white bg-white/5 border border-white/10 hover:bg-white/10'
+                        ? 'bg-gradient-to-r from-bitcoin-500 to-bitcoin-600 text-white shadow-lg'
+                        : 'text-white glass-card hover:bg-white/10'
                     }`}
                   >
                     {page}
@@ -318,12 +312,12 @@ export default async function ReviewsPage({ searchParams }: Props) {
             {currentPage < totalPages ? (
               <Link
                 href={buildPageUrl(currentPage + 1)}
-                className="px-4 py-2 text-sm font-medium text-white bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white glass-card hover:bg-white/10 rounded-lg transition-colors"
               >
                 Next →
               </Link>
             ) : (
-              <span className="px-4 py-2 text-sm font-medium text-gray-500 bg-white/5 border border-white/5 rounded-lg cursor-not-allowed">
+              <span className="px-4 py-2 text-sm font-medium text-white/30 glass-card rounded-lg cursor-not-allowed">
                 Next →
               </span>
             )}
@@ -332,11 +326,10 @@ export default async function ReviewsPage({ searchParams }: Props) {
 
         {/* Pagination Info */}
         {totalCount > 0 && (
-          <div className="mt-4 text-center text-sm text-gray-400">
+          <div className="mt-4 text-center text-sm text-white/60">
             Showing {offset + 1} to {Math.min(offset + ITEMS_PER_PAGE, totalCount)} of {totalCount} videos
           </div>
         )}
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }
