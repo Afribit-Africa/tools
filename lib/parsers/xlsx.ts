@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import type { ColumnDetection } from './csv';
 
 export interface ParsedXLSX {
   data: string[][];
@@ -6,6 +7,7 @@ export interface ParsedXLSX {
   addressColumn: number;
   addresses: string[];
   sheetName: string;
+  detectedColumns: ColumnDetection[];
 }
 
 export async function parseXLSXFile(file: File): Promise<ParsedXLSX> {
@@ -32,8 +34,11 @@ export async function parseXLSXFile(file: File): Promise<ParsedXLSX> {
           return;
         }
 
-        const headers = jsonData[0];
-        const addressColumnIndex = detectAddressColumn(headers);
+        const headers = jsonData[0].map(h => String(h));
+        const detectedColumns = detectAllAddressColumns(headers, jsonData);
+        const addressColumnIndex = detectedColumns.length > 0 
+          ? detectedColumns[0].index 
+          : 0;
 
         // Extract addresses (skip header row)
         const addresses = jsonData
@@ -48,6 +53,7 @@ export async function parseXLSXFile(file: File): Promise<ParsedXLSX> {
           addressColumn: addressColumnIndex,
           addresses,
           sheetName,
+          detectedColumns,
         });
       } catch (error) {
         reject(new Error(`XLSX parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
@@ -62,23 +68,108 @@ export async function parseXLSXFile(file: File): Promise<ParsedXLSX> {
   });
 }
 
+/**
+ * Detect all potential address columns with confidence levels
+ */
+function detectAllAddressColumns(headers: string[], data: string[][]): ColumnDetection[] {
+  const detections: ColumnDetection[] = [];
+  
+  // Priority keywords - higher priority = lightning-specific terms
+  const highPriorityKeywords = ['lightning', 'ln', 'blink', 'lnurl', 'lightning_address', 'ln_address'];
+  const mediumPriorityKeywords = ['address', 'recipient', 'payee', 'wallet'];
+  const lowPriorityKeywords = ['username', 'email', 'user', 'contact'];
+  
+  headers.forEach((header, index) => {
+    const headerLower = String(header).toLowerCase().trim();
+    const sampleValues = data.slice(1, 4).map(row => String(row[index] || '')).filter(v => v);
+    
+    // Check high priority (lightning-specific)
+    if (highPriorityKeywords.some(kw => headerLower.includes(kw))) {
+      detections.push({
+        index,
+        header: header || `Column ${index + 1}`,
+        confidence: 'high',
+        reason: 'Lightning address column detected',
+        sampleValues,
+      });
+      return;
+    }
+    
+    // Check if values look like lightning addresses (contain @)
+    const hasAtSymbol = sampleValues.some(v => v.includes('@'));
+    const hasBlinkDomain = sampleValues.some(v => v.includes('@blink.sv') || v.includes('@blink'));
+    
+    if (hasBlinkDomain) {
+      detections.push({
+        index,
+        header: header || `Column ${index + 1}`,
+        confidence: 'high',
+        reason: 'Contains Blink addresses',
+        sampleValues,
+      });
+      return;
+    }
+    
+    // Check medium priority
+    if (mediumPriorityKeywords.some(kw => headerLower.includes(kw))) {
+      detections.push({
+        index,
+        header: header || `Column ${index + 1}`,
+        confidence: hasAtSymbol ? 'medium' : 'low',
+        reason: hasAtSymbol ? 'Address column with @ values' : 'Generic address column',
+        sampleValues,
+      });
+      return;
+    }
+    
+    // Check low priority - be careful with "email" columns
+    if (lowPriorityKeywords.some(kw => headerLower.includes(kw))) {
+      const hasEmailDomains = sampleValues.some(v => 
+        v.includes('@gmail.') || v.includes('@yahoo.') || v.includes('@outlook.') || 
+        v.includes('@hotmail.') || v.includes('@proton.')
+      );
+      
+      if (headerLower.includes('email') && hasEmailDomains) {
+        return;
+      }
+      
+      if (hasAtSymbol) {
+        detections.push({
+          index,
+          header: header || `Column ${index + 1}`,
+          confidence: 'low',
+          reason: 'May contain addresses',
+          sampleValues,
+        });
+      }
+    }
+  });
+  
+  // Sort by confidence (high > medium > low)
+  const confidenceOrder = { high: 0, medium: 1, low: 2 };
+  detections.sort((a, b) => confidenceOrder[a.confidence] - confidenceOrder[b.confidence]);
+  
+  return detections;
+}
+
 function detectAddressColumn(headers: string[]): number {
   const addressKeywords = [
-    'address',
     'lightning',
     'ln',
     'blink',
-    'email',
+    'address',
     'recipient',
     'payee',
     'username',
   ];
 
-  const columnIndex = headers.findIndex(header =>
-    addressKeywords.some(keyword =>
-      String(header).toLowerCase().includes(keyword)
-    )
-  );
+  const columnIndex = headers.findIndex(header => {
+    const headerLower = String(header).toLowerCase();
+    if (headerLower.includes('email') && !headerLower.includes('lightning')) {
+      return false;
+    }
+    return addressKeywords.some(keyword => headerLower.includes(keyword));
+  });
 
   return columnIndex >= 0 ? columnIndex : 0;
 }

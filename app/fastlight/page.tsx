@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Zap, Send, Clock, Filter, Download, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Zap, Send, Clock, Filter, Download, ChevronDown, AlertTriangle, Check, RefreshCw } from 'lucide-react';
 import { FileUploader } from '@/components/modules/fastlight/FileUploader';
 import { ValidationTable } from '@/components/modules/fastlight/ValidationTable';
 import { StatsCards } from '@/components/modules/fastlight/StatsCards';
@@ -11,6 +11,7 @@ import { WalletConnector } from '@/components/modules/fastlight/WalletConnector'
 import { BatchPaymentPanel } from '@/components/modules/fastlight/BatchPaymentPanel';
 import { ErrorAlert } from '@/components/ui/ErrorAlert';
 import { parseCSVFile, parseXLSXFile, convertToCSV } from '@/lib/parsers';
+import type { ColumnDetection } from '@/lib/parsers';
 import { sanitizeAddress, parseBlinkAddress, extractUsername } from '@/lib/blink';
 import { downloadFile } from '@/lib/utils';
 import type { ValidationRecord, ValidationStats, BlinkAccount } from '@/types';
@@ -19,6 +20,16 @@ import { useSecureStorage } from '@/lib/utils/secure-storage';
 
 type FilterType = 'all' | 'valid' | 'invalid' | 'fixed' | 'pending';
 type ProviderType = 'blink' | 'machankura' | 'lnurl';
+
+interface ParsedFileData {
+  data: string[][];
+  headers: string[];
+  addressColumn: number;
+  amountColumn?: number;
+  detectedColumns: ColumnDetection[];
+  addresses: string[];
+  amounts: number[];
+}
 
 const PROVIDERS = [
   { id: 'blink', name: 'Blink', description: 'Verify @blink.sv addresses' },
@@ -40,6 +51,12 @@ export default function FastlightPage() {
   const [isValidating, setIsValidating] = useState(false);
   const [loadingState, setLoadingState] = useState<string>('');
   const [detectedHeaders, setDetectedHeaders] = useState<{headers: string[], addressColumn: number, amountColumn?: number} | null>(null);
+  
+  // Column selection state
+  const [showColumnSelector, setShowColumnSelector] = useState(false);
+  const [parsedFileData, setParsedFileData] = useState<ParsedFileData | null>(null);
+  const [selectedAddressColumn, setSelectedAddressColumn] = useState<number>(0);
+  
   const [stats, setStats] = useState<ValidationStats>({
     total: 0,
     valid: 0,
@@ -71,36 +88,40 @@ export default function FastlightPage() {
 
   const handleFileUpload = async (file: File) => {
     setFileName(file.name);
-    setIsValidating(true);
     setLoadingState('Reading file...');
     setError('');
 
     try {
       const extension = file.name.split('.').pop()?.toLowerCase();
-      let addresses: string[] = [];
-      let amounts: number[] = [];
       let headers: string[] = [];
       let addressColumn = 0;
       let amountColumn: number | undefined;
       let data: string[][] = [];
+      let detectedColumns: ColumnDetection[] = [];
+      let addresses: string[] = [];
 
       if (extension === 'csv') {
         setLoadingState('Parsing CSV file...');
         const parsed = await parseCSVFile(file);
-        addresses = parsed.addresses;
         headers = parsed.headers;
         addressColumn = parsed.addressColumn;
         data = parsed.data;
+        detectedColumns = parsed.detectedColumns;
+        addresses = parsed.addresses;
       } else if (extension === 'xlsx' || extension === 'xls') {
         setLoadingState('Parsing XLSX file...');
         const parsed = await parseXLSXFile(file);
-        addresses = parsed.addresses;
         headers = parsed.headers;
         addressColumn = parsed.addressColumn;
         data = parsed.data;
+        detectedColumns = parsed.detectedColumns;
+        addresses = parsed.addresses;
       }
 
       amountColumn = detectAmountColumn(headers);
+      
+      // Extract amounts if column detected
+      let amounts: number[] = [];
       if (amountColumn !== undefined) {
         amounts = data.slice(1).map(row => {
           const amountStr = row[amountColumn!];
@@ -109,38 +130,30 @@ export default function FastlightPage() {
         });
       }
 
-      setDetectedHeaders({ headers, addressColumn, amountColumn });
-      setLoadingState(`Found ${addresses.length} addresses in column "${headers[addressColumn]}"${amountColumn !== undefined ? ` and amounts in "${headers[amountColumn]}"` : ''}`);
-
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      const initialRecords: ValidationRecord[] = addresses.map((addr, index) => ({
-        id: `record-${index}`,
-        original: addr,
-        cleaned: '',
-        status: 'pending',
-        issues: [],
-        amount: amounts[index] || undefined,
-        paymentStatus: undefined,
-      }));
-
-      setRecords(initialRecords);
-      setStats({
-        total: addresses.length,
-        valid: 0,
-        invalid: 0,
-        fixed: 0,
-        pending: addresses.length,
-        progress: 0,
+      // Store parsed file data for column selection
+      setParsedFileData({
+        data,
+        headers,
+        addressColumn,
+        amountColumn,
+        detectedColumns,
+        addresses,
+        amounts,
       });
-
-      setLoadingState('Starting validation...');
-
-      const estimated = ValidationBatchProcessor.calculateEstimatedTime(addresses.length);
-      setEstimatedTime(estimated.formattedTime);
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      await validateAddresses(initialRecords);
+      setSelectedAddressColumn(addressColumn);
+      
+      // Show column selector if there are multiple potential columns or low confidence
+      const hasMultipleOptions = detectedColumns.length > 1;
+      const hasLowConfidence = detectedColumns.length > 0 && detectedColumns[0].confidence !== 'high';
+      const hasNoDetection = detectedColumns.length === 0;
+      
+      if (hasMultipleOptions || hasLowConfidence || hasNoDetection) {
+        setShowColumnSelector(true);
+        setLoadingState('');
+      } else {
+        // High confidence single detection - proceed directly
+        await proceedWithValidation(addressColumn, data, headers, amountColumn, amounts);
+      }
     } catch (error) {
       console.error('File processing error:', error);
       let errorMessage = 'Unknown error occurred';
@@ -161,6 +174,77 @@ export default function FastlightPage() {
       setIsValidating(false);
       setLoadingState('');
     }
+  };
+  
+  const handleColumnConfirm = async () => {
+    if (!parsedFileData) return;
+    
+    setShowColumnSelector(false);
+    
+    // Re-extract addresses from the selected column
+    const addresses = parsedFileData.data
+      .slice(1)
+      .map(row => row[selectedAddressColumn])
+      .filter(addr => addr && String(addr).trim().length > 0)
+      .map(addr => String(addr));
+    
+    await proceedWithValidation(
+      selectedAddressColumn, 
+      parsedFileData.data, 
+      parsedFileData.headers, 
+      parsedFileData.amountColumn, 
+      parsedFileData.amounts
+    );
+  };
+  
+  const proceedWithValidation = async (
+    addressColumn: number, 
+    data: string[][], 
+    headers: string[], 
+    amountColumn: number | undefined, 
+    amounts: number[]
+  ) => {
+    setIsValidating(true);
+    
+    // Extract addresses from the selected column
+    const addresses = data
+      .slice(1)
+      .map(row => row[addressColumn])
+      .filter(addr => addr && String(addr).trim().length > 0)
+      .map(addr => String(addr));
+
+    setDetectedHeaders({ headers, addressColumn, amountColumn });
+    setLoadingState(`Found ${addresses.length} addresses in column "${headers[addressColumn]}"${amountColumn !== undefined ? ` and amounts in "${headers[amountColumn]}"` : ''}`);
+
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const initialRecords: ValidationRecord[] = addresses.map((addr, index) => ({
+      id: `record-${index}`,
+      original: addr,
+      cleaned: '',
+      status: 'pending',
+      issues: [],
+      amount: amounts[index] || undefined,
+      paymentStatus: undefined,
+    }));
+
+    setRecords(initialRecords);
+    setStats({
+      total: addresses.length,
+      valid: 0,
+      invalid: 0,
+      fixed: 0,
+      pending: addresses.length,
+      progress: 0,
+    });
+
+    setLoadingState('Starting validation...');
+
+    const estimated = ValidationBatchProcessor.calculateEstimatedTime(addresses.length);
+    setEstimatedTime(estimated.formattedTime);
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    await validateAddresses(initialRecords);
   };
 
   const validateAddresses = async (initialRecords: ValidationRecord[]) => {
@@ -339,6 +423,9 @@ export default function FastlightPage() {
     setApiKey('');
     setAccount(undefined);
     setFilter('all');
+    setShowColumnSelector(false);
+    setParsedFileData(null);
+    setSelectedAddressColumn(0);
     setStats({
       total: 0,
       valid: 0,
@@ -347,6 +434,15 @@ export default function FastlightPage() {
       pending: 0,
       progress: 0,
     });
+  };
+
+  // Get sample values for selected column
+  const getColumnSamples = (columnIndex: number): string[] => {
+    if (!parsedFileData) return [];
+    return parsedFileData.data
+      .slice(1, 4)
+      .map(row => String(row[columnIndex] || ''))
+      .filter(v => v.length > 0);
   };
 
   return (
@@ -408,7 +504,126 @@ export default function FastlightPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-7xl">
-        {records.length === 0 ? (
+        {/* Column Selector Modal */}
+        {showColumnSelector && parsedFileData && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-gray-900 border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+              <div className="p-6 border-b border-white/10">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-bitcoin-500/20 rounded-xl flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5 text-bitcoin-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-heading font-bold text-white">Select Address Column</h3>
+                    <p className="text-sm text-gray-400">Choose which column contains the Lightning addresses</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-6 max-h-[60vh] overflow-y-auto">
+                {/* Auto-detected suggestions */}
+                {parsedFileData.detectedColumns.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-sm font-semibold text-gray-300 mb-3">Suggested Columns</h4>
+                    <div className="space-y-2">
+                      {parsedFileData.detectedColumns.map((col) => (
+                        <button
+                          key={col.index}
+                          onClick={() => setSelectedAddressColumn(col.index)}
+                          className={`w-full p-4 rounded-xl border text-left transition-all ${
+                            selectedAddressColumn === col.index
+                              ? 'bg-bitcoin-500/20 border-bitcoin-500/50'
+                              : 'bg-white/5 border-white/10 hover:border-white/20'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold text-white">{col.header}</span>
+                            <span className={`px-2 py-0.5 text-xs rounded-full ${
+                              col.confidence === 'high' 
+                                ? 'bg-green-500/20 text-green-400' 
+                                : col.confidence === 'medium'
+                                  ? 'bg-yellow-500/20 text-yellow-400'
+                                  : 'bg-gray-500/20 text-gray-400'
+                            }`}>
+                              {col.confidence} confidence
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-400 mb-2">{col.reason}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {col.sampleValues.slice(0, 3).map((val, i) => (
+                              <span key={i} className="px-2 py-1 bg-white/5 rounded text-xs text-gray-300 font-mono truncate max-w-[200px]">
+                                {val}
+                              </span>
+                            ))}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* All columns */}
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-300 mb-3">All Columns</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {parsedFileData.headers.map((header, idx) => {
+                      const samples = getColumnSamples(idx);
+                      const isSelected = selectedAddressColumn === idx;
+                      const isSuggested = parsedFileData.detectedColumns.some(c => c.index === idx);
+                      
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedAddressColumn(idx)}
+                          className={`p-3 rounded-xl border text-left transition-all ${
+                            isSelected
+                              ? 'bg-bitcoin-500/20 border-bitcoin-500/50'
+                              : 'bg-white/5 border-white/10 hover:border-white/20'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            {isSelected && <Check className="w-4 h-4 text-bitcoin-400" />}
+                            <span className={`font-medium text-sm ${isSelected ? 'text-bitcoin-400' : 'text-white'}`}>
+                              {header || `Column ${idx + 1}`}
+                            </span>
+                            {isSuggested && !isSelected && (
+                              <span className="px-1.5 py-0.5 bg-bitcoin-500/10 text-bitcoin-400 text-xs rounded">
+                                suggested
+                              </span>
+                            )}
+                          </div>
+                          {samples.length > 0 && (
+                            <p className="text-xs text-gray-500 font-mono truncate">
+                              {samples[0]}
+                            </p>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-6 border-t border-white/10 flex items-center justify-between">
+                <button
+                  onClick={resetState}
+                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleColumnConfirm}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-bitcoin-500 to-orange-500 hover:from-bitcoin-400 hover:to-orange-400 text-white font-semibold rounded-xl shadow-lg transition-all"
+                >
+                  <Check className="w-4 h-4" />
+                  Use Column: {parsedFileData.headers[selectedAddressColumn] || `Column ${selectedAddressColumn + 1}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {records.length === 0 && !showColumnSelector ? (
           /* Upload View */
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
@@ -446,7 +661,7 @@ export default function FastlightPage() {
                     2
                   </span>
                   <span>
-                    We automatically detect, clean, and verify each address against the selected provider
+                    We automatically detect the address column, or you can select it manually
                   </span>
                 </li>
                 <li className="flex items-start gap-4">
@@ -468,7 +683,7 @@ export default function FastlightPage() {
               </ol>
             </div>
           </div>
-        ) : (
+        ) : records.length > 0 ? (
           /* Validation View */
           <div className="space-y-6">
             {/* Header Detection Info */}
@@ -650,7 +865,7 @@ export default function FastlightPage() {
               </div>
             )}
           </div>
-        )}
+        ) : null}
       </main>
 
       {/* Footer */}
