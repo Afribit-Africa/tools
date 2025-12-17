@@ -2,10 +2,10 @@ import { requireBCEProfile } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { economies, videoSubmissions, merchants, monthlyRankings } from '@/lib/db/schema';
 import { eq, desc, sql, and } from 'drizzle-orm';
-import { Video, TrendingUp, Users, Award, Calendar, ExternalLink, Trophy, ArrowRight, Zap } from 'lucide-react';
+import { Video, TrendingUp, Users, Award, Calendar, ExternalLink, Trophy, ArrowRight, Zap, Home, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import FloatingNav from '@/components/ui/FloatingNav';
+import { DashboardLayout, BCESidebarSections, PageHeader, Button } from '@/components/cbaf';
 
 export default async function DashboardPage() {
   const session = await requireBCEProfile();
@@ -61,32 +61,36 @@ export default async function DashboardPage() {
   const approvalRate = totalSubmitted > 0 ? Math.round((totalApproved / totalSubmitted) * 100) : 0;
 
   return (
-    <div className="dark-page min-h-screen pb-20">
-      <FloatingNav role="bce" />
-
-      {/* Header */}
-      <header className="dark-header pt-28 pb-8 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-heading font-bold text-white">{economy.economyName}</h1>
-              <p className="text-white/60 mt-1">
-                {economy.city ? `${economy.city}, ` : ''}{economy.country}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link href="/cbaf/videos/submit" className="btn-primary-dark">
-                <Video className="w-4 h-4 mr-2" />
+    <DashboardLayout
+      sidebar={{
+        sections: BCESidebarSections,
+        userRole: 'bce',
+        economyName: economy.economyName,
+      }}
+    >
+      <PageHeader
+        title={economy.economyName}
+        description={`${economy.city ? `${economy.city}, ` : ''}${economy.country}`}
+        icon={Home}
+        breadcrumbs={[
+          { label: 'CBAF', href: '/cbaf/dashboard' },
+          { label: 'Dashboard' },
+        ]}
+        actions={
+          <>
+            <Link href="/cbaf/videos/submit">
+              <Button variant="primary" icon={Plus}>
                 Submit Video
-              </Link>
-              <Link href="/cbaf/merchants/register" className="btn-secondary-dark">
-                <Users className="w-4 h-4 mr-2" />
+              </Button>
+            </Link>
+            <Link href="/cbaf/merchants/register">
+              <Button variant="secondary" icon={Users}>
                 Add Merchant
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+              </Button>
+            </Link>
+          </>
+        }
+      />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Statistics Grid */}
@@ -265,6 +269,6 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </main>
-    </div>
+    </DashboardLayout>
   );
 }

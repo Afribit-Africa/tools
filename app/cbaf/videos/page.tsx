@@ -1,10 +1,10 @@
 import { requireBCEProfile } from '@/lib/auth/session';
 import { db } from '@/lib/db';
-import { videoSubmissions, videoMerchants } from '@/lib/db/schema';
+import { videoSubmissions, videoMerchants, economies } from '@/lib/db/schema';
 import { eq, desc, sql } from 'drizzle-orm';
-import { Video, ExternalLink, Users, Calendar, MessageSquare, CheckCircle, XCircle, Clock, AlertTriangle, Play } from 'lucide-react';
+import { Video, ExternalLink, Users, Calendar, MessageSquare, CheckCircle, XCircle, Clock, AlertTriangle, Play, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { Badge, EmptyState, StatCard } from '@/components/cbaf';
+import { Badge, DashboardLayout, BCESidebarSections, PageHeader, Button } from '@/components/cbaf';
 import VideoModal from '@/components/cbaf/VideoModal';
 
 export default async function VideosPage() {
@@ -17,86 +17,104 @@ export default async function VideosPage() {
     orderBy: [desc(videoSubmissions.submittedAt)],
   });
 
+  // Fetch economy for sidebar
+  const economy = await db.query.economies.findFirst({
+    where: eq(economies.id, economyId),
+  });
+
   // Group videos by status
   const pending = videos.filter(v => v.status === 'pending');
   const approved = videos.filter(v => v.status === 'approved');
   const rejected = videos.filter(v => v.status === 'rejected');
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-black text-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-heading font-bold">Your Videos</h1>
-              <p className="text-gray-300 mt-1">
-                {videos.length} total submission{videos.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link href="/cbaf/dashboard" className="bg-white text-black hover:bg-gray-100 px-4 py-2 rounded-lg font-medium transition-colors">
-                ← Back to Dashboard
-              </Link>
-              <Link href="/cbaf/videos/submit" className="btn-primary flex items-center gap-2">
-                <Video className="w-4 h-4" />
-                Submit Video
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+    <DashboardLayout
+      sidebar={{
+        sections: BCESidebarSections,
+        userRole: 'bce',
+        economyName: economy?.economyName,
+      }}
+    >
+      <PageHeader
+        title="Your Videos"
+        description={`${videos.length} total submission${videos.length !== 1 ? 's' : ''}`}
+        icon={Video}
+        breadcrumbs={[
+          { label: 'CBAF', href: '/cbaf/dashboard' },
+          { label: 'Videos' },
+        ]}
+        actions={
+          <Link href="/cbaf/videos/submit">
+            <Button variant="primary" icon={Plus}>
+              Submit Video
+            </Button>
+          </Link>
+        }
+      />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Statistics Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            title="Total"
-            value={videos.length.toString()}
-            icon={Video}
-            iconBgColor="bg-bitcoin-100"
-            iconColor="text-bitcoin-600"
-          />
-          <StatCard
-            title="Pending Review"
-            value={pending.length.toString()}
-            icon={Clock}
-            iconBgColor="bg-yellow-100"
-            iconColor="text-yellow-600"
-          />
-          <StatCard
-            title="Approved"
-            value={approved.length.toString()}
-            icon={CheckCircle}
-            iconBgColor="bg-green-100"
-            iconColor="text-green-600"
-          />
-          <StatCard
-            title="Rejected"
-            value={rejected.length.toString()}
-            icon={XCircle}
-            iconBgColor="bg-red-100"
-            iconColor="text-red-600"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="glass-card">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-bitcoin-500/20 rounded-xl">
+                <Video className="w-6 h-6 text-bitcoin-400" />
+              </div>
+              <span className="text-sm font-medium text-white/50">Total</span>
+            </div>
+            <div className="text-3xl font-bold text-white">{videos.length}</div>
+          </div>
+
+          <div className="stat-card-dark-warning">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-yellow-500/20 rounded-xl">
+                <Clock className="w-6 h-6 text-yellow-400" />
+              </div>
+              <span className="text-sm font-medium text-yellow-400/70">Pending</span>
+            </div>
+            <div className="text-3xl font-bold text-yellow-400">{pending.length}</div>
+          </div>
+
+          <div className="stat-card-dark-success">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-green-500/20 rounded-xl">
+                <CheckCircle className="w-6 h-6 text-green-400" />
+              </div>
+              <span className="text-sm font-medium text-green-400/70">Approved</span>
+            </div>
+            <div className="text-3xl font-bold text-green-400">{approved.length}</div>
+          </div>
+
+          <div className="stat-card-dark-error">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-red-500/20 rounded-xl">
+                <XCircle className="w-6 h-6 text-red-400" />
+              </div>
+              <span className="text-sm font-medium text-red-400/70">Rejected</span>
+            </div>
+            <div className="text-3xl font-bold text-red-400">{rejected.length}</div>
+          </div>
         </div>
 
         {videos.length === 0 ? (
-          <EmptyState
-            icon={Video}
-            title="No videos yet"
-            description="Submit your first proof-of-work video to start earning CBAF funding"
-          >
-            <Link href="/cbaf/videos/submit" className="btn-primary inline-flex items-center gap-2 mt-4">
-              <Video className="w-4 h-4" />
-              Submit Your First Video
-            </Link>
-          </EmptyState>
+          <div className="glass-card">
+            <div className="text-center py-12">
+              <Video className="w-12 h-12 text-white/20 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">No videos yet</h3>
+              <p className="text-white/50 mb-4">Submit your first proof-of-work video to start earning CBAF funding</p>
+              <Link href="/cbaf/videos/submit">
+                <Button variant="primary" icon={Video}>
+                  Submit Your First Video
+                </Button>
+              </Link>
+            </div>
+          </div>
         ) : (
           <div className="space-y-4">
             {videos.map((video) => (
               <div
                 key={video.id}
-                className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:border-bitcoin-300 hover:shadow-md transition-all"
+                className="glass-card-hover"
               >
                 <div className="flex items-start gap-6">
                   {/* Video Thumbnail/Icon */}
@@ -105,11 +123,11 @@ export default async function VideosPage() {
                       <img
                         src={video.videoThumbnail}
                         alt={video.videoTitle || 'Video thumbnail'}
-                        className="w-32 h-20 object-cover rounded-lg border border-gray-200"
+                        className="w-32 h-20 object-cover rounded-lg border border-white/10"
                       />
                     ) : (
-                      <div className="w-32 h-20 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
-                        <Video className="w-8 h-8 text-gray-400" />
+                      <div className="w-32 h-20 bg-white/5 rounded-lg border border-white/10 flex items-center justify-center">
+                        <Video className="w-8 h-8 text-white/40" />
                       </div>
                     )}
                   </div>
@@ -118,17 +136,18 @@ export default async function VideosPage() {
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <h3 className="font-heading font-bold text-lg text-gray-900">
+                        <h3 className="font-heading font-bold text-lg text-white">
                           {video.videoTitle || 'Untitled Video'}
                         </h3>
                         {video.videoDescription && (
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                          <p className="text-sm text-white/60 mt-1 line-clamp-2">
                             {video.videoDescription}
                           </p>
                         )}
                       </div>
                       <div className="ml-4">
                         <Badge
+                          darkMode={true}
                           variant={
                             video.status === 'approved'
                               ? 'success'
@@ -153,7 +172,7 @@ export default async function VideosPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                    <div className="flex items-center gap-4 text-sm text-white/50 mb-3">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(video.submittedAt).toLocaleDateString()}
@@ -172,7 +191,7 @@ export default async function VideosPage() {
 
                     {/* Duplicate Warning */}
                     {video.isDuplicate && (
-                      <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700 flex items-center gap-2">
+                      <div className="mb-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-400 flex items-center gap-2">
                         <AlertTriangle className="w-3 h-3 flex-shrink-0" />
                         <span>Marked as duplicate - may not be eligible for funding</span>
                       </div>
@@ -180,12 +199,12 @@ export default async function VideosPage() {
 
                     {/* Admin Comments */}
                     {video.adminComments && (
-                      <div className="mb-3 p-3 bg-gray-50 rounded border border-gray-200">
+                      <div className="mb-3 p-3 bg-white/5 rounded border border-white/10">
                         <div className="flex items-start gap-2">
-                          <MessageSquare className="w-4 h-4 text-bitcoin-600 flex-shrink-0 mt-0.5" />
+                          <MessageSquare className="w-4 h-4 text-bitcoin-400 flex-shrink-0 mt-0.5" />
                           <div className="flex-1">
-                            <p className="text-xs text-gray-500 mb-1">Admin Comment:</p>
-                            <p className="text-sm text-gray-900">{video.adminComments}</p>
+                            <p className="text-xs text-white/50 mb-1">Admin Comment:</p>
+                            <p className="text-sm text-white">{video.adminComments}</p>
                           </div>
                         </div>
                       </div>
@@ -200,8 +219,8 @@ export default async function VideosPage() {
                         title={video.videoTitle || undefined}
                         description={video.videoDescription || undefined}
                         triggerButton={
-                          <button className="text-sm bg-bitcoin-500 hover:bg-bitcoin-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
-                            <Play className="w-3 h-3" />
+                          <button className="btn-primary-dark text-sm">
+                            <Play className="w-3 h-3 mr-2" />
                             Watch Video
                           </button>
                         }
@@ -210,13 +229,13 @@ export default async function VideosPage() {
                         href={video.videoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-bitcoin-600 hover:text-bitcoin-700 font-medium flex items-center gap-1"
+                        className="text-sm text-bitcoin-400 hover:text-bitcoin-300 font-medium flex items-center gap-1"
                       >
                         <ExternalLink className="w-3 h-3" />
                         Open in New Tab
                       </a>
                       {video.reviewedBy && video.reviewedAt && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-white/50">
                           Reviewed {new Date(video.reviewedAt).toLocaleDateString()}
                         </span>
                       )}
@@ -230,9 +249,9 @@ export default async function VideosPage() {
 
         {/* Tips Section */}
         {videos.length > 0 && (
-          <div className="mt-8 p-6 bg-bitcoin-50 border-2 border-bitcoin-200 rounded-xl">
-            <h3 className="font-heading font-bold text-gray-900 mb-2">💡 Tips for Better Approval Rates</h3>
-            <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+          <div className="mt-8 p-6 bg-bitcoin-500/10 border border-bitcoin-500/30 rounded-xl backdrop-blur-xl">
+            <h3 className="font-heading font-bold text-white mb-2">💡 Tips for Better Approval Rates</h3>
+            <ul className="text-sm text-white/70 space-y-1 list-disc list-inside">
               <li>Ensure videos clearly show merchants accepting Bitcoin</li>
               <li>Use unique, non-recycled content for each month</li>
               <li>Register merchants on BTCMap before featuring them</li>
@@ -242,6 +261,6 @@ export default async function VideosPage() {
           </div>
         )}
       </main>
-    </div>
+    </DashboardLayout>
   );
 }
