@@ -4,7 +4,8 @@ import { economies } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import EconomyEditForm from './EconomyEditForm';
-import FloatingNav from '@/components/ui/FloatingNav';
+import { DashboardLayout, AdminSidebarSections, PageHeader } from '@/components/cbaf';
+import { Globe } from 'lucide-react';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -33,27 +34,31 @@ export default async function EconomyEditPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-black pb-20">
-      <FloatingNav role={session.user.role} />
+    <DashboardLayout
+      sidebar={{
+        sections: AdminSidebarSections,
+        userRole: session.user.role
+      }}
+    >
+      <PageHeader
+        title="Edit Economy Profile"
+        description={`Update ${economy.economyName}'s information and settings`}
+        icon={Globe}
+        breadcrumbs={[
+          { label: 'Admin', href: '/cbaf/admin' },
+          { label: 'Economies', href: '/cbaf/admin/economies' },
+          { label: economy.economyName, href: `/cbaf/admin/economies/${id}` },
+          { label: 'Edit' }
+        ]}
+      />
 
-      <header className="bg-gradient-to-r from-bitcoin-500/20 via-black to-bitcoin-500/20 text-white border-b border-white/10 pt-28 pb-8">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-heading font-bold mb-2 text-white">
-            Edit Economy Profile
-          </h1>
-          <p className="text-gray-300">
-            Update {economy.economyName}'s information and settings
-          </p>
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-4">
+      <div className="max-w-5xl mx-auto">
         <EconomyEditForm
           economy={economy}
           userRole={session.user.role}
           userEmail={session.user.email}
         />
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

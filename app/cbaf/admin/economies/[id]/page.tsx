@@ -9,7 +9,7 @@ import {
   XCircle, Edit, Building2, Zap
 } from 'lucide-react';
 import Link from 'next/link';
-import FloatingNav from '@/components/ui/FloatingNav';
+import { DashboardLayout, AdminSidebarSections, PageHeader, Button } from '@/components/cbaf';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -78,57 +78,30 @@ export default async function EconomyDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-black pb-20">
-      <FloatingNav role={session.user.role} />
+    <DashboardLayout
+      sidebar={{
+        sections: AdminSidebarSections,
+        userRole: session.user.role
+      }}
+    >
+      <PageHeader
+        title={economy.economyName}
+        description={`${economy.city ? `${economy.city}, ` : ''}${economy.country}`}
+        icon={Globe}
+        breadcrumbs={[
+          { label: 'Admin', href: '/cbaf/admin' },
+          { label: 'Economies', href: '/cbaf/admin/economies' },
+          { label: economy.economyName }
+        ]}
+        actions={
+          <Link href={`/cbaf/admin/economies/${id}/edit`}>
+            <Button variant="secondary" icon={Edit}>Edit Profile</Button>
+          </Link>
+        }
+      />
 
-      {/* Header */}
-      <header className="bg-gradient-to-r from-bitcoin/80 to-orange-600/80 backdrop-blur-xl border-b border-white/10 pt-28 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">
-              <Link
-                href="/cbaf/admin/economies"
-                className="text-sm text-white/70 hover:text-white mb-3 inline-block font-medium"
-              >
-                ← Back to Economies
-              </Link>
-              <div className="flex items-center gap-4 mb-3">
-                {/* Logo placeholder */}
-                <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20">
-                  <Globe className="w-10 h-10 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-4xl font-heading font-bold mb-2 text-white">
-                    {economy.economyName}
-                  </h1>
-                  <div className="flex items-center gap-3 text-white/80">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      <span>{economy.city ? `${economy.city}, ` : ''}{economy.country}</span>
-                    </div>
-                    {economy.isVerified && (
-                      <div className="flex items-center gap-1 bg-green-500/20 px-2 py-1 rounded-lg border border-green-400/30">
-                        <CheckCircle className="w-4 h-4 text-green-400" />
-                        <span className="text-sm font-medium text-green-400">Verified</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Link
-                href={`/cbaf/admin/economies/${id}/edit`}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                Edit Profile
-              </Link>
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="max-w-7xl mx-auto">{/* Quick Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
               <div className="flex items-center gap-2 mb-1">
                 <Video className="w-5 h-5 text-white/70" />
@@ -168,10 +141,7 @@ export default async function EconomyDetailPage({ params }: Props) {
               <div className="text-xs text-white/70">All-time</div>
             </div>
           </div>
-        </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-4">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
@@ -379,7 +349,7 @@ export default async function EconomyDetailPage({ params }: Props) {
             </section>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

@@ -18,7 +18,6 @@ import {
   Globe,
   Shield,
 } from 'lucide-react';
-import FloatingNav from '@/components/ui/FloatingNav';
 import dynamic from 'next/dynamic';
 
 const Plasma = dynamic(() => import('@/components/ui/Plasma'), { ssr: false });
@@ -242,8 +241,6 @@ export default function BulkPaymentPage() {
       </div>
 
       <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80 z-[1]" />
-
-      <FloatingNav role="super_admin" />
 
       <div className="relative z-10 pt-28 pb-12 px-6">
         <div className="max-w-7xl mx-auto">
